@@ -5,7 +5,7 @@ import { createWriteStream } from 'fs';
 import { get } from 'http';
 import { AppModule } from './app.module';
 import configuration from './config/configuration';
-import * as cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
