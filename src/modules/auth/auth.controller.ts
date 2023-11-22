@@ -1,23 +1,15 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { User } from '../users/schemas/user.schema';
 import { AuthService } from './auth.service';
 import { SignInReturnDto } from './dto/sign-in-return.dto';
 import { SignInDto } from './dto/sign-in.dto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { RefreshTokenGuard } from '../../common/guards/refresh-token.guard';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-
-interface RequestWithAuthUser extends Request {
-  user: {
-    sub: string;
-    username: string;
-    iat: number;
-    exp: number;
-    refresh_token?: string;
-  };
-}
+import { AuthUserRequest } from './types/auth-user-request';
+import { AuthUserRefreshRequest } from './types/auth-user-refresh-request';
 
 @ApiBearerAuth()
 @ApiTags('auth')
@@ -31,27 +23,57 @@ export class AuthController {
   }
 
   @Post('/login')
-  login(@Body() signInDto: SignInDto): Promise<SignInReturnDto> {
-    return this.authService.signIn(signInDto.email, signInDto.password);
+  async login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response): Promise<void> {
+    const { access_token, refresh_token } = await this.authService.signIn(signInDto.email, signInDto.password);
+    response
+      .cookie('access_token', access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        expires: new Date(Date.now() + 1 * 24 * 60 * 1000),
+      })
+      .cookie('refresh_token', refresh_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        expires: new Date(Date.now() + 7 * 24 * 60 * 1000),
+      })
+      .send({ access_token, refresh_token });
   }
 
   @UseGuards(AccessTokenGuard)
   @Get('/logout')
-  logout(@Req() req: RequestWithAuthUser) {
+  logout(@Req() req: AuthUserRequest, @Res({ passthrough: true }) response: Response) {
+    response.clearCookie('access_token');
+    response.clearCookie('refresh_token');
     return this.authService.signOut(req.user.sub);
   }
 
   @UseGuards(RefreshTokenGuard)
   @Get('/refresh')
-  refreshTokens(@Req() req: RequestWithAuthUser) {
+  async refreshTokens(@Req() req: AuthUserRefreshRequest, @Res({ passthrough: true }) response: Response) {
     const userId = req.user.sub;
     const refreshToken = req.user.refresh_token || '';
-    return this.authService.refreshTokens(userId, refreshToken);
+    const { access_token, refresh_token } = await this.authService.refreshTokens(userId, refreshToken);
+    response
+      .cookie('access_token', access_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        expires: new Date(Date.now() + 1 * 24 * 60 * 1000),
+      })
+      .cookie('refresh_token', refresh_token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        expires: new Date(Date.now() + 7 * 24 * 60 * 1000),
+      })
+      .send({ access_token, refresh_token });
   }
 
   @UseGuards(AccessTokenGuard)
   @Get('/whoami')
-  whoami(@Req() req: RequestWithAuthUser) {
+  whoami(@Req() req: AuthUserRequest) {
     return req.user;
   }
 }

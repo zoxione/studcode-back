@@ -6,6 +6,7 @@ import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { Project } from './schemas/project.schema';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { startOfToday, subWeeks, subMonths, subYears, subDays } from 'date-fns';
 
 @Injectable()
 export class ProjectsService {
@@ -16,15 +17,41 @@ export class ProjectsService {
     return createdProject;
   }
 
-  async findAll({ search = '', page = 0, limit = 20 }: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll({ search = '', page = 0, limit = 20, time_frame = 'all' }: FindAllQueryDto): Promise<FindAllReturnDto> {
     const count = await this.projectModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    let startDate: Date;
+    switch (time_frame) {
+      case 'day':
+        startDate = subDays(startOfToday(), 1);
+        break;
+      case 'week':
+        startDate = subWeeks(startOfToday(), 1);
+        break;
+      case 'month':
+        startDate = subMonths(startOfToday(), 1);
+        break;
+      case 'year':
+        startDate = subYears(startOfToday(), 1);
+        break;
+      default:
+        startDate = new Date(0);
+        break;
+    }
     const foundProjects = await this.projectModel
-      .find(searchQuery)
+      .find({
+        ...searchQuery,
+        created_at: { $gte: startDate },
+      })
       .skip(page * limit)
       .limit(limit)
+      .populate({ path: 'tags', select: '_id name icon' })
+      .populate({
+        path: 'creator',
+        select: '_id username avatar',
+      })
       .exec();
-    return { stats: { totalCount: count }, data: foundProjects };
+    return { stats: { total_count: count, time_frame: time_frame }, data: foundProjects };
   }
 
   async findOne(field: keyof Project, fieldValue: unknown): Promise<Project> {

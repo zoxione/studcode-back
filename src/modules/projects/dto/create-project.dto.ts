@@ -1,8 +1,19 @@
-import { IsString, IsInt, IsArray, IsUrl, IsOptional } from 'class-validator';
+import { IsString, IsInt, IsArray, IsUrl, IsOptional, IsEnum, ValidateNested, IsDefined } from 'class-validator';
+import { ProjectStatus } from '../../../common/types/project-status';
+import { ProjectLinkDto } from './project-link.dto';
+import { Type } from 'class-transformer';
+import { ProjectPrice } from '../../../common/types/project-price';
 
 export class CreateProjectDto {
   @IsString()
   readonly title: string;
+
+  @IsString()
+  readonly tagline: string;
+
+  @IsEnum(ProjectStatus)
+  @IsOptional()
+  readonly status: string;
 
   @IsString()
   @IsOptional()
@@ -12,10 +23,11 @@ export class CreateProjectDto {
   @IsOptional()
   readonly flames: number;
 
-  @IsString()
-  @IsUrl()
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => ProjectLinkDto)
   @IsOptional()
-  readonly link: string;
+  readonly link: ProjectLinkDto;
 
   @IsString()
   @IsUrl()
@@ -27,8 +39,15 @@ export class CreateProjectDto {
   @IsOptional()
   readonly screenshots: string[];
 
+  @IsEnum(ProjectPrice)
+  @IsOptional()
+  readonly price: string;
+
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   readonly tags: string[];
+
+  @IsString()
+  readonly creator: string;
 }

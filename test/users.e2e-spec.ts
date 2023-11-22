@@ -48,8 +48,14 @@ describe('Users Controller (e2e)', () => {
         first: 'first',
         middle: 'middle',
       },
-      avatar: 'https://ya.ru/',
-      about: '',
+      avatar: 'https://sample.com/avatar.png',
+      about: 'about',
+      link: {
+        github: 'https://github.com/',
+        vkontakte: 'https://vk.com/',
+        telegram: 'https://telegram.org',
+      },
+      awards: [],
       projects: [],
     },
     {

@@ -24,7 +24,7 @@ export class TeamsService {
       .skip(page * limit)
       .limit(limit)
       .exec();
-    return { stats: { totalCount: count }, data: foundTeams };
+    return { stats: { total_count: count }, data: foundTeams };
   }
 
   async findOne(field: keyof Team, fieldValue: unknown): Promise<Team> {

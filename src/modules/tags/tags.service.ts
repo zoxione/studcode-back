@@ -24,7 +24,7 @@ export class TagsService {
       .skip(page * limit)
       .limit(limit)
       .exec();
-    return { stats: { totalCount: count }, data: foundTags };
+    return { stats: { total_count: count }, data: foundTags };
   }
 
   async findOne(field: keyof Tag, fieldValue: unknown): Promise<Tag> {

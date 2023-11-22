@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsArray, IsUrl } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class SignInDto {
   @IsString()

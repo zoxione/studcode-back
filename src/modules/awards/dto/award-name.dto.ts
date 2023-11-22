@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class TagNameDto {
+export class AwardNameDto {
   @IsString()
   @IsOptional()
   readonly en: string;

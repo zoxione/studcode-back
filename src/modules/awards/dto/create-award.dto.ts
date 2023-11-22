@@ -1,12 +1,12 @@
 import { Type } from 'class-transformer';
 import { IsDefined, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
-import { TagNameDto } from './tag-name.dto';
+import { AwardNameDto } from './award-name.dto';
 
-export class UpdateTagDto {
+export class CreateAwardDto {
   @IsDefined()
   @ValidateNested()
-  @Type(() => TagNameDto)
-  readonly name: TagNameDto;
+  @Type(() => AwardNameDto)
+  readonly name: AwardNameDto;
 
   @IsString()
   @IsUrl()

@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-type TagDocument = HydratedDocument<Tag>;
+type AwardDocument = HydratedDocument<Award>;
 
 @Schema()
-class Tag {
+class Award {
   _id: mongoose.Types.ObjectId;
 
   @Prop(
@@ -22,11 +22,11 @@ class Tag {
   icon: string;
 }
 
-const TagSchema = SchemaFactory.createForClass(Tag);
-TagSchema.index({ 'name.ru': 'text' });
-TagSchema.set('timestamps', {
+const AwardSchema = SchemaFactory.createForClass(Award);
+AwardSchema.index({ 'name.ru': 'text' });
+AwardSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 });
 
-export { TagDocument, Tag, TagSchema };
+export { Award, AwardDocument, AwardSchema };

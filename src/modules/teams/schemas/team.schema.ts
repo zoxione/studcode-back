@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { Project } from 'src/modules/projects/schemas/project.schema';
-import { User } from 'src/modules/users/schemas/user.schema';
+import { Project } from '../../projects/schemas/project.schema';
+import { User } from '../../users/schemas/user.schema';
 
 type TeamDocument = HydratedDocument<Team>;
 
@@ -27,6 +27,9 @@ class Team {
 
 const TeamSchema = SchemaFactory.createForClass(Team);
 TeamSchema.index({ name: 'text' });
-TeamSchema.set('timestamps', true);
+TeamSchema.set('timestamps', {
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+});
 
 export { TeamDocument, Team, TeamSchema };

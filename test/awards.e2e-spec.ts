@@ -4,11 +4,11 @@ import mongoose from 'mongoose';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import configuration from '../src/config/configuration';
-import { UpdateTeamDto } from '../src/modules/teams/dto/update-team.dto';
-import { Team } from '../src/modules/teams/schemas/team.schema';
+import { UpdateAwardDto } from '../src/modules/awards/dto/update-award.dto';
+import { Award } from '../src/modules/awards/schemas/award.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
 
-describe('Teams Controller (e2e)', () => {
+describe('Awards Controller (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -36,18 +36,17 @@ describe('Teams Controller (e2e)', () => {
     password: Math.random().toString(36).substring(7),
   };
 
-  const newTeams = [
+  const newAwards = [
     {
-      _id: 'f53528c0460a017f68186916',
-      name: 'shinobi',
-      about: 'about',
-      avatar: 'https://sample.com/avatar.png',
-      users: [],
-      projects: [],
+      _id: 'f53528c0460a017f68186116',
+      name: {
+        en: 'First',
+        ru: 'Первый',
+      },
+      icon: 'https://sample.com/icon.png',
     },
     {
-      _id: 'f53528c0460a017f68186917',
-      name: 'fnatic',
+      _id: 'f53528c0460a017f68186117',
     },
   ];
 
@@ -55,7 +54,7 @@ describe('Teams Controller (e2e)', () => {
   let access_token: string = '';
   let refresh_token: string = '';
   let createdUser: User;
-  let createdTeam: Team;
+  let createdAward: Award;
 
   describe('Auth', () => {
     it('(POST) - Регистрация нового пользователя', async () => {
@@ -83,49 +82,49 @@ describe('Teams Controller (e2e)', () => {
     });
   });
 
-  describe('Teams', () => {
-    it('(POST) - Создание новой команды со всеми полями', async () => {
+  describe('Awards', () => {
+    it('(POST) - Создание новой награды со всеми полями', async () => {
       return request(app.getHttpServer())
-        .post('/teams')
+        .post('/awards')
         .set('Authorization', 'Bearer ' + access_token)
-        .send(newTeams[0])
+        .send(newAwards[0])
         .expect(201)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(newTeams[0]._id);
-          createdTeam = res.body;
+          expect(res.body._id).toEqual(newAwards[0]._id);
+          createdAward = res.body;
         });
     });
 
-    it('(POST) - Создание новой команды с минимальными полями', async () => {
+    it('(POST) - Создание новой награды с минимальными полями', async () => {
       return request(app.getHttpServer())
-        .post('/teams')
+        .post('/awards')
         .set('Authorization', 'Bearer ' + access_token)
-        .send(newTeams[1])
+        .send(newAwards[1])
         .expect(201)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(newTeams[1]._id);
+          expect(res.body._id).toEqual(newAwards[1]._id);
         });
     });
 
-    it('(POST/E) - Создание новой команды без токена', async () => {
-      return request(app.getHttpServer()).post('/teams').send(newTeams[1]).expect(401);
+    it('(POST/E) - Создание новой награды без токена', async () => {
+      return request(app.getHttpServer()).post('/awards').send(newAwards[1]).expect(401);
     });
 
-    it('(GET) - Получить все команды без фильтра', async () => {
+    it('(GET) - Получить все награды без фильтра', async () => {
       return request(app.getHttpServer())
-        .get('/teams')
+        .get('/awards')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newTeams.length);
+          expect(res.body.data.length).toBe(newAwards.length);
         });
     });
 
-    it('(GET) - Получить все команды с page=1', async () => {
+    it('(GET) - Получить все награды с page=1', async () => {
       return request(app.getHttpServer())
-        .get('/teams?page=1')
+        .get('/awards?page=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -133,9 +132,9 @@ describe('Teams Controller (e2e)', () => {
         });
     });
 
-    it('(GET) - Получить все команды с limit=1', async () => {
+    it('(GET) - Получить все награды с limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/teams?limit=1')
+        .get('/awards?limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -143,9 +142,9 @@ describe('Teams Controller (e2e)', () => {
         });
     });
 
-    it('(GET) - Получить все команды с page=1 и limit=1', async () => {
+    it('(GET) - Получить все награды с page=1 и limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/teams?page=1&limit=1')
+        .get('/awards?page=1&limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -153,87 +152,96 @@ describe('Teams Controller (e2e)', () => {
         });
     });
 
-    it(`(GET) - Получить все команды с search=${newTeams[0].name}`, async () => {
+    it(`(GET) - Получить все награды с search=${newAwards[0].name?.ru}`, async () => {
       return request(app.getHttpServer())
-        .get(encodeURI(`/teams?search=${newTeams[0].name}`))
+        .get(encodeURI(`/awards?search=${newAwards[0].name?.ru}`))
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
           expect(res.body.data.length).toBe(1);
-          expect(res.body.data[0].name).toEqual(newTeams[0].name);
+          expect(res.body.data[0].name?.ru).toEqual(newAwards[0].name?.ru);
         });
     });
 
-    it('(GET) - Получить команду по ID', async () => {
+    it('(GET) - Получить награду по ID', async () => {
       return request(app.getHttpServer())
-        .get(`/teams/${createdTeam._id}`)
+        .get(`/awards/${createdAward._id}`)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdTeam._id);
+          expect(res.body._id).toEqual(createdAward._id);
         });
     });
 
-    it('(GET/E) - Получить несуществующею команду по ID', async () => {
-      return request(app.getHttpServer()).get(`/teams/${clownId}`).expect(404);
+    it('(GET/E) - Получить несуществующую награду по ID', async () => {
+      return request(app.getHttpServer()).get(`/awards/${clownId}`).expect(404);
     });
 
-    it('(PUT) - Обновить команду по ID', async () => {
-      const updateTeam: Partial<UpdateTeamDto> = {
-        name: 'Update Team',
+    it('(PUT) - Обновить награду по ID', async () => {
+      const updateAward: Partial<UpdateAwardDto> = {
+        name: {
+          en: 'Mister alligator',
+          ru: 'Мистер всезнайка',
+        },
       };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam?._id}`)
+        .put(`/awards/${createdAward?._id}`)
         .set('Authorization', 'Bearer ' + access_token)
-        .send(updateTeam)
+        .send(updateAward)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.name).toEqual(updateTeam.name);
+          expect(res.body.name).toEqual(updateAward.name);
         });
     });
 
-    it('(PUT/E) - Обновить несуществующею команду по ID', async () => {
-      const updateTeam: Partial<UpdateTeamDto> = {
-        name: 'Update Team',
+    it('(PUT/E) - Обновить несуществующую награду по ID', async () => {
+      const updateAward: Partial<UpdateAwardDto> = {
+        name: {
+          en: 'Mister alligator',
+          ru: 'Мистер всезнайка',
+        },
       };
       return request(app.getHttpServer())
-        .put(`/teams/${clownId}`)
+        .put(`/awards/${clownId}`)
         .set('Authorization', 'Bearer ' + access_token)
-        .send(updateTeam)
+        .send(updateAward)
         .expect(404);
     });
 
-    it('(PUT/E) - Обновить команду по ID без токена', async () => {
-      const updateTeam: Partial<UpdateTeamDto> = {
-        name: 'Update Team',
+    it('(PUT/E) - Обновить награду по ID без токена', async () => {
+      const updateAward: Partial<UpdateAwardDto> = {
+        name: {
+          en: 'Mister alligator',
+          ru: 'Мистер всезнайка',
+        },
       };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam?._id}`)
-        .send(updateTeam)
+        .put(`/awards/${createdAward?._id}`)
+        .send(updateAward)
         .expect(401);
     });
 
-    it('(DELETE) - Удалить команду по ID', async () => {
+    it('(DELETE) - Удалить награду по ID', async () => {
       return request(app.getHttpServer())
-        .delete(`/teams/${createdTeam?._id}`)
+        .delete(`/awards/${createdAward?._id}`)
         .set('Authorization', 'Bearer ' + access_token)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdTeam._id);
+          expect(res.body._id).toEqual(createdAward._id);
         });
     });
 
-    it('(DELETE/E) - Удалить несуществующею команду по ID', async () => {
+    it('(DELETE/E) - Удалить несуществующую награду по ID', async () => {
       return request(app.getHttpServer())
-        .delete(`/teams/${clownId}`)
+        .delete(`/awards/${clownId}`)
         .set('Authorization', 'Bearer ' + access_token)
         .expect(404);
     });
 
-    it('(DELETE/E) - Удалить команду по ID без токена', async () => {
-      return request(app.getHttpServer()).delete(`/teams/${newTeams[1]._id}`).expect(401);
+    it('(DELETE/E) - Удалить награду по ID без токена', async () => {
+      return request(app.getHttpServer()).delete(`/awards/${newAwards[1]._id}`).expect(401);
     });
   });
 });

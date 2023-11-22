@@ -43,6 +43,7 @@ describe('Tags Controller (e2e)', () => {
         en: 'AI',
         ru: 'ИИ',
       },
+      icon: 'https://sample.com/icon.png',
     },
     {
       _id: 'f53528c0460a017f68186917',

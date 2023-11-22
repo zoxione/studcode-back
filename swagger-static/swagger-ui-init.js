@@ -815,6 +815,206 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/awards": {
+        "post": {
+          "operationId": "AwardsController_createOne",
+          "summary": "Create a new award",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateAwardDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Award"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "awards"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "get": {
+          "operationId": "AwardsController_findAll",
+          "summary": "Get a list of awards",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Award"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "awards"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/awards/{id}": {
+        "get": {
+          "operationId": "AwardsController_findOneById",
+          "summary": "Get a award by ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Award"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "awards"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "put": {
+          "operationId": "AwardsController_updateOneById",
+          "summary": "Update a award by ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateAwardDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Award"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "awards"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "AwardsController_deleteOneById",
+          "summary": "Delete a award by ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Award"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "awards"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/auth/register": {
         "post": {
           "operationId": "AuthController_register",
@@ -985,17 +1185,17 @@ window.onload = function() {
           "properties": {
             "username": {
               "type": "string",
-              "description": "User identifier (optional)",
+              "description": "User identifier",
               "example": "john_doe"
             },
             "email": {
               "type": "string",
-              "description": "User email (optional)",
+              "description": "User email",
               "example": "user@example.com"
             },
             "password": {
               "type": "string",
-              "description": "User password (optional)"
+              "description": "User password"
             },
             "role": {
               "type": "string",
@@ -1047,6 +1247,18 @@ window.onload = function() {
           "properties": {}
         },
         "UpdateTeamDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "CreateAwardDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "Award": {
+          "type": "object",
+          "properties": {}
+        },
+        "UpdateAwardDto": {
           "type": "object",
           "properties": {}
         },

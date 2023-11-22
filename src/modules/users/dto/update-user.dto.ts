@@ -1,23 +1,31 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsEmail, IsEnum, IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
+import {
+  IsArray,
+  IsDefined,
+  IsEmail,
+  IsEnum,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateNested,
+} from 'class-validator';
 import { UserNameDto } from './user-name.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../../../common/types/role';
+import { UserLinkDto } from './user-link.dto';
 
 export class UpdateUserDto {
-  @ApiProperty({ description: 'User identifier (optional)', example: 'john_doe' })
+  @ApiProperty({ description: 'User identifier', example: 'john_doe' })
   @IsString()
-  @IsOptional()
   readonly username: string;
 
-  @ApiProperty({ description: 'User email (optional)', example: 'user@example.com' })
+  @ApiProperty({ description: 'User email', example: 'user@example.com' })
   @IsEmail()
-  @IsOptional()
   readonly email: string;
 
-  @ApiProperty({ description: 'User password (optional)' })
+  @ApiProperty({ description: 'User password' })
   @IsString()
-  @IsOptional()
   readonly password: string;
 
   @ApiProperty({ description: 'User role (optional)', enum: Role, example: Role.User })
@@ -47,6 +55,17 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   readonly about: string;
+
+  @IsDefined()
+  @ValidateNested()
+  @Type(() => UserLinkDto)
+  @IsOptional()
+  readonly link: UserLinkDto;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly awards: string[];
 
   @IsArray()
   @IsString({ each: true })

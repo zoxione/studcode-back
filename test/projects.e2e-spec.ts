@@ -7,6 +7,7 @@ import configuration from '../src/config/configuration';
 import { UpdateProjectDto } from '../src/modules/projects/dto/update-project.dto';
 import { Project } from '../src/modules/projects/schemas/project.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
+import { startOfToday, subYears } from 'date-fns';
 
 describe('Projects Controller (e2e)', () => {
   let app: INestApplication;
@@ -40,16 +41,32 @@ describe('Projects Controller (e2e)', () => {
     {
       _id: 'f53528c0460a017f68186916',
       title: 'One',
+      tagline: 'Tagline',
+      status: 'draft',
       description: 'Description',
       flames: 0,
-      link: 'https://ya.ru/',
-      avatar: 'https://ya.ru/',
-      screenshots: [],
+      link: {
+        main: 'https://sample.com',
+        github: 'https://github.com/',
+        demo: 'https://www.youtube.com/',
+      },
+      avatar: 'https://sample.com/avatar.png',
+      screenshots: [
+        'https://sample.com/screenshot_1.png',
+        'https://sample.com/screenshot_2.png',
+        'https://sample.com/screenshot_3.png',
+        'https://sample.com/screenshot_4.png',
+        'https://sample.com/screenshot_5.png',
+      ],
+      price: 'free',
       tags: [],
+      created_at: subYears(startOfToday(), 1),
+      updated_at: subYears(startOfToday(), 1),
     },
     {
       _id: 'f53528c0460a017f68186917',
       title: 'Two',
+      tagline: 'Tagline',
     },
   ];
 
@@ -163,6 +180,56 @@ describe('Projects Controller (e2e)', () => {
           expect(res.body).toBeDefined();
           expect(res.body.data.length).toBe(1);
           expect(res.body.data[0].title).toEqual(newProjects[0].title);
+        });
+    });
+
+    it(`(GET) - Получить все проекты с time_frame=day`, async () => {
+      return request(app.getHttpServer())
+        .get(`/projects?time_frame=day`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.data.length).toBe(newProjects.length - 1);
+        });
+    });
+
+    it(`(GET) - Получить все проекты с time_frame=week`, async () => {
+      return request(app.getHttpServer())
+        .get(`/projects?time_frame=week`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.data.length).toBe(newProjects.length - 1);
+        });
+    });
+
+    it(`(GET) - Получить все проекты с time_frame=month`, async () => {
+      return request(app.getHttpServer())
+        .get(`/projects?time_frame=month`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.data.length).toBe(newProjects.length - 1);
+        });
+    });
+
+    it(`(GET) - Получить все проекты с time_frame=year`, async () => {
+      return request(app.getHttpServer())
+        .get(`/projects?time_frame=year`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.data.length).toBe(newProjects.length);
+        });
+    });
+
+    it(`(GET) - Получить все проекты с time_frame=all`, async () => {
+      return request(app.getHttpServer())
+        .get(`/projects?time_frame=all`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.data.length).toBe(newProjects.length);
         });
     });
 

@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDefined, ValidateNested } from 'class-validator';
+import { IsDefined, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 import { TagNameDto } from './tag-name.dto';
 
 export class CreateTagDto {
@@ -7,4 +7,9 @@ export class CreateTagDto {
   @ValidateNested()
   @Type(() => TagNameDto)
   readonly name: TagNameDto;
+
+  @IsString()
+  @IsUrl()
+  @IsOptional()
+  readonly icon: string;
 }

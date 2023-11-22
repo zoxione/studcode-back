@@ -1,6 +1,8 @@
 import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Role } from '../../../common/types/role';
+import { Award } from '../../awards/schemas/award.schema';
+import { Project } from '../../projects/schemas/project.schema';
 
 type UserDocument = HydratedDocument<User>;
 
@@ -41,11 +43,33 @@ class User {
 
   @Prop({ type: String, default: '' })
   about: string;
+
+  @Prop(
+    raw({
+      github: { type: String, default: '' },
+      vkontakte: { type: String, default: '' },
+      telegram: { type: String, default: '' },
+    }),
+  )
+  link: {
+    github: string;
+    vkontakte: string;
+    telegram: string;
+  };
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Award' }], default: [] })
+  awards: Award[];
+
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }], default: [] })
+  projects: Project[];
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ username: 'text' });
 UserSchema.index({ email: 'text' });
-UserSchema.set('timestamps', true);
+UserSchema.set('timestamps', {
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+});
 
 export { User, UserDocument, UserSchema };

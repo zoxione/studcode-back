@@ -2,7 +2,8 @@ import { Document } from 'mongoose';
 
 export class FindAllReturnDto {
   stats: {
-    totalCount: number;
+    total_count: number;
+    time_frame?: string;
   };
   data: Document[];
 }

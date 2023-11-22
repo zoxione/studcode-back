@@ -34,7 +34,7 @@ export class UsersService {
       .skip(page * limit)
       .limit(limit)
       .exec();
-    return { stats: { totalCount: count }, data: foundUsers };
+    return { stats: { total_count: count }, data: foundUsers };
   }
 
   async findOne(field: keyof User, fieldValue: unknown, withSecret: boolean = false): Promise<User> {
