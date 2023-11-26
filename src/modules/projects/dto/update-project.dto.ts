@@ -9,6 +9,7 @@ export class UpdateProjectDto {
   readonly title: string;
 
   @IsString()
+  @IsOptional()
   readonly tagline: string;
 
   @IsEnum(ProjectStatus)
@@ -49,5 +50,6 @@ export class UpdateProjectDto {
   readonly tags: string[];
 
   @IsString()
+  @IsOptional()
   readonly creator: string;
 }

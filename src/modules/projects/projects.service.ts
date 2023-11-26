@@ -14,6 +14,8 @@ export class ProjectsService {
 
   async createOne(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = await this.projectModel.create(createProjectDto);
+    await createdProject.populate({ path: 'tags', select: '_id name icon' });
+    await createdProject.populate({ path: 'creator', select: '_id username avatar' });
     return createdProject;
   }
 
@@ -58,7 +60,14 @@ export class ProjectsService {
     let foundProject: Project | null = null;
     switch (field) {
       case '_id': {
-        foundProject = await this.projectModel.findOne({ _id: fieldValue }).exec();
+        foundProject = await this.projectModel
+          .findOne({ _id: fieldValue })
+          .populate({ path: 'tags', select: '_id name icon' })
+          .populate({
+            path: 'creator',
+            select: '_id username avatar',
+          })
+          .exec();
         break;
       }
       default: {
@@ -79,6 +88,11 @@ export class ProjectsService {
           .findOneAndUpdate({ _id: fieldValue }, updateDto, {
             new: true,
           })
+          .populate({ path: 'tags', select: '_id name icon' })
+          .populate({
+            path: 'creator',
+            select: '_id username avatar',
+          })
           .exec();
         break;
       }
@@ -96,7 +110,14 @@ export class ProjectsService {
     let deletedProject: Project | null = null;
     switch (field) {
       case '_id': {
-        deletedProject = await this.projectModel.findByIdAndRemove({ _id: fieldValue }).exec();
+        deletedProject = await this.projectModel
+          .findByIdAndRemove({ _id: fieldValue })
+          .populate({ path: 'tags', select: '_id name icon' })
+          .populate({
+            path: 'creator',
+            select: '_id username avatar',
+          })
+          .exec();
         break;
       }
       default: {
