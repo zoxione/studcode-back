@@ -16,7 +16,7 @@ export class ProjectsController {
 
   @UseGuards(AccessTokenGuard)
   @Post('/')
-  @ApiOperation({ summary: 'Create a new project' })
+  @ApiOperation({ summary: 'Создание нового проекта' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async createOne(@Body() createProjectDto: CreateProjectDto): Promise<Project> {
@@ -24,7 +24,7 @@ export class ProjectsController {
   }
 
   @Get('/')
-  @ApiOperation({ summary: 'Get a list of projects' })
+  @ApiOperation({ summary: 'Получение списка проектов' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
@@ -32,7 +32,7 @@ export class ProjectsController {
   }
 
   @Get('/:id')
-  @ApiOperation({ summary: 'Get a project by ID' })
+  @ApiOperation({ summary: 'Получение проекта по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -42,7 +42,7 @@ export class ProjectsController {
 
   @UseGuards(AccessTokenGuard)
   @Put('/:id')
-  @ApiOperation({ summary: 'Update a project by ID' })
+  @ApiOperation({ summary: 'Обновление проекта по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -52,7 +52,7 @@ export class ProjectsController {
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete a project by ID' })
+  @ApiOperation({ summary: 'Удаление проекта по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })

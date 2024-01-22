@@ -6,6 +6,7 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "generate-types": "kubb generate --config kubb.config.mjs",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start:dev": "set NODE_ENV=development & nest start --watch",
@@ -16,6 +17,10 @@
     "parse-topics": "node ./src/utils/parse-topics.js"
   },
   "dependencies": {
+    "@kubb/cli": "^2.1.2",
+    "@kubb/core": "^2.1.2",
+    "@kubb/swagger": "^2.1.2",
+    "@kubb/swagger-ts": "^2.1.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.1.1",
     "@nestjs/core": "^10.0.0",

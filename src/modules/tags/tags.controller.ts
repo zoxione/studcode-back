@@ -16,7 +16,7 @@ export class TagsController {
 
   @UseGuards(AccessTokenGuard)
   @Post('/')
-  @ApiOperation({ summary: 'Create a new tag' })
+  @ApiOperation({ summary: 'Создание нового тега' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async createOne(@Body() createTagDto: CreateTagDto): Promise<Tag> {
@@ -24,7 +24,7 @@ export class TagsController {
   }
 
   @Get('/')
-  @ApiOperation({ summary: 'Get a list of tags' })
+  @ApiOperation({ summary: 'Получение списка тегов' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
@@ -32,7 +32,7 @@ export class TagsController {
   }
 
   @Get('/:id')
-  @ApiOperation({ summary: 'Get a tag by ID' })
+  @ApiOperation({ summary: 'Получение тега по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -42,7 +42,7 @@ export class TagsController {
 
   @UseGuards(AccessTokenGuard)
   @Put('/:id')
-  @ApiOperation({ summary: 'Update a tag by ID' })
+  @ApiOperation({ summary: 'Обновление тега по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -52,7 +52,7 @@ export class TagsController {
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete a tag by ID' })
+  @ApiOperation({ summary: 'Удаление тега по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })

@@ -9,8 +9,12 @@ import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    cors: true,
     logger: ['log', 'error', 'warn', 'debug'],
+  });
+  app.enableCors({
+    origin: process.env.FRONTEND_URL,
+    methods: 'GET,POST,PUT,DELETE',
+    credentials: true,
   });
   app.use(cookieParser());
   app.enableVersioning({
@@ -22,11 +26,12 @@ async function bootstrap() {
   // Swagger
   const config = new DocumentBuilder()
     .setTitle('Студенческий код')
-    .setDescription('Это API')
+    .setDescription('Это открытое API для веб-приложения "Студенческий код".')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
+  // fs.writeFileSync("./swagger-spec.json", JSON.stringify(document));
   SwaggerModule.setup('/swagger', app, document);
 
   await app.listen(configuration().port);
@@ -35,6 +40,10 @@ async function bootstrap() {
 
   // get the swagger json file (if app is running in development mode)
   if (configuration().node_env === 'development') {
+    get(`${appUrl}/swagger-yaml`, function (response) {
+      response.pipe(createWriteStream('swagger-static/swagger-spec.yaml'));
+      console.log(`Swagger YAML file written to: '/swagger-static/swagger-spec.yaml'`);
+    });
     get(`${appUrl}/swagger/swagger-ui-bundle.js`, function (response) {
       response.pipe(createWriteStream('swagger-static/swagger-ui-bundle.js'));
       console.log(`Swagger UI bundle file written to: '/swagger-static/swagger-ui-bundle.js'`);

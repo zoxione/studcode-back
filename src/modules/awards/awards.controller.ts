@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
 import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
-import { CreateAwardDto } from './dto/create-award.dto';
-import { AwardsService } from './awards.service';
-import { Award } from './schemas/award.schema';
-import { UpdateAwardDto } from './dto/update-award.dto';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AwardsService } from './awards.service';
+import { CreateAwardDto } from './dto/create-award.dto';
+import { UpdateAwardDto } from './dto/update-award.dto';
+import { Award } from './schemas/award.schema';
 
 @ApiBearerAuth()
 @ApiTags('awards')
@@ -16,7 +16,7 @@ export class AwardsController {
 
   @UseGuards(AccessTokenGuard)
   @Post('/')
-  @ApiOperation({ summary: 'Create a new award' })
+  @ApiOperation({ summary: 'Создание новой награды' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Award })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async createOne(@Body() createAwardDto: CreateAwardDto): Promise<Award> {
@@ -24,7 +24,7 @@ export class AwardsController {
   }
 
   @Get('/')
-  @ApiOperation({ summary: 'Get a list of awards' })
+  @ApiOperation({ summary: 'Получение списка наград' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Award })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
@@ -32,7 +32,7 @@ export class AwardsController {
   }
 
   @Get('/:id')
-  @ApiOperation({ summary: 'Get a award by ID' })
+  @ApiOperation({ summary: 'Получение награды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Award })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -42,7 +42,7 @@ export class AwardsController {
 
   @UseGuards(AccessTokenGuard)
   @Put('/:id')
-  @ApiOperation({ summary: 'Update a award by ID' })
+  @ApiOperation({ summary: 'Обновление награды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Award })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -52,7 +52,7 @@ export class AwardsController {
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete a award by ID' })
+  @ApiOperation({ summary: 'Удаление награды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Award })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })

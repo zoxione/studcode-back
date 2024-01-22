@@ -1,12 +1,16 @@
 import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { TagNameDto } from '../dto/tag-name.dto';
 
 type TagDocument = HydratedDocument<Tag>;
 
 @Schema()
 class Tag {
+  @ApiProperty({ description: 'Идентификатор', type: mongoose.Types.ObjectId })
   _id: mongoose.Types.ObjectId;
 
+  @ApiProperty({ description: 'Название', type: TagNameDto })
   @Prop(
     raw({
       en: { type: String, default: '' },
@@ -18,6 +22,7 @@ class Tag {
     ru: string;
   };
 
+  @ApiProperty({ description: 'Ссылка на иконку', type: String })
   @Prop({ type: String, default: '' })
   icon: string;
 }

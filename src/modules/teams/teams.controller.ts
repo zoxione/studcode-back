@@ -16,7 +16,7 @@ export class TeamsController {
 
   @UseGuards(AccessTokenGuard)
   @Post('/')
-  @ApiOperation({ summary: 'Create a new team' })
+  @ApiOperation({ summary: 'Создание новой команды' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async createOne(@Body() createTeamDto: CreateTeamDto): Promise<Team> {
@@ -24,7 +24,7 @@ export class TeamsController {
   }
 
   @Get('/')
-  @ApiOperation({ summary: 'Get a list of teams' })
+  @ApiOperation({ summary: 'Получение списка команд' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
@@ -32,7 +32,7 @@ export class TeamsController {
   }
 
   @Get('/:id')
-  @ApiOperation({ summary: 'Get a team by ID' })
+  @ApiOperation({ summary: 'Получение команды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -42,7 +42,7 @@ export class TeamsController {
 
   @UseGuards(AccessTokenGuard)
   @Put('/:id')
-  @ApiOperation({ summary: 'Update a team by ID' })
+  @ApiOperation({ summary: 'Обновление команды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -52,7 +52,7 @@ export class TeamsController {
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete a team by ID' })
+  @ApiOperation({ summary: 'Удаление команды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })

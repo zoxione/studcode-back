@@ -24,7 +24,7 @@ export class UsersController {
   // }
 
   @Get('/')
-  @ApiOperation({ summary: 'Get a list of users' })
+  @ApiOperation({ summary: 'Получение списка пользователей' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
@@ -32,7 +32,7 @@ export class UsersController {
   }
 
   @Get('/:id')
-  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiOperation({ summary: 'Получение пользователя по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -41,7 +41,7 @@ export class UsersController {
   }
 
   @Get('/:username')
-  @ApiOperation({ summary: 'Get a user by username' })
+  @ApiOperation({ summary: 'Получение пользователя по username' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -51,7 +51,7 @@ export class UsersController {
 
   @UseGuards(AccessTokenGuard)
   @Put('/:id')
-  @ApiOperation({ summary: 'Update a user by ID' })
+  @ApiOperation({ summary: 'Обновление пользователя по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -61,7 +61,7 @@ export class UsersController {
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:id')
-  @ApiOperation({ summary: 'Delete a user by ID' })
+  @ApiOperation({ summary: 'Удаление пользователя по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
