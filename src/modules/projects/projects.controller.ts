@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
+import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { FindAllQueryProjectDto } from './dto/find-all-query-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectsService } from './projects.service';
 import { Project } from './schemas/project.schema';
-import { UpdateProjectDto } from './dto/update-project.dto';
-import { AccessTokenGuard } from '../../common/guards/access-token.guard';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @ApiTags('projects')
@@ -27,7 +27,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Получение списка проектов' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll(@Query() query: FindAllQueryProjectDto): Promise<FindAllReturnDto> {
     return this.projectsService.findAll(query);
   }
 

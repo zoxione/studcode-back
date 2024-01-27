@@ -8,5 +8,6 @@ import { Award, AwardSchema } from './schemas/award.schema';
   imports: [MongooseModule.forFeature([{ name: Award.name, schema: AwardSchema }])],
   controllers: [AwardsController],
   providers: [AwardsService],
+  exports: [AwardsService],
 })
 export class AwardsModule {}

@@ -15,4 +15,8 @@ export class CreateTagDto {
   @IsUrl()
   @IsOptional()
   readonly icon: string;
+
+  @ApiProperty({ description: 'Ключевое слово', type: String })
+  @IsString()
+  readonly slug: string;
 }

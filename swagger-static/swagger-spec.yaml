@@ -224,6 +224,29 @@ paths:
           description: Not Found
       tags: *ref_2
       security: *ref_3
+  /api/v1/tags/slug/{slug}:
+    get:
+      operationId: TagsController_findOneBySlug
+      summary: Получение тега по slug
+      parameters:
+        - name: slug
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_2
+      security: *ref_3
   /api/v1/users:
     get:
       operationId: UsersController_findAll
@@ -746,10 +769,14 @@ components:
         icon:
           type: string
           description: Ссылка на иконку
+        slug:
+          type: string
+          description: Ключевое слово
       required:
         - _id
         - name
         - icon
+        - slug
     UserFullNameDto:
       type: object
       properties:
@@ -1012,9 +1039,13 @@ components:
         icon:
           type: string
           description: Ссылка на иконку
+        slug:
+          type: string
+          description: Ключевое слово
       required:
         - name
         - icon
+        - slug
     UpdateTagDto:
       type: object
       properties:
@@ -1025,9 +1056,13 @@ components:
         icon:
           type: string
           description: Ссылка на иконку
+        slug:
+          type: string
+          description: Ключевое слово
       required:
         - name
         - icon
+        - slug
     UpdateUserDto:
       type: object
       properties:

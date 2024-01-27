@@ -24,7 +24,17 @@ export class TagsService {
       .skip(page * limit)
       .limit(limit)
       .exec();
-    return { stats: { total_count: count }, data: foundTags };
+    return {
+      stats: {
+        page,
+        limit,
+        search,
+        find_count: foundTags.length,
+        total_count: count,
+        count_pages: Math.ceil(count / limit),
+      },
+      data: foundTags,
+    };
   }
 
   async findOne(field: keyof Tag, fieldValue: unknown): Promise<Tag> {
@@ -32,6 +42,10 @@ export class TagsService {
     switch (field) {
       case '_id': {
         foundTag = await this.tagModel.findOne({ _id: fieldValue }).exec();
+        break;
+      }
+      case 'slug': {
+        foundTag = await this.tagModel.findOne({ slug: fieldValue }).exec();
         break;
       }
       default: {

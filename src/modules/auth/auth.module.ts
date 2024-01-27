@@ -10,5 +10,6 @@ import { UsersModule } from '../users/users.module';
   imports: [UsersModule, JwtModule.register({})],
   controllers: [AuthController],
   providers: [AuthService, AccessTokenStrategy, RefreshTokenStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}

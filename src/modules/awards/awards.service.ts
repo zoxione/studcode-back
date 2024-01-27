@@ -24,7 +24,17 @@ export class AwardsService {
       .skip(page * limit)
       .limit(limit)
       .exec();
-    return { stats: { total_count: count }, data: foundAwards };
+    return {
+      stats: {
+        page,
+        limit,
+        search,
+        find_count: foundAwards.length,
+        total_count: count,
+        count_pages: Math.ceil(count / limit),
+      },
+      data: foundAwards,
+    };
   }
 
   async findOne(field: keyof Award, fieldValue: unknown): Promise<Award> {

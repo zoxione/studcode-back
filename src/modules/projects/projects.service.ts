@@ -1,16 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { startOfToday, subDays, subMonths, subWeeks, subYears } from 'date-fns';
 import { Model } from 'mongoose';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
+import { TagsService } from '../tags/tags.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { Project } from './schemas/project.schema';
+import { FindAllQueryProjectDto } from './dto/find-all-query-project.dto';
+import { FindAllReturnProjectDto } from './dto/find-all-return-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { startOfToday, subWeeks, subMonths, subYears, subDays } from 'date-fns';
+import { Project } from './schemas/project.schema';
 
 @Injectable()
 export class ProjectsService {
-  constructor(@InjectModel(Project.name) private readonly projectModel: Model<Project>) {}
+  constructor(
+    @InjectModel(Project.name) private readonly projectModel: Model<Project>,
+    private tagsService: TagsService,
+  ) {}
 
   async createOne(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = await this.projectModel.create(createProjectDto);
@@ -19,9 +23,19 @@ export class ProjectsService {
     return createdProject;
   }
 
-  async findAll({ search = '', page = 0, limit = 20, time_frame = 'all' }: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll({
+    search = '',
+    page = 0,
+    limit = 20,
+    time_frame = 'all',
+    tag_slug = '',
+    creator_id = '',
+  }: FindAllQueryProjectDto): Promise<FindAllReturnProjectDto> {
     const count = await this.projectModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const tag = tag_slug !== '' ? await this.tagsService.findOne('slug', tag_slug) : null;
+    const tagSlugQuery = tag !== null ? { tags: tag._id } : {};
+    const creatorQuery = creator_id !== '' ? { creator: creator_id } : {};
     let startDate: Date;
     switch (time_frame) {
       case 'day':
@@ -43,17 +57,30 @@ export class ProjectsService {
     const foundProjects = await this.projectModel
       .find({
         ...searchQuery,
+        ...tagSlugQuery,
+        ...creatorQuery,
         created_at: { $gte: startDate },
       })
       .skip(page * limit)
       .limit(limit)
-      .populate({ path: 'tags', select: '_id name icon' })
+      .populate({ path: 'tags', select: '_id name icon slug' })
       .populate({
         path: 'creator',
         select: '_id username avatar',
       })
       .exec();
-    return { stats: { total_count: count, time_frame: time_frame }, data: foundProjects };
+    return {
+      stats: {
+        page,
+        limit,
+        search,
+        time_frame,
+        find_count: foundProjects.length,
+        total_count: count,
+        count_pages: Math.ceil(count / limit),
+      },
+      data: foundProjects,
+    };
   }
 
   async findOne(field: keyof Project, fieldValue: unknown): Promise<Project> {

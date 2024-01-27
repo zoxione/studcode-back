@@ -34,7 +34,17 @@ export class UsersService {
       .skip(page * limit)
       .limit(limit)
       .exec();
-    return { stats: { total_count: count }, data: foundUsers };
+    return {
+      stats: {
+        page,
+        limit,
+        search,
+        find_count: foundUsers.length,
+        total_count: count,
+        count_pages: Math.ceil(count / limit),
+      },
+      data: foundUsers,
+    };
   }
 
   async findOne(field: keyof User, fieldValue: unknown, withSecret: boolean = false): Promise<User> {

@@ -40,6 +40,15 @@ export class TagsController {
     return this.tagsService.findOne('_id', id);
   }
 
+  @Get('/slug/:slug')
+  @ApiOperation({ summary: 'Получение тега по slug' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async findOneBySlug(@Param('slug') slug: string): Promise<Tag> {
+    return this.tagsService.findOne('slug', slug);
+  }
+
   @UseGuards(AccessTokenGuard)
   @Put('/:id')
   @ApiOperation({ summary: 'Обновление тега по ID' })

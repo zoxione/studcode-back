@@ -15,4 +15,9 @@ export class UpdateTagDto {
   @IsUrl()
   @IsOptional()
   readonly icon: string;
+
+  @ApiProperty({ description: 'Ключевое слово', type: String })
+  @IsString()
+  @IsOptional()
+  readonly slug: string;
 }

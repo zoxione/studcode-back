@@ -411,6 +411,48 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/tags/slug/{slug}": {
+        "get": {
+          "operationId": "TagsController_findOneBySlug",
+          "summary": "Получение тега по slug",
+          "parameters": [
+            {
+              "name": "slug",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "tags"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/users": {
         "get": {
           "operationId": "UsersController_findAll",
@@ -1300,12 +1342,17 @@ window.onload = function() {
             "icon": {
               "type": "string",
               "description": "Ссылка на иконку"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
             }
           },
           "required": [
             "_id",
             "name",
-            "icon"
+            "icon",
+            "slug"
           ]
         },
         "UserFullNameDto": {
@@ -1679,11 +1726,16 @@ window.onload = function() {
             "icon": {
               "type": "string",
               "description": "Ссылка на иконку"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
             }
           },
           "required": [
             "name",
-            "icon"
+            "icon",
+            "slug"
           ]
         },
         "UpdateTagDto": {
@@ -1700,11 +1752,16 @@ window.onload = function() {
             "icon": {
               "type": "string",
               "description": "Ссылка на иконку"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
             }
           },
           "required": [
             "name",
-            "icon"
+            "icon",
+            "slug"
           ]
         },
         "UpdateUserDto": {
