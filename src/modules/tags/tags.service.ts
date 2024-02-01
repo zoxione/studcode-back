@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
-import { Tag } from './schemas/tag.schema';
 import { CreateTagDto } from './dto/create-tag.dto';
+import { FindAllFilterTagDto } from './dto/find-all-filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { Tag } from './schemas/tag.schema';
+import { FindAllReturnTag } from './types/find-all-return-tag';
 
 @Injectable()
 export class TagsService {
@@ -16,24 +16,28 @@ export class TagsService {
     return createdTag;
   }
 
-  async findAll({ search = '', page = 0, limit = 20 }: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterTagDto): Promise<FindAllReturnTag> {
     const count = await this.tagModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const foundTags = await this.tagModel
       .find(searchQuery)
-      .skip(page * limit)
+      .skip((page - 1) * limit)
       .limit(limit)
+      .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
-      stats: {
+      filter: {
         page,
         limit,
         search,
+        order,
+      },
+      info: {
         find_count: foundTags.length,
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      data: foundTags,
+      results: foundTags,
     };
   }
 

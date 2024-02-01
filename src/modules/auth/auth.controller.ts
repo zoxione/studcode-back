@@ -25,19 +25,23 @@ export class AuthController {
   @Post('/login')
   @ApiOperation({ summary: 'Аутентификация пользователя' })
   async login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response): Promise<void> {
-    const { access_token, refresh_token } = await this.authService.signIn(signInDto.email, signInDto.password);
+    const { access_token, refresh_token, access_token_exp, refresh_token_exp } = await this.authService.signIn(
+      signInDto.email,
+      signInDto.password,
+    );
+    const nowUnix = (+new Date() / 1e3) | 0;
     response
       .cookie('access_token', access_token, {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-        expires: new Date(Date.now() + 1 * 24 * 60 * 1000),
+        maxAge: (access_token_exp - nowUnix) * 1000,
       })
       .cookie('refresh_token', refresh_token, {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-        expires: new Date(Date.now() + 7 * 24 * 60 * 1000),
+        maxAge: (refresh_token_exp - nowUnix) * 1000,
       })
       .send({ access_token, refresh_token });
   }

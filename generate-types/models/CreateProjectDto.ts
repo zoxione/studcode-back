@@ -58,6 +58,11 @@ export type CreateProjectDto = {
     */
     price: CreateProjectDtoPrice;
     /**
+     * @description Рейтинг
+     * @type number
+    */
+    rating: number;
+    /**
      * @description Теги
      * @type array
     */

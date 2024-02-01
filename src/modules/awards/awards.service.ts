@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
 import { CreateAwardDto } from './dto/create-award.dto';
-import { Award } from './schemas/award.schema';
+import { FindAllFilterAwardDto } from './dto/find-all-filter-award.dto';
 import { UpdateAwardDto } from './dto/update-award.dto';
+import { Award } from './schemas/award.schema';
+import { FindAllReturnAward } from './types/find-all-return-award';
 
 @Injectable()
 export class AwardsService {
@@ -16,24 +16,33 @@ export class AwardsService {
     return createdAward;
   }
 
-  async findAll({ search = '', page = 0, limit = 20 }: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll({
+    search = '',
+    page = 1,
+    limit = 20,
+    order = '_id',
+  }: FindAllFilterAwardDto): Promise<FindAllReturnAward> {
     const count = await this.awardModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const foundAwards = await this.awardModel
       .find(searchQuery)
-      .skip(page * limit)
+      .skip((page - 1) * limit)
       .limit(limit)
+      .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
-      stats: {
+      filter: {
         page,
         limit,
         search,
+        order,
+      },
+      info: {
         find_count: foundAwards.length,
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      data: foundAwards,
+      results: foundAwards,
     };
   }
 

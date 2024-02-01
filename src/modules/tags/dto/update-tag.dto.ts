@@ -1,23 +1,4 @@
-import { Type } from 'class-transformer';
-import { IsDefined, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
-import { TagNameDto } from './tag-name.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateTagDto } from './create-tag.dto';
 
-export class UpdateTagDto {
-  @ApiProperty({ description: 'Название', type: TagNameDto })
-  @IsDefined()
-  @ValidateNested()
-  @Type(() => TagNameDto)
-  readonly name: TagNameDto;
-
-  @ApiProperty({ description: 'Ссылка на иконку', type: String })
-  @IsString()
-  @IsUrl()
-  @IsOptional()
-  readonly icon: string;
-
-  @ApiProperty({ description: 'Ключевое слово', type: String })
-  @IsString()
-  @IsOptional()
-  readonly slug: string;
-}
+export class UpdateTagDto extends PartialType(CreateTagDto) {}

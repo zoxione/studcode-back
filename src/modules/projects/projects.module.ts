@@ -4,9 +4,10 @@ import { ProjectsService } from './projects.service';
 import { ProjectsController } from './projects.controller';
 import { Project, ProjectSchema } from './schemas/project.schema';
 import { TagsModule } from '../tags/tags.module';
+import { VotesModule } from '../votes/votes.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]), TagsModule],
+  imports: [MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]), TagsModule, VotesModule],
   controllers: [ProjectsController],
   providers: [ProjectsService],
   exports: [ProjectsService],

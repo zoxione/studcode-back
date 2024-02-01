@@ -1,21 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsDefined,
-  IsEmail,
-  IsEnum,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUrl,
-  ValidateNested,
-} from 'class-validator';
-import { Role } from '../types/role';
-import { UserLinksDto } from './user-links.dto';
-import { UserFullNameDto } from './user-full-name.dto';
+import { IsArray, IsEmail, IsEnum, IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 import { Award } from '../../awards/schemas/award.schema';
 import { Project } from '../../projects/schemas/project.schema';
+import { Role } from '../types/role';
+import { UserFullNameDto } from './user-full-name.dto';
+import { UserLinksDto } from './user-links.dto';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Имя пользователя', type: String })
@@ -48,7 +38,6 @@ export class CreateUserDto {
   readonly full_name: UserFullNameDto;
 
   @ApiProperty({ description: 'Ссылка на аватар', type: String })
-  @IsString()
   @IsUrl()
   @IsOptional()
   readonly avatar: string;
@@ -59,7 +48,7 @@ export class CreateUserDto {
   readonly about: string;
 
   @ApiProperty({ description: 'Ссылки', type: UserLinksDto })
-  @IsDefined()
+  @IsObject()
   @ValidateNested()
   @Type(() => UserLinksDto)
   @IsOptional()

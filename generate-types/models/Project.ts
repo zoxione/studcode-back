@@ -65,6 +65,11 @@ export type Project = {
     */
     price: ProjectPrice;
     /**
+     * @description Рейтинг
+     * @type number
+    */
+    rating: number;
+    /**
      * @description Теги
      * @type array
     */

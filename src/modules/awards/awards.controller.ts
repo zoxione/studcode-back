@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { AwardsService } from './awards.service';
 import { CreateAwardDto } from './dto/create-award.dto';
+import { FindAllFilterAwardDto } from './dto/find-all-filter-award.dto';
 import { UpdateAwardDto } from './dto/update-award.dto';
 import { Award } from './schemas/award.schema';
+import { FindAllReturnAward } from './types/find-all-return-award';
 
 @ApiBearerAuth()
 @ApiTags('awards')
@@ -27,7 +27,7 @@ export class AwardsController {
   @ApiOperation({ summary: 'Получение списка наград' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Award })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll(@Query() query: FindAllFilterAwardDto): Promise<FindAllReturnAward> {
     return this.awardsService.findAll(query);
   }
 

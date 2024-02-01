@@ -1,4 +1,4 @@
-export enum TimeFrame {
+export enum ProjectTimeFrame {
   Day = 'day',
   Week = 'week',
   Month = 'month',

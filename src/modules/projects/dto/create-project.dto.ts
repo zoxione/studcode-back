@@ -1,9 +1,19 @@
-import { IsString, IsInt, IsArray, IsUrl, IsOptional, IsEnum, ValidateNested, IsDefined } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsNumber,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateNested,
+} from 'class-validator';
+import { ProjectPrice } from '../types/project-price';
 import { ProjectStatus } from '../types/project-status';
 import { ProjectLinksDto } from './project-links.dto';
-import { Type } from 'class-transformer';
-import { ProjectPrice } from '../types/project-price';
-import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateProjectDto {
   @ApiProperty({ description: 'Название', type: String })
@@ -30,14 +40,13 @@ export class CreateProjectDto {
   readonly flames: number;
 
   @ApiProperty({ description: 'Ссылки', type: ProjectLinksDto })
-  @IsDefined()
+  @IsObject()
   @ValidateNested()
   @Type(() => ProjectLinksDto)
   @IsOptional()
   readonly links: ProjectLinksDto;
 
   @ApiProperty({ description: 'Ссылка на логотип', type: String })
-  @IsString()
   @IsUrl()
   @IsOptional()
   readonly logo: string;
@@ -52,6 +61,11 @@ export class CreateProjectDto {
   @IsEnum(ProjectPrice)
   @IsOptional()
   readonly price: string;
+
+  @ApiProperty({ description: 'Рейтинг', type: Number })
+  @IsNumber()
+  @IsOptional()
+  readonly rating: number;
 
   @ApiProperty({ description: 'Теги', type: [String] })
   @IsArray()

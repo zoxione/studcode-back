@@ -61,6 +61,10 @@ class Project {
   @Prop({ type: String, enum: ProjectPrice, default: ProjectPrice.Free })
   price: string;
 
+  @ApiProperty({ description: 'Рейтинг', type: Number })
+  @Prop({ type: Number, default: 0.0 })
+  rating: number;
+
   @ApiProperty({ description: 'Теги', type: [Tag] })
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], default: [] })
   tags: Tag[];

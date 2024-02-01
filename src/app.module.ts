@@ -10,6 +10,8 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AwardsModule } from './modules/awards/awards.module';
+import { VotesModule } from './modules/votes/votes.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { AwardsModule } from './modules/awards/awards.module';
     UsersModule,
     TeamsModule,
     AwardsModule,
+    VotesModule,
+    ReviewsModule,
     AuthModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),

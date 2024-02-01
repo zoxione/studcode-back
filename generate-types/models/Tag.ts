@@ -15,4 +15,9 @@ export type Tag = {
      * @type string
     */
     icon: string;
+    /**
+     * @description Ключевое слово
+     * @type string
+    */
+    slug: string;
 };

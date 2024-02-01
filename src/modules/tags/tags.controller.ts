@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
-import { TagsService } from './tags.service';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateTagDto } from './dto/create-tag.dto';
+import { FindAllFilterTagDto } from './dto/find-all-filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag } from './schemas/tag.schema';
-import { AccessTokenGuard } from '../../common/guards/access-token.guard';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { TagsService } from './tags.service';
+import { FindAllReturnTag } from './types/find-all-return-tag';
 
 @ApiBearerAuth()
 @ApiTags('tags')
@@ -27,7 +27,7 @@ export class TagsController {
   @ApiOperation({ summary: 'Получение списка тегов' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll(@Query() query: FindAllFilterTagDto): Promise<FindAllReturnTag> {
     return this.tagsService.findAll(query);
   }
 

@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { Tokens } from './types/tokens';
+import { JwtPayload } from './types/jwt-payload';
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,10 @@ export class AuthService {
     return createdUser;
   }
 
-  async signIn(email: string, password: string): Promise<Tokens> {
+  async signIn(
+    email: string,
+    password: string,
+  ): Promise<Tokens & { access_token_exp: number; refresh_token_exp: number }> {
     const user = await this.usersService.findOne('email', email, true);
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
@@ -31,7 +35,9 @@ export class AuthService {
     }
     const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.avatar);
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
-    return tokens;
+    const access_token_decode = this.jwtService.decode(tokens.access_token) as JwtPayload;
+    const refresh_token_decode = this.jwtService.decode(tokens.refresh_token) as JwtPayload;
+    return { ...tokens, access_token_exp: access_token_decode.exp, refresh_token_exp: refresh_token_decode.exp };
   }
 
   async refreshTokens(userId: string, refreshToken: string) {

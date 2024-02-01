@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
 import { CreateTeamDto } from './dto/create-team.dto';
-import { Team } from './schemas/team.schema';
+import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
+import { Team } from './schemas/team.schema';
+import { FindAllReturnTeam } from './types/find-all-return-team';
 
 @Injectable()
 export class TeamsService {
@@ -16,24 +16,33 @@ export class TeamsService {
     return createdTeam;
   }
 
-  async findAll({ search = '', page = 0, limit = 20 }: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll({
+    search = '',
+    page = 1,
+    limit = 20,
+    order = '_id',
+  }: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
     const count = await this.teamModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const foundTeams = await this.teamModel
       .find(searchQuery)
-      .skip(page * limit)
+      .skip((page - 1) * limit)
       .limit(limit)
+      .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
-      stats: {
+      filter: {
         page,
         limit,
         search,
+        order,
+      },
+      info: {
         find_count: foundTeams.length,
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      data: foundTeams,
+      results: foundTeams,
     };
   }
 

@@ -1,17 +1,16 @@
-import { Type } from 'class-transformer';
-import { IsDefined, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
-import { TagNameDto } from './tag-name.dto';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import { IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
+import { TagNameDto } from './tag-name.dto';
 
 export class CreateTagDto {
   @ApiProperty({ description: 'Название', type: TagNameDto })
-  @IsDefined()
+  @IsObject()
   @ValidateNested()
   @Type(() => TagNameDto)
   readonly name: TagNameDto;
 
   @ApiProperty({ description: 'Ссылка на иконку', type: String })
-  @IsString()
   @IsUrl()
   @IsOptional()
   readonly icon: string;

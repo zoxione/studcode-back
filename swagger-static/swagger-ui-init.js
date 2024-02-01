@@ -211,6 +211,48 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/projects/vote/{id}": {
+        "put": {
+          "operationId": "ProjectsController_voteOneById",
+          "summary": "Голосование за проект по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "projects"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/tags": {
         "post": {
           "operationId": "TagsController_createOne",
@@ -445,6 +487,206 @@ window.onload = function() {
           },
           "tags": [
             "tags"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/votes": {
+        "post": {
+          "operationId": "VotesController_createOne",
+          "summary": "Создание нового голоса",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVoteDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Vote"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "votes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "get": {
+          "operationId": "VotesController_findAll",
+          "summary": "Получение списка голосов",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Vote"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "votes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/votes/{id}": {
+        "get": {
+          "operationId": "VotesController_findOneById",
+          "summary": "Получение голоса по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Vote"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "votes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "put": {
+          "operationId": "VotesController_updateOneById",
+          "summary": "Обновление голоса по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateVoteDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Vote"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "votes"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "VotesController_deleteOneById",
+          "summary": "Удаление голоса по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Vote"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "votes"
           ],
           "security": [
             {
@@ -1057,6 +1299,206 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/reviews": {
+        "post": {
+          "operationId": "ReviewsController_createOne",
+          "summary": "Создание нового обзора",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReviewDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "get": {
+          "operationId": "ReviewsController_findAll",
+          "summary": "Получение списка обзоров",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews/{id}": {
+        "get": {
+          "operationId": "ReviewsController_findOneById",
+          "summary": "Получение обзора по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "put": {
+          "operationId": "ReviewsController_updateOneById",
+          "summary": "Обновление обзора по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateReviewDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "ReviewsController_deleteOneById",
+          "summary": "Удаление обзора по ID",
+          "parameters": [
+            {
+              "name": "id",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/auth/register": {
         "post": {
           "operationId": "AuthController_register",
@@ -1273,6 +1715,10 @@ window.onload = function() {
                 "payment_required"
               ]
             },
+            "rating": {
+              "type": "number",
+              "description": "Рейтинг"
+            },
             "tags": {
               "description": "Теги",
               "type": "array",
@@ -1295,6 +1741,7 @@ window.onload = function() {
             "logo",
             "screenshots",
             "price",
+            "rating",
             "tags",
             "creator"
           ]
@@ -1599,6 +2046,10 @@ window.onload = function() {
                 "payment_required"
               ]
             },
+            "rating": {
+              "type": "number",
+              "description": "Рейтинг"
+            },
             "tags": {
               "description": "Теги",
               "type": "array",
@@ -1626,91 +2077,14 @@ window.onload = function() {
             "logo",
             "screenshots",
             "price",
+            "rating",
             "tags",
             "creator"
           ]
         },
         "UpdateProjectDto": {
           "type": "object",
-          "properties": {
-            "title": {
-              "type": "string",
-              "description": "Название"
-            },
-            "tagline": {
-              "type": "string",
-              "description": "Слоган"
-            },
-            "status": {
-              "type": "string",
-              "description": "Статус",
-              "enum": [
-                "draft",
-                "published",
-                "archived"
-              ]
-            },
-            "description": {
-              "type": "string",
-              "description": "Описание"
-            },
-            "flames": {
-              "type": "number",
-              "description": "Количество огоньков"
-            },
-            "links": {
-              "description": "Ссылки",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ProjectLinksDto"
-                }
-              ]
-            },
-            "logo": {
-              "type": "string",
-              "description": "Ссылка на логотип"
-            },
-            "screenshots": {
-              "description": "Массив скриншотов",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "price": {
-              "type": "string",
-              "description": "Цена",
-              "enum": [
-                "free",
-                "free_options",
-                "payment_required"
-              ]
-            },
-            "tags": {
-              "description": "Теги",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "creator": {
-              "type": "string",
-              "description": "Создатель"
-            }
-          },
-          "required": [
-            "title",
-            "tagline",
-            "status",
-            "description",
-            "flames",
-            "links",
-            "logo",
-            "screenshots",
-            "price",
-            "tags",
-            "creator"
-          ]
+          "properties": {}
         },
         "CreateTagDto": {
           "type": "object",
@@ -1740,109 +2114,66 @@ window.onload = function() {
         },
         "UpdateTagDto": {
           "type": "object",
+          "properties": {}
+        },
+        "CreateVoteDto": {
+          "type": "object",
           "properties": {
-            "name": {
-              "description": "Название",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/TagNameDto"
-                }
-              ]
-            },
-            "icon": {
+            "project": {
               "type": "string",
-              "description": "Ссылка на иконку"
+              "description": "Проект"
             },
-            "slug": {
+            "voter": {
               "type": "string",
-              "description": "Ключевое слово"
+              "description": "Голосующий"
             }
           },
           "required": [
-            "name",
-            "icon",
-            "slug"
+            "project",
+            "voter"
           ]
+        },
+        "Vote": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "description": "Идентификатор",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "project": {
+              "description": "Проект",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Project"
+                }
+              ]
+            },
+            "voter": {
+              "description": "Голосующий",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/User"
+                }
+              ]
+            }
+          },
+          "required": [
+            "_id",
+            "project",
+            "voter"
+          ]
+        },
+        "UpdateVoteDto": {
+          "type": "object",
+          "properties": {}
         },
         "UpdateUserDto": {
           "type": "object",
-          "properties": {
-            "username": {
-              "type": "string",
-              "description": "Имя пользователя"
-            },
-            "email": {
-              "type": "string",
-              "description": "Электронная почта"
-            },
-            "password": {
-              "type": "string",
-              "description": "Пароль"
-            },
-            "role": {
-              "type": "string",
-              "description": "Роль",
-              "enum": [
-                "user",
-                "admin"
-              ]
-            },
-            "refresh_token": {
-              "type": "string",
-              "description": "Токен обновления"
-            },
-            "full_name": {
-              "description": "ФИО",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/UserFullNameDto"
-                }
-              ]
-            },
-            "avatar": {
-              "type": "string",
-              "description": "Ссылка на аватар"
-            },
-            "about": {
-              "type": "string",
-              "description": "О себе"
-            },
-            "links": {
-              "description": "Ссылки",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/UserLinksDto"
-                }
-              ]
-            },
-            "awards": {
-              "description": "Награды",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Award"
-              }
-            },
-            "projects": {
-              "description": "Проекты",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Project"
-              }
-            }
-          },
-          "required": [
-            "username",
-            "email",
-            "password",
-            "role",
-            "refresh_token",
-            "full_name",
-            "avatar",
-            "about",
-            "links",
-            "awards",
-            "projects"
-          ]
+          "properties": {}
         },
         "CreateTeamDto": {
           "type": "object",
@@ -1931,41 +2262,7 @@ window.onload = function() {
         },
         "UpdateTeamDto": {
           "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Название"
-            },
-            "about": {
-              "type": "string",
-              "description": "О команде"
-            },
-            "logo": {
-              "type": "string",
-              "description": "Ссылка на логотип"
-            },
-            "users": {
-              "description": "Участники",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "projects": {
-              "description": "Проекты",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": [
-            "name",
-            "about",
-            "logo",
-            "users",
-            "projects"
-          ]
+          "properties": {}
         },
         "CreateAwardDto": {
           "type": "object",
@@ -1990,24 +2287,114 @@ window.onload = function() {
         },
         "UpdateAwardDto": {
           "type": "object",
+          "properties": {}
+        },
+        "CreateReviewDto": {
+          "type": "object",
           "properties": {
-            "name": {
-              "description": "Название",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/AwardNameDto"
-                }
-              ]
-            },
-            "icon": {
+            "text": {
               "type": "string",
-              "description": "Ссылка на иконку"
+              "description": "Текст"
+            },
+            "rating": {
+              "type": "number",
+              "description": "Текст"
+            },
+            "project": {
+              "type": "string",
+              "description": "Проект"
+            },
+            "reviewer": {
+              "type": "string",
+              "description": "Рецензент"
+            },
+            "likes": {
+              "description": "Пользователи, поставившие лайки",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dislikes": {
+              "description": "Пользователи, поставившие дизлайки",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "required": [
-            "name",
-            "icon"
+            "text",
+            "rating",
+            "project",
+            "reviewer",
+            "likes",
+            "dislikes"
           ]
+        },
+        "Review": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "description": "Идентификатор",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "text": {
+              "type": "string",
+              "description": "Текст"
+            },
+            "rating": {
+              "type": "number",
+              "description": "Оценка"
+            },
+            "project": {
+              "description": "Проект",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Project"
+                }
+              ]
+            },
+            "reviewer": {
+              "description": "Рецензент",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/User"
+                }
+              ]
+            },
+            "likes": {
+              "description": "Пользователи, поставившие лайки",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            },
+            "dislikes": {
+              "description": "Пользователи, поставившие дизлайки",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ObjectId"
+              }
+            }
+          },
+          "required": [
+            "_id",
+            "text",
+            "rating",
+            "project",
+            "reviewer",
+            "likes",
+            "dislikes"
+          ]
+        },
+        "UpdateReviewDto": {
+          "type": "object",
+          "properties": {}
         },
         "CreateUserDto": {
           "type": "object",

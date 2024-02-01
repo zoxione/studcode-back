@@ -12,7 +12,6 @@ export class CreateTeamDto {
   readonly about: string;
 
   @ApiProperty({ description: 'Ссылка на логотип', type: String })
-  @IsString()
   @IsUrl()
   @IsOptional()
   readonly logo: string;

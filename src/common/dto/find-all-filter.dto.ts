@@ -1,15 +1,16 @@
 import { Type } from 'class-transformer';
-import { IsString, IsInt, IsOptional, IsEnum } from 'class-validator';
-import { TimeFrame } from '../types/time-frame';
+import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
-export class FindAllQueryDto {
+export class FindAllFilterDto {
   @IsInt()
   @Type(() => Number)
+  @Min(1)
   @IsOptional()
   readonly page?: number;
 
   @IsInt()
   @Type(() => Number)
+  @Min(0)
   @IsOptional()
   readonly limit?: number;
 
@@ -17,7 +18,7 @@ export class FindAllQueryDto {
   @IsOptional()
   readonly search?: string;
 
-  @IsEnum(TimeFrame)
+  @IsString()
   @IsOptional()
-  readonly time_frame?: string;
+  readonly order?: string;
 }

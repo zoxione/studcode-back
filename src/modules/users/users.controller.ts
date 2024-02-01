@@ -1,12 +1,11 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UsersService } from './users.service';
-import { User } from './schemas/user.schema';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Body, Controller, Delete, Get, HttpStatus, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { User } from './schemas/user.schema';
+import { FindAllReturnUser } from './types/find-all-return-user';
+import { UsersService } from './users.service';
 
 @ApiBearerAuth()
 @ApiTags('users')
@@ -27,7 +26,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Получение списка пользователей' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll(@Query() query: FindAllFilterUserDto): Promise<FindAllReturnUser> {
     return this.usersService.findAll(query);
   }
 

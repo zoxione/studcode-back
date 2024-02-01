@@ -1,12 +1,12 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
-import { CreateTeamDto } from './dto/create-team.dto';
-import { TeamsService } from './teams.service';
-import { Team } from './schemas/team.schema';
-import { UpdateTeamDto } from './dto/update-team.dto';
-import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { CreateTeamDto } from './dto/create-team.dto';
+import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
+import { UpdateTeamDto } from './dto/update-team.dto';
+import { Team } from './schemas/team.schema';
+import { TeamsService } from './teams.service';
+import { FindAllReturnTeam } from './types/find-all-return-team';
 
 @ApiBearerAuth()
 @ApiTags('teams')
@@ -27,7 +27,7 @@ export class TeamsController {
   @ApiOperation({ summary: 'Получение списка команд' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async findAll(@Query() query: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll(@Query() query: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
     return this.teamsService.findAll(query);
   }
 

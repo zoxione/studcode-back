@@ -112,6 +112,29 @@ paths:
           description: Not Found
       tags: *ref_0
       security: *ref_1
+  /api/v1/projects/vote/{id}:
+    put:
+      operationId: ProjectsController_voteOneById
+      summary: Голосование за проект по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_0
+      security: *ref_1
   /api/v1/tags:
     post:
       operationId: TagsController_createOne
@@ -247,6 +270,118 @@ paths:
           description: Not Found
       tags: *ref_2
       security: *ref_3
+  /api/v1/votes:
+    post:
+      operationId: VotesController_createOne
+      summary: Создание нового голоса
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVoteDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '401':
+          description: Unauthorized
+      tags: &ref_4
+        - votes
+      security: &ref_5
+        - bearer: []
+    get:
+      operationId: VotesController_findAll
+      summary: Получение списка голосов
+      parameters: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '401':
+          description: Unauthorized
+      tags: *ref_4
+      security: *ref_5
+  /api/v1/votes/{id}:
+    get:
+      operationId: VotesController_findOneById
+      summary: Получение голоса по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_4
+      security: *ref_5
+    put:
+      operationId: VotesController_updateOneById
+      summary: Обновление голоса по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVoteDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_4
+      security: *ref_5
+    delete:
+      operationId: VotesController_deleteOneById
+      summary: Удаление голоса по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vote'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_4
+      security: *ref_5
   /api/v1/users:
     get:
       operationId: UsersController_findAll
@@ -261,9 +396,9 @@ paths:
                 $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
-      tags: &ref_4
+      tags: &ref_6
         - users
-      security: &ref_5
+      security: &ref_7
         - bearer: []
   /api/v1/users/{id}:
     get:
@@ -286,8 +421,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
     put:
       operationId: UsersController_updateOneById
       summary: Обновление пользователя по ID
@@ -314,8 +449,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
     delete:
       operationId: UsersController_deleteOneById
       summary: Удаление пользователя по ID
@@ -336,8 +471,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
   /api/v1/users/{username}:
     get:
       operationId: UsersController_findOneByUsername
@@ -359,8 +494,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
   /api/v1/teams:
     post:
       operationId: TeamsController_createOne
@@ -381,9 +516,9 @@ paths:
                 $ref: '#/components/schemas/Team'
         '401':
           description: Unauthorized
-      tags: &ref_6
+      tags: &ref_8
         - teams
-      security: &ref_7
+      security: &ref_9
         - bearer: []
     get:
       operationId: TeamsController_findAll
@@ -398,8 +533,8 @@ paths:
                 $ref: '#/components/schemas/Team'
         '401':
           description: Unauthorized
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/teams/{id}:
     get:
       operationId: TeamsController_findOneById
@@ -421,8 +556,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
     put:
       operationId: TeamsController_updateOneById
       summary: Обновление команды по ID
@@ -449,8 +584,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
     delete:
       operationId: TeamsController_deleteOneById
       summary: Удаление команды по ID
@@ -471,8 +606,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/awards:
     post:
       operationId: AwardsController_createOne
@@ -493,9 +628,9 @@ paths:
                 $ref: '#/components/schemas/Award'
         '401':
           description: Unauthorized
-      tags: &ref_8
+      tags: &ref_10
         - awards
-      security: &ref_9
+      security: &ref_11
         - bearer: []
     get:
       operationId: AwardsController_findAll
@@ -510,8 +645,8 @@ paths:
                 $ref: '#/components/schemas/Award'
         '401':
           description: Unauthorized
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/awards/{id}:
     get:
       operationId: AwardsController_findOneById
@@ -533,8 +668,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
     put:
       operationId: AwardsController_updateOneById
       summary: Обновление награды по ID
@@ -561,8 +696,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
     delete:
       operationId: AwardsController_deleteOneById
       summary: Удаление награды по ID
@@ -583,8 +718,120 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
+  /api/v1/reviews:
+    post:
+      operationId: ReviewsController_createOne
+      summary: Создание нового обзора
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReviewDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '401':
+          description: Unauthorized
+      tags: &ref_12
+        - reviews
+      security: &ref_13
+        - bearer: []
+    get:
+      operationId: ReviewsController_findAll
+      summary: Получение списка обзоров
+      parameters: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '401':
+          description: Unauthorized
+      tags: *ref_12
+      security: *ref_13
+  /api/v1/reviews/{id}:
+    get:
+      operationId: ReviewsController_findOneById
+      summary: Получение обзора по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_12
+      security: *ref_13
+    put:
+      operationId: ReviewsController_updateOneById
+      summary: Обновление обзора по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReviewDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_12
+      security: *ref_13
+    delete:
+      operationId: ReviewsController_deleteOneById
+      summary: Удаление обзора по ID
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_12
+      security: *ref_13
   /api/v1/auth/register:
     post:
       operationId: AuthController_register
@@ -599,9 +846,9 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_10
+      tags: &ref_14
         - auth
-      security: &ref_11
+      security: &ref_15
         - bearer: []
   /api/v1/auth/login:
     post:
@@ -617,8 +864,8 @@ paths:
       responses:
         '201':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_14
+      security: *ref_15
   /api/v1/auth/logout:
     get:
       operationId: AuthController_logout
@@ -627,8 +874,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_14
+      security: *ref_15
   /api/v1/auth/refresh:
     get:
       operationId: AuthController_refreshTokens
@@ -637,8 +884,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_14
+      security: *ref_15
   /api/v1/auth/whoami:
     get:
       operationId: AuthController_whoami
@@ -647,8 +894,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_14
+      security: *ref_15
 info:
   title: Студенческий код
   description: Это открытое API для веб-приложения "Студенческий код".
@@ -720,6 +967,9 @@ components:
             - free
             - free_options
             - payment_required
+        rating:
+          type: number
+          description: Рейтинг
         tags:
           description: Теги
           type: array
@@ -738,6 +988,7 @@ components:
         - logo
         - screenshots
         - price
+        - rating
         - tags
         - creator
     ObjectId:
@@ -946,6 +1197,9 @@ components:
             - free
             - free_options
             - payment_required
+        rating:
+          type: number
+          description: Рейтинг
         tags:
           description: Теги
           type: array
@@ -966,69 +1220,12 @@ components:
         - logo
         - screenshots
         - price
+        - rating
         - tags
         - creator
     UpdateProjectDto:
       type: object
-      properties:
-        title:
-          type: string
-          description: Название
-        tagline:
-          type: string
-          description: Слоган
-        status:
-          type: string
-          description: Статус
-          enum:
-            - draft
-            - published
-            - archived
-        description:
-          type: string
-          description: Описание
-        flames:
-          type: number
-          description: Количество огоньков
-        links:
-          description: Ссылки
-          allOf:
-            - $ref: '#/components/schemas/ProjectLinksDto'
-        logo:
-          type: string
-          description: Ссылка на логотип
-        screenshots:
-          description: Массив скриншотов
-          type: array
-          items:
-            type: string
-        price:
-          type: string
-          description: Цена
-          enum:
-            - free
-            - free_options
-            - payment_required
-        tags:
-          description: Теги
-          type: array
-          items:
-            type: string
-        creator:
-          type: string
-          description: Создатель
-      required:
-        - title
-        - tagline
-        - status
-        - description
-        - flames
-        - links
-        - logo
-        - screenshots
-        - price
-        - tags
-        - creator
+      properties: {}
     CreateTagDto:
       type: object
       properties:
@@ -1048,78 +1245,44 @@ components:
         - slug
     UpdateTagDto:
       type: object
-      properties:
-        name:
-          description: Название
-          allOf:
-            - $ref: '#/components/schemas/TagNameDto'
-        icon:
-          type: string
-          description: Ссылка на иконку
-        slug:
-          type: string
-          description: Ключевое слово
-      required:
-        - name
-        - icon
-        - slug
-    UpdateUserDto:
+      properties: {}
+    CreateVoteDto:
       type: object
       properties:
-        username:
+        project:
           type: string
-          description: Имя пользователя
-        email:
+          description: Проект
+        voter:
           type: string
-          description: Электронная почта
-        password:
-          type: string
-          description: Пароль
-        role:
-          type: string
-          description: Роль
-          enum:
-            - user
-            - admin
-        refresh_token:
-          type: string
-          description: Токен обновления
-        full_name:
-          description: ФИО
-          allOf:
-            - $ref: '#/components/schemas/UserFullNameDto'
-        avatar:
-          type: string
-          description: Ссылка на аватар
-        about:
-          type: string
-          description: О себе
-        links:
-          description: Ссылки
-          allOf:
-            - $ref: '#/components/schemas/UserLinksDto'
-        awards:
-          description: Награды
-          type: array
-          items:
-            $ref: '#/components/schemas/Award'
-        projects:
-          description: Проекты
-          type: array
-          items:
-            $ref: '#/components/schemas/Project'
+          description: Голосующий
       required:
-        - username
-        - email
-        - password
-        - role
-        - refresh_token
-        - full_name
-        - avatar
-        - about
-        - links
-        - awards
-        - projects
+        - project
+        - voter
+    Vote:
+      type: object
+      properties:
+        _id:
+          description: Идентификатор
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        project:
+          description: Проект
+          allOf:
+            - $ref: '#/components/schemas/Project'
+        voter:
+          description: Голосующий
+          allOf:
+            - $ref: '#/components/schemas/User'
+      required:
+        - _id
+        - project
+        - voter
+    UpdateVoteDto:
+      type: object
+      properties: {}
+    UpdateUserDto:
+      type: object
+      properties: {}
     CreateTeamDto:
       type: object
       properties:
@@ -1183,32 +1346,7 @@ components:
         - projects
     UpdateTeamDto:
       type: object
-      properties:
-        name:
-          type: string
-          description: Название
-        about:
-          type: string
-          description: О команде
-        logo:
-          type: string
-          description: Ссылка на логотип
-        users:
-          description: Участники
-          type: array
-          items:
-            type: string
-        projects:
-          description: Проекты
-          type: array
-          items:
-            type: string
-      required:
-        - name
-        - about
-        - logo
-        - users
-        - projects
+      properties: {}
     CreateAwardDto:
       type: object
       properties:
@@ -1224,17 +1362,81 @@ components:
         - icon
     UpdateAwardDto:
       type: object
+      properties: {}
+    CreateReviewDto:
+      type: object
       properties:
-        name:
-          description: Название
-          allOf:
-            - $ref: '#/components/schemas/AwardNameDto'
-        icon:
+        text:
           type: string
-          description: Ссылка на иконку
+          description: Текст
+        rating:
+          type: number
+          description: Текст
+        project:
+          type: string
+          description: Проект
+        reviewer:
+          type: string
+          description: Рецензент
+        likes:
+          description: Пользователи, поставившие лайки
+          type: array
+          items:
+            type: string
+        dislikes:
+          description: Пользователи, поставившие дизлайки
+          type: array
+          items:
+            type: string
       required:
-        - name
-        - icon
+        - text
+        - rating
+        - project
+        - reviewer
+        - likes
+        - dislikes
+    Review:
+      type: object
+      properties:
+        _id:
+          description: Идентификатор
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        text:
+          type: string
+          description: Текст
+        rating:
+          type: number
+          description: Оценка
+        project:
+          description: Проект
+          allOf:
+            - $ref: '#/components/schemas/Project'
+        reviewer:
+          description: Рецензент
+          allOf:
+            - $ref: '#/components/schemas/User'
+        likes:
+          description: Пользователи, поставившие лайки
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectId'
+        dislikes:
+          description: Пользователи, поставившие дизлайки
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectId'
+      required:
+        - _id
+        - text
+        - rating
+        - project
+        - reviewer
+        - likes
+        - dislikes
+    UpdateReviewDto:
+      type: object
+      properties: {}
     CreateUserDto:
       type: object
       properties:

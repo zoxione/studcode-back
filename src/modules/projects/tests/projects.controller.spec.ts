@@ -4,7 +4,7 @@
 // import { ProjectsServiceValue, mockProject } from './__mocks__/projects.service';
 // import { Project } from '../schemas/project.schema';
 // import { CreateProjectDto } from '../dto/create-project.dto';
-// import { FindAllReturnDto } from '../../../common/dto/find-all-return.dto';
+// import { FindAllReturn } from '../../../common/dto/find-all-return.dto';
 // import { UpdateProjectDto } from '../dto/update-project.dto';
 // import { NotFoundException } from '@nestjs/common';
 
@@ -53,7 +53,7 @@
 
 //   describe('findAll()', () => {
 //     describe('когда вызывается findAll()', () => {
-//       let projects: FindAllReturnDto;
+//       let projects: FindAllReturn;
 
 //       beforeEach(async () => {
 //         projects = await controller.findAll({});

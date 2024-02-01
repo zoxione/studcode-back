@@ -1,12 +1,11 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FindAllQueryDto } from '../../common/dto/find-all-query.dto';
-import { FindAllReturnDto } from '../../common/dto/find-all-return.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './schemas/user.schema';
+import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import * as bcrypt from 'bcrypt';
+import { User } from './schemas/user.schema';
+import { FindAllReturnUser } from './types/find-all-return-user';
 
 @Injectable()
 export class UsersService {
@@ -25,25 +24,34 @@ export class UsersService {
     return createdUser;
   }
 
-  async findAll({ search = '', page = 0, limit = 20 }: FindAllQueryDto): Promise<FindAllReturnDto> {
+  async findAll({
+    search = '',
+    page = 1,
+    limit = 20,
+    order = '_id',
+  }: FindAllFilterUserDto): Promise<FindAllReturnUser> {
     const count = await this.userModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const foundUsers = await this.userModel
       .find(searchQuery)
       .select('-password -refresh_token')
-      .skip(page * limit)
+      .skip((page - 1) * limit)
       .limit(limit)
+      .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
-      stats: {
+      filter: {
         page,
         limit,
         search,
+        order,
+      },
+      info: {
         find_count: foundUsers.length,
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      data: foundUsers,
+      results: foundUsers,
     };
   }
 

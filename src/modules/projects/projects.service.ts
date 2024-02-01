@@ -1,41 +1,50 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { startOfToday, subDays, subMonths, subWeeks, subYears } from 'date-fns';
 import { Model } from 'mongoose';
 import { TagsService } from '../tags/tags.service';
+import { VotesService } from '../votes/votes.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { FindAllQueryProjectDto } from './dto/find-all-query-project.dto';
-import { FindAllReturnProjectDto } from './dto/find-all-return-project.dto';
+import { FindAllFilterProjectDto } from './dto/find-all-filter-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './schemas/project.schema';
+import { FindAllReturnProject } from './types/find-all-return-project';
 
 @Injectable()
 export class ProjectsService {
+  private readonly populations = [
+    { path: 'tags', select: '_id name icon slug' },
+    { path: 'creator', select: '_id username avatar' },
+  ];
+
   constructor(
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     private tagsService: TagsService,
+    private votesService: VotesService,
   ) {}
 
   async createOne(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = await this.projectModel.create(createProjectDto);
-    await createdProject.populate({ path: 'tags', select: '_id name icon' });
-    await createdProject.populate({ path: 'creator', select: '_id username avatar' });
+    await createdProject.populate(this.populations);
     return createdProject;
   }
 
   async findAll({
     search = '',
-    page = 0,
+    page = 1,
     limit = 20,
+    order = '_id',
     time_frame = 'all',
     tag_slug = '',
     creator_id = '',
-  }: FindAllQueryProjectDto): Promise<FindAllReturnProjectDto> {
+    status = '',
+  }: FindAllFilterProjectDto): Promise<FindAllReturnProject> {
     const count = await this.projectModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const tag = tag_slug !== '' ? await this.tagsService.findOne('slug', tag_slug) : null;
     const tagSlugQuery = tag !== null ? { tags: tag._id } : {};
     const creatorQuery = creator_id !== '' ? { creator: creator_id } : {};
+    const statusQuery = status !== '' ? { status: status } : {};
     let startDate: Date;
     switch (time_frame) {
       case 'day':
@@ -59,27 +68,31 @@ export class ProjectsService {
         ...searchQuery,
         ...tagSlugQuery,
         ...creatorQuery,
+        ...statusQuery,
         created_at: { $gte: startDate },
       })
-      .skip(page * limit)
+      .skip((page - 1) * limit)
       .limit(limit)
-      .populate({ path: 'tags', select: '_id name icon slug' })
-      .populate({
-        path: 'creator',
-        select: '_id username avatar',
-      })
+      .populate(this.populations)
+      .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
-      stats: {
+      filter: {
         page,
         limit,
         search,
+        order,
         time_frame,
+        tag_slug,
+        creator_id,
+        status,
+      },
+      info: {
         find_count: foundProjects.length,
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      data: foundProjects,
+      results: foundProjects,
     };
   }
 
@@ -87,14 +100,7 @@ export class ProjectsService {
     let foundProject: Project | null = null;
     switch (field) {
       case '_id': {
-        foundProject = await this.projectModel
-          .findOne({ _id: fieldValue })
-          .populate({ path: 'tags', select: '_id name icon' })
-          .populate({
-            path: 'creator',
-            select: '_id username avatar',
-          })
-          .exec();
+        foundProject = await this.projectModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
         break;
       }
       default: {
@@ -115,11 +121,7 @@ export class ProjectsService {
           .findOneAndUpdate({ _id: fieldValue }, updateDto, {
             new: true,
           })
-          .populate({ path: 'tags', select: '_id name icon' })
-          .populate({
-            path: 'creator',
-            select: '_id username avatar',
-          })
+          .populate(this.populations)
           .exec();
         break;
       }
@@ -133,17 +135,44 @@ export class ProjectsService {
     return updatedProject;
   }
 
+  async voteOne(project_id: string, voter_id: string): Promise<Project> {
+    const project = await this.projectModel.findOne({ _id: project_id });
+    if (!project) {
+      throw new NotFoundException('Project Not Found');
+    }
+    try {
+      const vote = await this.votesService.findOne('project', project._id);
+      throw new ConflictException(`User with id ${voter_id} already voted`);
+    } catch (e) {
+      if (e.response.error === 'Not Found') {
+        await this.votesService.createOne({ project: project_id, voter: voter_id });
+        const updatedProject = await this.projectModel
+          .findOneAndUpdate(
+            { _id: project_id },
+            { flames: project.flames + 1 },
+            {
+              new: true,
+            },
+          )
+          .populate(this.populations)
+          .exec();
+        if (!updatedProject) {
+          throw new NotFoundException('Project Not Updated');
+        }
+        return updatedProject;
+      } else {
+        throw e;
+      }
+    }
+  }
+
   async deleteOne(field: keyof Project, fieldValue: unknown): Promise<Project> {
     let deletedProject: Project | null = null;
     switch (field) {
       case '_id': {
         deletedProject = await this.projectModel
           .findByIdAndRemove({ _id: fieldValue })
-          .populate({ path: 'tags', select: '_id name icon' })
-          .populate({
-            path: 'creator',
-            select: '_id username avatar',
-          })
+          .populate(this.populations)
           .exec();
         break;
       }
