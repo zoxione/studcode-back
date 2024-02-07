@@ -16,8 +16,8 @@ export class AccessTokenStrategy extends PassportStrategy(Strategy, 'jwt-access-
   }
 
   private static extractAccessToken(req: Request): string | null {
-    if (req.cookies && req.cookies.access_token) {
-      return req.cookies.access_token;
+    if (req.cookies && req.cookies[configuration().access_token_name]) {
+      return req.cookies[configuration().access_token_name];
     }
     if (req.headers.authorization && req.headers.authorization.split(' ')[0] === 'Bearer') {
       return req.headers.authorization.split(' ')[1];

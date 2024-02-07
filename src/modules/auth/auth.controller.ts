@@ -9,6 +9,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { AuthUserRefreshRequest } from './types/auth-user-refresh-request';
 import { AuthUserRequest } from './types/auth-user-request';
+import configuration from '../../config/configuration';
 
 @ApiBearerAuth()
 @ApiTags('auth')
@@ -31,16 +32,16 @@ export class AuthController {
     );
     const nowUnix = (+new Date() / 1e3) | 0;
     response
-      .cookie('access_token', access_token, {
+      .cookie(configuration().access_token_name, access_token, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: configuration().node_env === 'production',
+        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
         maxAge: (access_token_exp - nowUnix) * 1000,
       })
-      .cookie('refresh_token', refresh_token, {
+      .cookie(configuration().refresh_token_name, refresh_token, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: configuration().node_env === 'production',
+        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
         maxAge: (refresh_token_exp - nowUnix) * 1000,
       })
       .send({ access_token, refresh_token });
@@ -50,8 +51,16 @@ export class AuthController {
   @Get('/logout')
   @ApiOperation({ summary: 'Выход из аккаунта' })
   logout(@Req() req: AuthUserRequest, @Res({ passthrough: true }) response: Response) {
-    response.clearCookie('access_token');
-    response.clearCookie('refresh_token');
+    response.clearCookie(configuration().access_token_name, {
+      httpOnly: true,
+      secure: configuration().node_env === 'production',
+      sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+    });
+    response.clearCookie(configuration().refresh_token_name, {
+      httpOnly: true,
+      secure: configuration().node_env === 'production',
+      sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+    });
     return this.authService.signOut(req.user.sub);
   }
 
@@ -63,16 +72,16 @@ export class AuthController {
     const refreshToken = req.user.refresh_token || '';
     const { access_token, refresh_token } = await this.authService.refreshTokens(userId, refreshToken);
     response
-      .cookie('access_token', access_token, {
+      .cookie(configuration().access_token_name, access_token, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: configuration().node_env === 'production',
+        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
         expires: new Date(Date.now() + 1 * 24 * 60 * 1000),
       })
-      .cookie('refresh_token', refresh_token, {
+      .cookie(configuration().refresh_token_name, refresh_token, {
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: configuration().node_env === 'production',
+        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
         expires: new Date(Date.now() + 7 * 24 * 60 * 1000),
       })
       .send({ access_token, refresh_token });
