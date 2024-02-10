@@ -14,7 +14,7 @@ import { FindAllReturnProject } from './types/find-all-return-project';
 export class ProjectsService {
   private readonly populations = [
     { path: 'tags', select: '_id name icon slug' },
-    { path: 'creator', select: '_id username avatar' },
+    { path: 'creator', select: '_id username avatar full_name' },
   ];
 
   constructor(

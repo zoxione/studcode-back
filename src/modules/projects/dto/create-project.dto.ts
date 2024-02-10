@@ -22,6 +22,7 @@ export class CreateProjectDto {
 
   @ApiProperty({ description: 'Слоган', type: String })
   @IsString()
+  @IsOptional()
   readonly tagline: string;
 
   @ApiProperty({ description: 'Статус', type: String, enum: ProjectStatus })
