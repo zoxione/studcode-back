@@ -12,6 +12,7 @@ import { join } from 'path';
 import { AwardsModule } from './modules/awards/awards.module';
 import { VotesModule } from './modules/votes/votes.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -30,5 +31,6 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
       serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
     }),
   ],
+  controllers: [AppController],
 })
 export class AppModule {}
