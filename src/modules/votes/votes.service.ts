@@ -46,7 +46,28 @@ export class VotesService {
     };
   }
 
-  async findOne(field: keyof Vote, fieldValue: unknown): Promise<Vote> {
+  async findOne(field: keyof Vote, fieldValue: unknown): Promise<Vote>;
+  async findOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Vote>;
+  async findOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Vote | null>;
+  async findOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Vote | null> {
     let foundVote: Vote | null = null;
     switch (field) {
       case '_id': {
@@ -61,13 +82,37 @@ export class VotesService {
         break;
       }
     }
-    if (!foundVote) {
+    if (!foundVote && options.throw) {
       throw new NotFoundException('Vote Not Found');
     }
     return foundVote;
   }
 
-  async updateOne(field: keyof Vote, fieldValue: unknown, updateDto: Partial<UpdateVoteDto>): Promise<Vote> {
+  async updateOne(field: keyof Vote, fieldValue: unknown, updateDto: Partial<UpdateVoteDto>): Promise<Vote>;
+  async updateOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateVoteDto>,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Vote>;
+  async updateOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateVoteDto>,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Vote | null>;
+  async updateOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateVoteDto>,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Vote | null> {
     let updatedVote: Vote | null = null;
     switch (field) {
       case '_id': {
@@ -82,13 +127,37 @@ export class VotesService {
         break;
       }
     }
-    if (!updatedVote) {
+    if (!updatedVote && options.throw) {
       throw new NotFoundException('Vote Not Updated');
     }
     return updatedVote;
   }
 
-  async deleteOne(field: keyof Vote, fieldValue: unknown): Promise<Vote> {
+  async deleteOne(field: keyof Vote, fieldValue: unknown): Promise<Vote>;
+  async deleteOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<Vote>;
+  async deleteOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<Vote | null>;
+  async deleteOne(
+    field: keyof Vote,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<Vote | null> {
     let deletedVote: Vote | null = null;
     switch (field) {
       case '_id': {
@@ -99,7 +168,7 @@ export class VotesService {
         break;
       }
     }
-    if (!deletedVote) {
+    if (!deletedVote && options.throw) {
       throw new NotFoundException('Vote Not Deleted');
     }
     return deletedVote;

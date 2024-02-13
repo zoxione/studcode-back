@@ -48,12 +48,12 @@ paths:
           description: Unauthorized
       tags: *ref_0
       security: *ref_1
-  /api/v1/projects/{id}:
+  /api/v1/projects/{key}:
     get:
       operationId: ProjectsController_findOneById
       summary: Получение проекта по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -75,7 +75,7 @@ paths:
       operationId: ProjectsController_updateOneById
       summary: Обновление проекта по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -103,7 +103,7 @@ paths:
       operationId: ProjectsController_deleteOneById
       summary: Удаление проекта по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -121,12 +121,12 @@ paths:
           description: Not Found
       tags: *ref_0
       security: *ref_1
-  /api/v1/projects/vote/{id}:
+  /api/v1/projects/vote/{key}:
     put:
       operationId: ProjectsController_voteOneById
       summary: Голосование за проект по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -183,12 +183,12 @@ paths:
           description: Unauthorized
       tags: *ref_2
       security: *ref_3
-  /api/v1/tags/{id}:
+  /api/v1/tags/{key}:
     get:
       operationId: TagsController_findOneById
-      summary: Получение тега по ID
+      summary: Получение тега по ID/slug
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -208,9 +208,9 @@ paths:
       security: *ref_3
     put:
       operationId: TagsController_updateOneById
-      summary: Обновление тега по ID
+      summary: Обновление тега по ID/slug
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -236,32 +236,9 @@ paths:
       security: *ref_3
     delete:
       operationId: TagsController_deleteOneById
-      summary: Удаление тега по ID
+      summary: Удаление тега по ID/slug
       parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Tag'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
-      tags: *ref_2
-      security: *ref_3
-  /api/v1/tags/slug/{slug}:
-    get:
-      operationId: TagsController_findOneBySlug
-      summary: Получение тега по slug
-      parameters:
-        - name: slug
+        - name: key
           required: true
           in: path
           schema:
@@ -318,12 +295,12 @@ paths:
           description: Unauthorized
       tags: *ref_4
       security: *ref_5
-  /api/v1/votes/{id}:
+  /api/v1/votes/{key}:
     get:
       operationId: VotesController_findOneById
       summary: Получение голоса по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -345,7 +322,7 @@ paths:
       operationId: VotesController_updateOneById
       summary: Обновление голоса по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -373,7 +350,7 @@ paths:
       operationId: VotesController_deleteOneById
       summary: Удаление голоса по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -409,12 +386,12 @@ paths:
         - users
       security: &ref_7
         - bearer: []
-  /api/v1/users/{id}:
+  /api/v1/users/{key}:
     get:
       operationId: UsersController_findOneById
-      summary: Получение пользователя по ID
+      summary: Получение пользователя по ID/username/email
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -434,9 +411,9 @@ paths:
       security: *ref_7
     put:
       operationId: UsersController_updateOneById
-      summary: Обновление пользователя по ID
+      summary: Обновление пользователя по ID/username/email
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -462,32 +439,9 @@ paths:
       security: *ref_7
     delete:
       operationId: UsersController_deleteOneById
-      summary: Удаление пользователя по ID
+      summary: Удаление пользователя по ID/username/email
       parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Not Found
-      tags: *ref_6
-      security: *ref_7
-  /api/v1/users/{username}:
-    get:
-      operationId: UsersController_findOneByUsername
-      summary: Получение пользователя по username
-      parameters:
-        - name: username
+        - name: key
           required: true
           in: path
           schema:
@@ -544,12 +498,12 @@ paths:
           description: Unauthorized
       tags: *ref_8
       security: *ref_9
-  /api/v1/teams/{id}:
+  /api/v1/teams/{key}:
     get:
       operationId: TeamsController_findOneById
       summary: Получение команды по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -571,7 +525,7 @@ paths:
       operationId: TeamsController_updateOneById
       summary: Обновление команды по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -599,7 +553,7 @@ paths:
       operationId: TeamsController_deleteOneById
       summary: Удаление команды по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -656,12 +610,12 @@ paths:
           description: Unauthorized
       tags: *ref_10
       security: *ref_11
-  /api/v1/awards/{id}:
+  /api/v1/awards/{key}:
     get:
       operationId: AwardsController_findOneById
       summary: Получение награды по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -683,7 +637,7 @@ paths:
       operationId: AwardsController_updateOneById
       summary: Обновление награды по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -711,7 +665,7 @@ paths:
       operationId: AwardsController_deleteOneById
       summary: Удаление награды по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -768,12 +722,12 @@ paths:
           description: Unauthorized
       tags: *ref_12
       security: *ref_13
-  /api/v1/reviews/{id}:
+  /api/v1/reviews/{key}:
     get:
       operationId: ReviewsController_findOneById
       summary: Получение обзора по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -795,7 +749,7 @@ paths:
       operationId: ReviewsController_updateOneById
       summary: Обновление обзора по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -823,7 +777,7 @@ paths:
       operationId: ReviewsController_deleteOneById
       summary: Удаление обзора по ID
       parameters:
-        - name: id
+        - name: key
           required: true
           in: path
           schema:
@@ -1032,11 +986,15 @@ components:
         slug:
           type: string
           description: Ключевое слово
+        description:
+          type: string
+          description: Описание
       required:
         - _id
         - name
         - icon
         - slug
+        - description
     UserFullNameDto:
       type: object
       properties:
@@ -1095,10 +1053,14 @@ components:
         icon:
           type: string
           description: Ссылка на иконку
+        description:
+          type: string
+          description: Описание
       required:
         - _id
         - name
         - icon
+        - description
     User:
       type: object
       properties:
@@ -1121,6 +1083,9 @@ components:
           enum:
             - user
             - admin
+        verify_email:
+          type: boolean
+          description: Подтверждение почты
         refresh_token:
           type: string
           description: Токен обновления
@@ -1154,6 +1119,7 @@ components:
         - email
         - password
         - role
+        - verify_email
         - refresh_token
         - full_name
         - avatar
@@ -1248,10 +1214,14 @@ components:
         slug:
           type: string
           description: Ключевое слово
+        description:
+          type: string
+          description: Описание
       required:
         - name
         - icon
         - slug
+        - description
     UpdateTagDto:
       type: object
       properties: {}
@@ -1366,9 +1336,13 @@ components:
         icon:
           type: string
           description: Ссылка на иконку
+        description:
+          type: string
+          description: Описание
       required:
         - name
         - icon
+        - description
     UpdateAwardDto:
       type: object
       properties: {}
@@ -1464,6 +1438,9 @@ components:
           enum:
             - user
             - admin
+        verify_email:
+          type: boolean
+          description: Подтверждение почты
         refresh_token:
           type: string
           description: Токен обновления
@@ -1496,6 +1473,7 @@ components:
         - email
         - password
         - role
+        - verify_email
         - refresh_token
         - full_name
         - avatar

@@ -13,15 +13,6 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // @UseGuards(AccessTokenGuard)
-  // @Post('/')
-  // @ApiOperation({ summary: 'Create a new user' })
-  // @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
-  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  // async createOne(@Body() createUserDto: CreateUserDto): Promise<User> {
-  //   return this.usersService.createOne(createUserDto);
-  // }
-
   @Get('/')
   @ApiOperation({ summary: 'Получение списка пользователей' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
@@ -30,41 +21,53 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
-  @Get('/:id')
-  @ApiOperation({ summary: 'Получение пользователя по ID' })
+  @Get('/:key')
+  @ApiOperation({ summary: 'Получение пользователя по ID/username/email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('id') id: string): Promise<User> {
-    return this.usersService.findOne('_id', id);
-  }
-
-  @Get('/:username')
-  @ApiOperation({ summary: 'Получение пользователя по username' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneByUsername(@Param('username') username: string): Promise<User> {
-    return this.usersService.findOne('username', username);
-  }
-
-  @UseGuards(AccessTokenGuard)
-  @Put('/:id')
-  @ApiOperation({ summary: 'Обновление пользователя по ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('id') id: string, @Body() updateDto: UpdateUserDto): Promise<User> {
-    return this.usersService.updateOne('_id', id, updateDto);
+  async findOneById(@Param('key') key: string): Promise<User> {
+    let foundUser = await this.usersService.findOne('_id', key, { throw: false });
+    if (!foundUser) {
+      foundUser = await this.usersService.findOne('username', key, { throw: false });
+    }
+    if (!foundUser) {
+      foundUser = await this.usersService.findOne('email', key, { throw: true });
+    }
+    return foundUser;
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete('/:id')
-  @ApiOperation({ summary: 'Удаление пользователя по ID' })
+  @Put('/:key')
+  @ApiOperation({ summary: 'Обновление пользователя по ID/username/email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('id') id: string): Promise<User> {
-    return this.usersService.deleteOne('_id', id);
+  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateUserDto): Promise<User> {
+    let updatedUser = await this.usersService.updateOne('_id', key, updateDto, { throw: false });
+    if (!updatedUser) {
+      updatedUser = await this.usersService.updateOne('username', key, updateDto, { throw: false });
+    }
+    if (!updatedUser) {
+      updatedUser = await this.usersService.updateOne('email', key, updateDto, { throw: true });
+    }
+    return updatedUser;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete('/:key')
+  @ApiOperation({ summary: 'Удаление пользователя по ID/username/email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async deleteOneById(@Param('key') key: string): Promise<User> {
+    let deletedUser = await this.usersService.deleteOne('_id', key, { throw: false });
+    if (!deletedUser) {
+      deletedUser = await this.usersService.deleteOne('username', key, { throw: false });
+    }
+    if (!deletedUser) {
+      deletedUser = await this.usersService.deleteOne('email', key, { throw: true });
+    }
+    return deletedUser;
   }
 }

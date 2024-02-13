@@ -93,13 +93,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/projects/{id}": {
+      "/api/v1/projects/{key}": {
         "get": {
           "operationId": "ProjectsController_findOneById",
           "summary": "Получение проекта по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -139,7 +139,7 @@ window.onload = function() {
           "summary": "Обновление проекта по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -189,7 +189,7 @@ window.onload = function() {
           "summary": "Удаление проекта по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -225,13 +225,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/projects/vote/{id}": {
+      "/api/v1/projects/vote/{key}": {
         "put": {
           "operationId": "ProjectsController_voteOneById",
           "summary": "Голосование за проект по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -335,13 +335,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/tags/{id}": {
+      "/api/v1/tags/{key}": {
         "get": {
           "operationId": "TagsController_findOneById",
-          "summary": "Получение тега по ID",
+          "summary": "Получение тега по ID/slug",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -378,10 +378,10 @@ window.onload = function() {
         },
         "put": {
           "operationId": "TagsController_updateOneById",
-          "summary": "Обновление тега по ID",
+          "summary": "Обновление тега по ID/slug",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -428,52 +428,10 @@ window.onload = function() {
         },
         "delete": {
           "operationId": "TagsController_deleteOneById",
-          "summary": "Удаление тега по ID",
+          "summary": "Удаление тега по ID/slug",
           "parameters": [
             {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Tag"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "tags"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/tags/slug/{slug}": {
-        "get": {
-          "operationId": "TagsController_findOneBySlug",
-          "summary": "Получение тега по slug",
-          "parameters": [
-            {
-              "name": "slug",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -577,13 +535,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/votes/{id}": {
+      "/api/v1/votes/{key}": {
         "get": {
           "operationId": "VotesController_findOneById",
           "summary": "Получение голоса по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -623,7 +581,7 @@ window.onload = function() {
           "summary": "Обновление голоса по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -673,7 +631,7 @@ window.onload = function() {
           "summary": "Удаление голоса по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -739,13 +697,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/users/{id}": {
+      "/api/v1/users/{key}": {
         "get": {
           "operationId": "UsersController_findOneById",
-          "summary": "Получение пользователя по ID",
+          "summary": "Получение пользователя по ID/username/email",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -782,10 +740,10 @@ window.onload = function() {
         },
         "put": {
           "operationId": "UsersController_updateOneById",
-          "summary": "Обновление пользователя по ID",
+          "summary": "Обновление пользователя по ID/username/email",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -832,52 +790,10 @@ window.onload = function() {
         },
         "delete": {
           "operationId": "UsersController_deleteOneById",
-          "summary": "Удаление пользователя по ID",
+          "summary": "Удаление пользователя по ID/username/email",
           "parameters": [
             {
-              "name": "id",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "users"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/users/{username}": {
-        "get": {
-          "operationId": "UsersController_findOneByUsername",
-          "summary": "Получение пользователя по username",
-          "parameters": [
-            {
-              "name": "username",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -981,13 +897,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/teams/{id}": {
+      "/api/v1/teams/{key}": {
         "get": {
           "operationId": "TeamsController_findOneById",
           "summary": "Получение команды по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1027,7 +943,7 @@ window.onload = function() {
           "summary": "Обновление команды по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1077,7 +993,7 @@ window.onload = function() {
           "summary": "Удаление команды по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1181,13 +1097,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/awards/{id}": {
+      "/api/v1/awards/{key}": {
         "get": {
           "operationId": "AwardsController_findOneById",
           "summary": "Получение награды по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1227,7 +1143,7 @@ window.onload = function() {
           "summary": "Обновление награды по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1277,7 +1193,7 @@ window.onload = function() {
           "summary": "Удаление награды по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1381,13 +1297,13 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/reviews/{id}": {
+      "/api/v1/reviews/{key}": {
         "get": {
           "operationId": "ReviewsController_findOneById",
           "summary": "Получение обзора по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1427,7 +1343,7 @@ window.onload = function() {
           "summary": "Обновление обзора по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1477,7 +1393,7 @@ window.onload = function() {
           "summary": "Удаление обзора по ID",
           "parameters": [
             {
-              "name": "id",
+              "name": "key",
               "required": true,
               "in": "path",
               "schema": {
@@ -1807,13 +1723,18 @@ window.onload = function() {
             "slug": {
               "type": "string",
               "description": "Ключевое слово"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
             }
           },
           "required": [
             "_id",
             "name",
             "icon",
-            "slug"
+            "slug",
+            "description"
           ]
         },
         "UserFullNameDto": {
@@ -1899,12 +1820,17 @@ window.onload = function() {
             "icon": {
               "type": "string",
               "description": "Ссылка на иконку"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
             }
           },
           "required": [
             "_id",
             "name",
-            "icon"
+            "icon",
+            "description"
           ]
         },
         "User": {
@@ -1937,6 +1863,10 @@ window.onload = function() {
                 "user",
                 "admin"
               ]
+            },
+            "verify_email": {
+              "type": "boolean",
+              "description": "Подтверждение почты"
             },
             "refresh_token": {
               "type": "string",
@@ -1987,6 +1917,7 @@ window.onload = function() {
             "email",
             "password",
             "role",
+            "verify_email",
             "refresh_token",
             "full_name",
             "avatar",
@@ -2118,12 +2049,17 @@ window.onload = function() {
             "slug": {
               "type": "string",
               "description": "Ключевое слово"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
             }
           },
           "required": [
             "name",
             "icon",
-            "slug"
+            "slug",
+            "description"
           ]
         },
         "UpdateTagDto": {
@@ -2292,11 +2228,16 @@ window.onload = function() {
             "icon": {
               "type": "string",
               "description": "Ссылка на иконку"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
             }
           },
           "required": [
             "name",
-            "icon"
+            "icon",
+            "description"
           ]
         },
         "UpdateAwardDto": {
@@ -2433,6 +2374,10 @@ window.onload = function() {
                 "admin"
               ]
             },
+            "verify_email": {
+              "type": "boolean",
+              "description": "Подтверждение почты"
+            },
             "refresh_token": {
               "type": "string",
               "description": "Токен обновления"
@@ -2481,6 +2426,7 @@ window.onload = function() {
             "email",
             "password",
             "role",
+            "verify_email",
             "refresh_token",
             "full_name",
             "avatar",

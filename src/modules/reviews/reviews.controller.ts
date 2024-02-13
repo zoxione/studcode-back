@@ -31,32 +31,32 @@ export class ReviewsController {
     return this.reviewsService.findAll(query);
   }
 
-  @Get('/:id')
+  @Get('/:key')
   @ApiOperation({ summary: 'Получение обзора по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('id') id: string): Promise<Review> {
-    return this.reviewsService.findOne('_id', id);
+  async findOneById(@Param('key') key: string): Promise<Review> {
+    return this.reviewsService.findOne('_id', key);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/:id')
+  @Put('/:key')
   @ApiOperation({ summary: 'Обновление обзора по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('id') id: string, @Body() updateDto: UpdateReviewDto): Promise<Review> {
-    return this.reviewsService.updateOne('_id', id, updateDto);
+  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateReviewDto): Promise<Review> {
+    return this.reviewsService.updateOne('_id', key, updateDto);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete('/:id')
+  @Delete('/:key')
   @ApiOperation({ summary: 'Удаление обзора по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('id') id: string): Promise<Review> {
-    return this.reviewsService.deleteOne('_id', id);
+  async deleteOneById(@Param('key') key: string): Promise<Review> {
+    return this.reviewsService.deleteOne('_id', key);
   }
 }

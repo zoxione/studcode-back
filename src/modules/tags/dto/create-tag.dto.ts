@@ -18,4 +18,9 @@ export class CreateTagDto {
   @ApiProperty({ description: 'Ключевое слово', type: String })
   @IsString()
   readonly slug: string;
+
+  @ApiProperty({ description: 'Описание', type: String })
+  @IsString()
+  @IsOptional()
+  readonly description: string;
 }

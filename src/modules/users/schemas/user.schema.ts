@@ -30,6 +30,10 @@ class User {
   @Prop({ type: String, enum: Role, default: Role.User })
   role: string;
 
+  @ApiProperty({ description: 'Подтверждение почты', type: Boolean })
+  @Prop({ type: Boolean, default: false })
+  verify_email: boolean;
+
   @ApiProperty({ description: 'Токен обновления', type: String })
   @Prop({ type: String, default: '' })
   refresh_token: string;

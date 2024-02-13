@@ -96,7 +96,28 @@ export class ProjectsService {
     };
   }
 
-  async findOne(field: keyof Project, fieldValue: unknown): Promise<Project> {
+  async findOne(field: keyof Project, fieldValue: unknown): Promise<Project>;
+  async findOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Project>;
+  async findOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Project | null>;
+  async findOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Project | null> {
     let foundProject: Project | null = null;
     switch (field) {
       case '_id': {
@@ -107,13 +128,37 @@ export class ProjectsService {
         break;
       }
     }
-    if (!foundProject) {
+    if (!foundProject && options.throw) {
       throw new NotFoundException('Project Not Found');
     }
     return foundProject;
   }
 
-  async updateOne(field: keyof Project, fieldValue: unknown, updateDto: Partial<UpdateProjectDto>): Promise<Project> {
+  async updateOne(field: keyof Project, fieldValue: unknown, updateDto: Partial<UpdateProjectDto>): Promise<Project>;
+  async updateOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateProjectDto>,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Project>;
+  async updateOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateProjectDto>,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Project | null>;
+  async updateOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateProjectDto>,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Project | null> {
     let updatedProject: Project | null = null;
     switch (field) {
       case '_id': {
@@ -129,20 +174,41 @@ export class ProjectsService {
         break;
       }
     }
-    if (!updatedProject) {
+    if (!updatedProject && options.throw) {
       throw new NotFoundException('Project Not Updated');
     }
     return updatedProject;
   }
 
-  async voteOne(project_id: string, voter_id: string): Promise<Project> {
+  async voteOne(project_id: string, voter_id: string): Promise<Project>;
+  async voteOne(
+    project_id: string,
+    voter_id: string,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Project>;
+  async voteOne(
+    project_id: string,
+    voter_id: string,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Project | null>;
+  async voteOne(
+    project_id: string,
+    voter_id: string,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Project | null> {
     const project = await this.projectModel.findOne({ _id: project_id });
     if (!project) {
       throw new NotFoundException('Project Not Found');
     }
     try {
       const vote = await this.votesService.findOne('project', project._id);
-      throw new ConflictException(`User with id ${voter_id} already voted`);
+      throw new ConflictException(`Project with id ${voter_id} already voted`);
     } catch (e) {
       if (e.response.error === 'Not Found') {
         await this.votesService.createOne({ project: project_id, voter: voter_id });
@@ -156,7 +222,7 @@ export class ProjectsService {
           )
           .populate(this.populations)
           .exec();
-        if (!updatedProject) {
+        if (!updatedProject && options.throw) {
           throw new NotFoundException('Project Not Updated');
         }
         return updatedProject;
@@ -166,7 +232,31 @@ export class ProjectsService {
     }
   }
 
-  async deleteOne(field: keyof Project, fieldValue: unknown): Promise<Project> {
+  async deleteOne(field: keyof Project, fieldValue: unknown): Promise<Project>;
+  async deleteOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<Project>;
+  async deleteOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<Project | null>;
+  async deleteOne(
+    field: keyof Project,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<Project | null> {
     let deletedProject: Project | null = null;
     switch (field) {
       case '_id': {
@@ -180,7 +270,7 @@ export class ProjectsService {
         break;
       }
     }
-    if (!deletedProject) {
+    if (!deletedProject && options.throw) {
       throw new NotFoundException('Project Not Deleted');
     }
     return deletedProject;

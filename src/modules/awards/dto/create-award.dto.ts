@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsObject, IsOptional, IsUrl, ValidateNested } from 'class-validator';
+import { IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 import { AwardNameDto } from './award-name.dto';
 
 export class CreateAwardDto {
@@ -14,4 +14,9 @@ export class CreateAwardDto {
   @IsUrl()
   @IsOptional()
   readonly icon: string;
+
+  @ApiProperty({ description: 'Описание', type: String })
+  @IsString()
+  @IsOptional()
+  readonly description: string;
 }

@@ -10,6 +10,7 @@ import { SignInDto } from './dto/sign-in.dto';
 import { AuthUserRefreshRequest } from './types/auth-user-refresh-request';
 import { AuthUserRequest } from './types/auth-user-request';
 import configuration from '../../config/configuration';
+import { Session } from './types/session';
 
 @ApiBearerAuth()
 @ApiTags('auth')
@@ -25,8 +26,8 @@ export class AuthController {
 
   @Post('/login')
   @ApiOperation({ summary: 'Аутентификация пользователя' })
-  async login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response): Promise<void> {
-    const { access_token, refresh_token, access_token_exp, refresh_token_exp } = await this.authService.signIn(
+  async login(@Body() signInDto: SignInDto, @Res({ passthrough: true }) response: Response) {
+    const { access_token, refresh_token, access_token_exp, refresh_token_exp, session } = await this.authService.signIn(
       signInDto.email,
       signInDto.password,
     );
@@ -44,7 +45,7 @@ export class AuthController {
         sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
         maxAge: (refresh_token_exp - nowUnix) * 1000,
       })
-      .send({ access_token, refresh_token });
+      .send({ user: session, access_token, access_token_exp, refresh_token, refresh_token_exp });
   }
 
   @UseGuards(AccessTokenGuard)
@@ -70,27 +71,36 @@ export class AuthController {
   async refreshTokens(@Req() req: AuthUserRefreshRequest, @Res({ passthrough: true }) response: Response) {
     const userId = req.user.sub;
     const refreshToken = req.user.refresh_token || '';
-    const { access_token, refresh_token } = await this.authService.refreshTokens(userId, refreshToken);
+    const { access_token, refresh_token, access_token_exp, refresh_token_exp } = await this.authService.refreshTokens(
+      userId,
+      refreshToken,
+    );
+    const nowUnix = (+new Date() / 1e3) | 0;
     response
       .cookie(configuration().access_token_name, access_token, {
         httpOnly: true,
         secure: configuration().node_env === 'production',
         sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
-        expires: new Date(Date.now() + 1 * 24 * 60 * 1000),
+        maxAge: (access_token_exp - nowUnix) * 1000,
       })
       .cookie(configuration().refresh_token_name, refresh_token, {
         httpOnly: true,
         secure: configuration().node_env === 'production',
         sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
-        expires: new Date(Date.now() + 7 * 24 * 60 * 1000),
+        maxAge: (refresh_token_exp - nowUnix) * 1000,
       })
-      .send({ access_token, refresh_token });
+      .send({ access_token, access_token_exp, refresh_token, refresh_token_exp });
   }
 
   @UseGuards(AccessTokenGuard)
   @Get('/whoami')
   @ApiOperation({ summary: 'Получение информации о текущем пользователе' })
-  whoami(@Req() req: AuthUserRequest) {
-    return req.user;
+  async whoami(@Req() req: AuthUserRequest): Promise<Session> {
+    return {
+      _id: req.user.sub,
+      username: req.user.username,
+      email: req.user.email,
+      avatar: req.user.avatar,
+    };
   }
 }

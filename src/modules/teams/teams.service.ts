@@ -46,7 +46,28 @@ export class TeamsService {
     };
   }
 
-  async findOne(field: keyof Team, fieldValue: unknown): Promise<Team> {
+  async findOne(field: keyof Team, fieldValue: unknown): Promise<Team>;
+  async findOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Team>;
+  async findOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Team | null>;
+  async findOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Team | null> {
     let foundTeam: Team | null = null;
     switch (field) {
       case '_id': {
@@ -57,13 +78,37 @@ export class TeamsService {
         break;
       }
     }
-    if (!foundTeam) {
+    if (!foundTeam && options.throw) {
       throw new NotFoundException('Team Not Found');
     }
     return foundTeam;
   }
 
-  async updateOne(field: keyof Team, fieldValue: unknown, updateDto: Partial<UpdateTeamDto>): Promise<Team> {
+  async updateOne(field: keyof Team, fieldValue: unknown, updateDto: Partial<UpdateTeamDto>): Promise<Team>;
+  async updateOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateTeamDto>,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Team>;
+  async updateOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateTeamDto>,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Team | null>;
+  async updateOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateTeamDto>,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Team | null> {
     let updatedTeam: Team | null = null;
     switch (field) {
       case '_id': {
@@ -78,13 +123,37 @@ export class TeamsService {
         break;
       }
     }
-    if (!updatedTeam) {
+    if (!updatedTeam && options.throw) {
       throw new NotFoundException('Team Not Updated');
     }
     return updatedTeam;
   }
 
-  async deleteOne(field: keyof Team, fieldValue: unknown): Promise<Team> {
+  async deleteOne(field: keyof Team, fieldValue: unknown): Promise<Team>;
+  async deleteOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<Team>;
+  async deleteOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<Team | null>;
+  async deleteOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<Team | null> {
     let deletedTeam: Team | null = null;
     switch (field) {
       case '_id': {
@@ -95,7 +164,7 @@ export class TeamsService {
         break;
       }
     }
-    if (!deletedTeam) {
+    if (!deletedTeam && options.throw) {
       throw new NotFoundException('Team Not Deleted');
     }
     return deletedTeam;

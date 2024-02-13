@@ -1,6 +1,6 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -55,15 +55,38 @@ export class UsersService {
     };
   }
 
-  async findOne(field: keyof User, fieldValue: unknown, withSecret: boolean = false): Promise<User> {
+  async findOne(field: keyof User, fieldValue: unknown): Promise<User>;
+  async findOne(
+    field: keyof User,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<User>;
+  async findOne(
+    field: keyof User,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<User | null>;
+  async findOne(
+    field: keyof User,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<User | null> {
     let foundUser: User | null = null;
-    let select = '-password -refresh_token';
-    if (withSecret) {
-      select = '';
-    }
+    const select = !options.secret ? '-password -refresh_token' : '';
     switch (field) {
       case '_id': {
-        foundUser = await this.userModel.findOne({ _id: fieldValue }).select(select).exec();
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          foundUser = await this.userModel.findOne({ _id: fieldValue }).select(select).exec();
+        }
         break;
       }
       case 'username': {
@@ -78,18 +101,60 @@ export class UsersService {
         break;
       }
     }
-    if (!foundUser) {
+    if (!foundUser && options.throw) {
       throw new NotFoundException('User Not Found');
     }
     return foundUser;
   }
 
-  async updateOne(field: keyof User, fieldValue: unknown, updateDto: Partial<UpdateUserDto>): Promise<User> {
+  async updateOne(field: keyof User, fieldValue: unknown, updateDto: Partial<UpdateUserDto>): Promise<User>;
+  async updateOne(
+    field: keyof User,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateUserDto>,
+    options: {
+      throw?: true;
+    },
+  ): Promise<User>;
+  async updateOne(
+    field: keyof User,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateUserDto>,
+    options: {
+      throw?: false;
+    },
+  ): Promise<User | null>;
+  async updateOne(
+    field: keyof User,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateUserDto>,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<User | null> {
     let updatedUser: User | null = null;
     switch (field) {
       case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          updatedUser = await this.userModel
+            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+              new: true,
+            })
+            .exec();
+        }
+        break;
+      }
+      case 'username': {
         updatedUser = await this.userModel
-          .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+          .findOneAndUpdate({ username: fieldValue }, updateDto, {
+            new: true,
+          })
+          .exec();
+        break;
+      }
+      case 'email': {
+        updatedUser = await this.userModel
+          .findOneAndUpdate({ email: fieldValue }, updateDto, {
             new: true,
           })
           .exec();
@@ -99,24 +164,58 @@ export class UsersService {
         break;
       }
     }
-    if (!updatedUser) {
+    if (!updatedUser && options.throw) {
       throw new NotFoundException('User Not Updated');
     }
     return updatedUser;
   }
 
-  async deleteOne(field: keyof User, fieldValue: unknown): Promise<User> {
+  async deleteOne(field: keyof User, fieldValue: unknown): Promise<User>;
+  async deleteOne(
+    field: keyof User,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<User>;
+  async deleteOne(
+    field: keyof User,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<User | null>;
+  async deleteOne(
+    field: keyof User,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<User | null> {
     let deletedUser: User | null = null;
     switch (field) {
       case '_id': {
-        deletedUser = await this.userModel.findByIdAndRemove({ _id: fieldValue }).exec();
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          deletedUser = await this.userModel.findByIdAndRemove({ _id: fieldValue }).exec();
+        }
+        break;
+      }
+      case 'username': {
+        deletedUser = await this.userModel.findByIdAndRemove({ username: fieldValue }).exec();
+        break;
+      }
+      case 'email': {
+        deletedUser = await this.userModel.findByIdAndRemove({ email: fieldValue }).exec();
         break;
       }
       default: {
         break;
       }
     }
-    if (!deletedUser) {
+    if (!deletedUser && options.throw) {
       throw new NotFoundException('User Not Deleted');
     }
     return deletedUser;

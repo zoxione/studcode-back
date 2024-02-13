@@ -31,41 +31,44 @@ export class TagsController {
     return this.tagsService.findAll(query);
   }
 
-  @Get('/:id')
-  @ApiOperation({ summary: 'Получение тега по ID' })
+  @Get('/:key')
+  @ApiOperation({ summary: 'Получение тега по ID/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('id') id: string): Promise<Tag> {
-    return this.tagsService.findOne('_id', id);
-  }
-
-  @Get('/slug/:slug')
-  @ApiOperation({ summary: 'Получение тега по slug' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneBySlug(@Param('slug') slug: string): Promise<Tag> {
-    return this.tagsService.findOne('slug', slug);
+  async findOneById(@Param('key') key: string): Promise<Tag> {
+    let foundTag = await this.tagsService.findOne('_id', key, { throw: false });
+    if (!foundTag) {
+      foundTag = await this.tagsService.findOne('slug', key, { throw: true });
+    }
+    return foundTag;
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/:id')
-  @ApiOperation({ summary: 'Обновление тега по ID' })
+  @Put('/:key')
+  @ApiOperation({ summary: 'Обновление тега по ID/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('id') id: string, @Body() updateDto: UpdateTagDto): Promise<Tag> {
-    return this.tagsService.updateOne('_id', id, updateDto);
+  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateTagDto): Promise<Tag> {
+    let updatedTag = await this.tagsService.updateOne('_id', key, updateDto, { throw: false });
+    if (!updatedTag) {
+      updatedTag = await this.tagsService.updateOne('slug', key, updateDto, { throw: true });
+    }
+    return updatedTag;
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete('/:id')
-  @ApiOperation({ summary: 'Удаление тега по ID' })
+  @Delete('/:key')
+  @ApiOperation({ summary: 'Удаление тега по ID/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('id') id: string): Promise<Tag> {
-    return this.tagsService.deleteOne('_id', id);
+  async deleteOneById(@Param('key') key: string): Promise<Tag> {
+    let deletedTag = await this.tagsService.deleteOne('_id', key, { throw: false });
+    if (!deletedTag) {
+      deletedTag = await this.tagsService.deleteOne('slug', key, { throw: true });
+    }
+    return deletedTag;
   }
 }

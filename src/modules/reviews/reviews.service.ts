@@ -82,7 +82,28 @@ export class ReviewsService {
     };
   }
 
-  async findOne(field: keyof Review, fieldValue: unknown): Promise<Review> {
+  async findOne(field: keyof Review, fieldValue: unknown): Promise<Review>;
+  async findOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Review>;
+  async findOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Review | null>;
+  async findOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Review | null> {
     let foundReview: Review | null = null;
     switch (field) {
       case '_id': {
@@ -97,13 +118,37 @@ export class ReviewsService {
         break;
       }
     }
-    if (!foundReview) {
+    if (!foundReview && options.throw) {
       throw new NotFoundException('Review Not Found');
     }
     return foundReview;
   }
 
-  async updateOne(field: keyof Review, fieldValue: unknown, updateDto: Partial<UpdateReviewDto>): Promise<Review> {
+  async updateOne(field: keyof Review, fieldValue: unknown, updateDto: Partial<UpdateReviewDto>): Promise<Review>;
+  async updateOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateReviewDto>,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Review>;
+  async updateOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateReviewDto>,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Review | null>;
+  async updateOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateReviewDto>,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Review | null> {
     let updatedReview: Review | null = null;
     switch (field) {
       case '_id': {
@@ -119,13 +164,37 @@ export class ReviewsService {
         break;
       }
     }
-    if (!updatedReview) {
+    if (!updatedReview && options.throw) {
       throw new NotFoundException('Review Not Updated');
     }
     return updatedReview;
   }
 
-  async deleteOne(field: keyof Review, fieldValue: unknown): Promise<Review> {
+  async deleteOne(field: keyof Review, fieldValue: unknown): Promise<Review>;
+  async deleteOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<Review>;
+  async deleteOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<Review | null>;
+  async deleteOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<Review | null> {
     let deletedReview: Review | null = null;
     switch (field) {
       case '_id': {
@@ -136,7 +205,7 @@ export class ReviewsService {
         break;
       }
     }
-    if (!deletedReview) {
+    if (!deletedReview && options.throw) {
       throw new NotFoundException('Review Not Deleted');
     }
     return deletedReview;

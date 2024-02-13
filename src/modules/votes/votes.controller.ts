@@ -31,32 +31,32 @@ export class VotesController {
     return this.votesService.findAll(query);
   }
 
-  @Get('/:id')
+  @Get('/:key')
   @ApiOperation({ summary: 'Получение голоса по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Vote })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('id') id: string): Promise<Vote> {
-    return this.votesService.findOne('_id', id);
+  async findOneById(@Param('key') key: string): Promise<Vote> {
+    return this.votesService.findOne('_id', key);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/:id')
+  @Put('/:key')
   @ApiOperation({ summary: 'Обновление голоса по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Vote })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('id') id: string, @Body() updateDto: UpdateVoteDto): Promise<Vote> {
-    return this.votesService.updateOne('_id', id, updateDto);
+  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateVoteDto): Promise<Vote> {
+    return this.votesService.updateOne('_id', key, updateDto);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete('/:id')
+  @Delete('/:key')
   @ApiOperation({ summary: 'Удаление голоса по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Vote })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('id') id: string): Promise<Vote> {
-    return this.votesService.deleteOne('_id', id);
+  async deleteOneById(@Param('key') key: string): Promise<Vote> {
+    return this.votesService.deleteOne('_id', key);
   }
 }

@@ -46,7 +46,28 @@ export class AwardsService {
     };
   }
 
-  async findOne(field: keyof Award, fieldValue: unknown): Promise<Award> {
+  async findOne(field: keyof Award, fieldValue: unknown): Promise<Award>;
+  async findOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Award>;
+  async findOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Award | null>;
+  async findOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Award | null> {
     let foundAward: Award | null = null;
     switch (field) {
       case '_id': {
@@ -57,13 +78,37 @@ export class AwardsService {
         break;
       }
     }
-    if (!foundAward) {
+    if (!foundAward && options.throw) {
       throw new NotFoundException('Award Not Found');
     }
     return foundAward;
   }
 
-  async updateOne(field: keyof Award, fieldValue: unknown, updateDto: Partial<UpdateAwardDto>): Promise<Award> {
+  async updateOne(field: keyof Award, fieldValue: unknown, updateDto: Partial<UpdateAwardDto>): Promise<Award>;
+  async updateOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateAwardDto>,
+    options: {
+      throw?: true;
+    },
+  ): Promise<Award>;
+  async updateOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateAwardDto>,
+    options: {
+      throw?: false;
+    },
+  ): Promise<Award | null>;
+  async updateOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    updateDto: Partial<UpdateAwardDto>,
+    options: {
+      throw?: boolean;
+    } = { throw: true },
+  ): Promise<Award | null> {
     let updatedAward: Award | null = null;
     switch (field) {
       case '_id': {
@@ -78,13 +123,37 @@ export class AwardsService {
         break;
       }
     }
-    if (!updatedAward) {
+    if (!updatedAward && options.throw) {
       throw new NotFoundException('Award Not Updated');
     }
     return updatedAward;
   }
 
-  async deleteOne(field: keyof Award, fieldValue: unknown): Promise<Award> {
+  async deleteOne(field: keyof Award, fieldValue: unknown): Promise<Award>;
+  async deleteOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<Award>;
+  async deleteOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<Award | null>;
+  async deleteOne(
+    field: keyof Award,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<Award | null> {
     let deletedAward: Award | null = null;
     switch (field) {
       case '_id': {
@@ -95,7 +164,7 @@ export class AwardsService {
         break;
       }
     }
-    if (!deletedAward) {
+    if (!deletedAward && options.throw) {
       throw new NotFoundException('Award Not Deleted');
     }
     return deletedAward;

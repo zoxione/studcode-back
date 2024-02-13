@@ -6,6 +6,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UsersService } from '../users/users.service';
 import { Tokens } from './types/tokens';
 import { JwtPayload } from './types/jwt-payload';
+import { Session } from './types/session';
 
 @Injectable()
 export class AuthService {
@@ -27,8 +28,8 @@ export class AuthService {
   async signIn(
     email: string,
     password: string,
-  ): Promise<Tokens & { access_token_exp: number; refresh_token_exp: number }> {
-    const user = await this.usersService.findOne('email', email, true);
+  ): Promise<Tokens & { session: Session } & { access_token_exp: number; refresh_token_exp: number }> {
+    const user = await this.usersService.findOne('email', email, { secret: true });
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
       throw new UnauthorizedException('Password is incorrect');
@@ -37,11 +38,16 @@ export class AuthService {
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
     const access_token_decode = this.jwtService.decode(tokens.access_token) as JwtPayload;
     const refresh_token_decode = this.jwtService.decode(tokens.refresh_token) as JwtPayload;
-    return { ...tokens, access_token_exp: access_token_decode.exp, refresh_token_exp: refresh_token_decode.exp };
+    return {
+      session: { _id: user._id.toString(), username: user.username, email: user.email, avatar: user.avatar },
+      ...tokens,
+      access_token_exp: access_token_decode.exp,
+      refresh_token_exp: refresh_token_decode.exp,
+    };
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
-    const user = await this.usersService.findOne('_id', userId, true);
+    const user = await this.usersService.findOne('_id', userId, { secret: true });
     if (!user || !user.refresh_token) {
       throw new ForbiddenException('Access Denied');
     }
@@ -51,7 +57,9 @@ export class AuthService {
     }
     const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.avatar);
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
-    return tokens;
+    const access_token_decode = this.jwtService.decode(tokens.access_token) as JwtPayload;
+    const refresh_token_decode = this.jwtService.decode(tokens.refresh_token) as JwtPayload;
+    return { ...tokens, access_token_exp: access_token_decode.exp, refresh_token_exp: refresh_token_decode.exp };
   }
 
   async signOut(userId: string) {

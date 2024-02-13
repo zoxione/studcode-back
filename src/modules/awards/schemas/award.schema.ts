@@ -25,6 +25,10 @@ class Award {
   @ApiProperty({ description: 'Ссылка на иконку', type: String })
   @Prop({ type: String, default: '' })
   icon: string;
+
+  @ApiProperty({ description: 'Описание', type: String })
+  @Prop({ type: String, default: '' })
+  description: string;
 }
 
 const AwardSchema = SchemaFactory.createForClass(Award);

@@ -32,42 +32,42 @@ export class ProjectsController {
     return this.projectsService.findAll(query);
   }
 
-  @Get('/:id')
+  @Get('/:key')
   @ApiOperation({ summary: 'Получение проекта по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('id') id: string): Promise<Project> {
-    return this.projectsService.findOne('_id', id);
+  async findOneById(@Param('key') key: string): Promise<Project> {
+    return this.projectsService.findOne('_id', key);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/:id')
+  @Put('/:key')
   @ApiOperation({ summary: 'Обновление проекта по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('id') id: string, @Body() updateDto: UpdateProjectDto): Promise<Project> {
-    return this.projectsService.updateOne('_id', id, updateDto);
+  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateProjectDto): Promise<Project> {
+    return this.projectsService.updateOne('_id', key, updateDto);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/vote/:id')
+  @Put('/vote/:key')
   @ApiOperation({ summary: 'Голосование за проект по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async voteOneById(@Param('id') id: string, @Req() req: AuthUserRequest): Promise<Project> {
-    return this.projectsService.voteOne(id, req.user.sub);
+  async voteOneById(@Param('key') key: string, @Req() req: AuthUserRequest): Promise<Project> {
+    return this.projectsService.voteOne(key, req.user.sub);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete('/:id')
+  @Delete('/:key')
   @ApiOperation({ summary: 'Удаление проекта по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('id') id: string): Promise<Project> {
-    return this.projectsService.deleteOne('_id', id);
+  async deleteOneById(@Param('key') key: string): Promise<Project> {
+    return this.projectsService.deleteOne('_id', key);
   }
 }

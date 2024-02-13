@@ -29,6 +29,10 @@ class Tag {
   @ApiProperty({ description: 'Ключевое слово', type: String })
   @Prop({ type: String, default: '' })
   slug: string;
+
+  @ApiProperty({ description: 'Описание', type: String })
+  @Prop({ type: String, default: '' })
+  description: string;
 }
 
 const TagSchema = SchemaFactory.createForClass(Tag);

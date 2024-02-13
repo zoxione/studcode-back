@@ -31,32 +31,32 @@ export class TeamsController {
     return this.teamsService.findAll(query);
   }
 
-  @Get('/:id')
+  @Get('/:key')
   @ApiOperation({ summary: 'Получение команды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('id') id: string): Promise<Team> {
-    return this.teamsService.findOne('_id', id);
+  async findOneById(@Param('key') key: string): Promise<Team> {
+    return this.teamsService.findOne('_id', key);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/:id')
+  @Put('/:key')
   @ApiOperation({ summary: 'Обновление команды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('id') id: string, @Body() updateDto: UpdateTeamDto): Promise<Team> {
-    return this.teamsService.updateOne('_id', id, updateDto);
+  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateTeamDto): Promise<Team> {
+    return this.teamsService.updateOne('_id', key, updateDto);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete('/:id')
+  @Delete('/:key')
   @ApiOperation({ summary: 'Удаление команды по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('id') id: string): Promise<Team> {
-    return this.teamsService.deleteOne('_id', id);
+  async deleteOneById(@Param('key') key: string): Promise<Team> {
+    return this.teamsService.deleteOne('_id', key);
   }
 }
