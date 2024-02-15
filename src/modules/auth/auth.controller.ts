@@ -36,13 +36,13 @@ export class AuthController {
       .cookie(configuration().access_token_name, access_token, {
         httpOnly: true,
         secure: configuration().node_env === 'production',
-        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+        sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
         maxAge: (access_token_exp - nowUnix) * 1000,
       })
       .cookie(configuration().refresh_token_name, refresh_token, {
         httpOnly: true,
         secure: configuration().node_env === 'production',
-        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+        sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
         maxAge: (refresh_token_exp - nowUnix) * 1000,
       })
       .send({ user: session, access_token, access_token_exp, refresh_token, refresh_token_exp });
@@ -55,12 +55,12 @@ export class AuthController {
     response.clearCookie(configuration().access_token_name, {
       httpOnly: true,
       secure: configuration().node_env === 'production',
-      sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+      sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
     });
     response.clearCookie(configuration().refresh_token_name, {
       httpOnly: true,
       secure: configuration().node_env === 'production',
-      sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+      sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
     });
     return this.authService.signOut(req.user.sub);
   }
@@ -80,13 +80,13 @@ export class AuthController {
       .cookie(configuration().access_token_name, access_token, {
         httpOnly: true,
         secure: configuration().node_env === 'production',
-        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+        sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
         maxAge: (access_token_exp - nowUnix) * 1000,
       })
       .cookie(configuration().refresh_token_name, refresh_token, {
         httpOnly: true,
         secure: configuration().node_env === 'production',
-        sameSite: configuration().node_env === 'production' ? 'none' : 'lax',
+        sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
         maxAge: (refresh_token_exp - nowUnix) * 1000,
       })
       .send({ access_token, access_token_exp, refresh_token, refresh_token_exp });
