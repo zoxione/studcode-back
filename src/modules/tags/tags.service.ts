@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { Project } from '../projects/schemas/project.schema';
+import { ProjectStatus } from '../projects/types/project-status';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { FindAllFilterTagDto } from './dto/find-all-filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
@@ -9,7 +11,10 @@ import { FindAllReturnTag } from './types/find-all-return-tag';
 
 @Injectable()
 export class TagsService {
-  constructor(@InjectModel(Tag.name) private readonly tagModel: Model<Tag>) {}
+  constructor(
+    @InjectModel(Tag.name) private readonly tagModel: Model<Tag>,
+    @InjectModel(Project.name) private readonly projectModel: Model<Project>,
+  ) {}
 
   async createOne(createTagDto: CreateTagDto): Promise<Tag> {
     const createdTag = await this.tagModel.create(createTagDto);
@@ -39,6 +44,35 @@ export class TagsService {
       },
       results: foundTags,
     };
+  }
+
+  async findAllPopular(): Promise<Tag[]> {
+    const popularTags = await this.projectModel.aggregate([
+      {
+        $match: { status: ProjectStatus.Published }, // Фильтрация по статусу 'Published'
+      },
+      {
+        $unwind: '$tags', // Развернуть массив тегов
+      },
+      {
+        $group: {
+          _id: '$tags', // Группировка по тегу
+          count: { $sum: 1 }, // Подсчет количества проектов для каждого тега
+        },
+      },
+      {
+        $sort: {
+          count: -1, // Сортировка по убыванию количества проектов
+        },
+      },
+      {
+        $limit: 5, // Установка лимита для количества возвращаемых тегов
+      },
+    ]);
+    console.log(popularTags);
+    const tagIds = popularTags.map((tag) => tag._id);
+    const tags = await this.tagModel.find({ _id: { $in: tagIds } });
+    return tags;
   }
 
   async findOne(field: keyof Tag, fieldValue: unknown): Promise<Tag>;

@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Put,
+  Query,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
@@ -6,6 +18,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
 import { UsersService } from './users.service';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
 
 @ApiBearerAuth()
 @ApiTags('users')
@@ -43,7 +56,14 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateUserDto): Promise<User> {
+  async updateOneById(
+    @Req() req: AuthUserRequest,
+    @Param('key') key: string,
+    @Body() updateDto: UpdateUserDto,
+  ): Promise<User> {
+    if (req.user.sub !== key && req.user.username !== key && req.user.email !== key) {
+      throw new UnauthorizedException('You are not allowed to update this user');
+    }
     let updatedUser = await this.usersService.updateOne('_id', key, updateDto, { throw: false });
     if (!updatedUser) {
       updatedUser = await this.usersService.updateOne('username', key, updateDto, { throw: false });
@@ -60,7 +80,10 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: User })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('key') key: string): Promise<User> {
+  async deleteOneById(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
+    if (req.user.sub !== key && req.user.username !== key && req.user.email !== key) {
+      throw new UnauthorizedException('You are not allowed to update this user');
+    }
     let deletedUser = await this.usersService.deleteOne('_id', key, { throw: false });
     if (!deletedUser) {
       deletedUser = await this.usersService.deleteOne('username', key, { throw: false });

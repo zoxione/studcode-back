@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  UnauthorizedException,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateReviewDto } from './dto/create-review.dto';
@@ -7,6 +20,7 @@ import { FindAllReturnReview } from './types/find-all-return-review';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewsService } from './reviews.service';
 import { Review } from './schemas/review.schema';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
 
 @ApiBearerAuth()
 @ApiTags('reviews')
@@ -46,7 +60,15 @@ export class ReviewsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateReviewDto): Promise<Review> {
+  async updateOneById(
+    @Req() req: AuthUserRequest,
+    @Param('key') key: string,
+    @Body() updateDto: UpdateReviewDto,
+  ): Promise<Review> {
+    const review = await this.reviewsService.findOne('_id', key);
+    if (review.reviewer._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to update this review');
+    }
     return this.reviewsService.updateOne('_id', key, updateDto);
   }
 
@@ -56,7 +78,11 @@ export class ReviewsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('key') key: string): Promise<Review> {
+  async deleteOneById(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
+    const review = await this.reviewsService.findOne('_id', key);
+    if (review.reviewer._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to update this review');
+    }
     return this.reviewsService.deleteOne('_id', key);
   }
 }
