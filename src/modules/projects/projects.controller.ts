@@ -5,22 +5,28 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
   Post,
   Put,
   Query,
   Req,
   UnauthorizedException,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { AuthUserRequest } from '../auth/types/auth-user-request';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { FindAllFilterProjectDto } from './dto/find-all-filter-project.dto';
-import { FindAllReturnProject } from './types/find-all-return-project';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectsService } from './projects.service';
 import { Project } from './schemas/project.schema';
+import { FindAllReturnProject } from './types/find-all-return-project';
+import { ProjectFiles } from './types/project-files';
 
 @ApiBearerAuth()
 @ApiTags('projects')
@@ -73,7 +79,50 @@ export class ProjectsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/vote/:key')
+  @Post('/:key/uploads')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'logo_file', maxCount: 1 },
+      { name: 'screenshots_files', maxCount: 10 },
+    ]),
+  )
+  @ApiOperation({ summary: 'Загрузка файлов проекта' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  async uploadFiles(
+    @Req() req: AuthUserRequest,
+    @Param('key') key: string,
+    @UploadedFiles(
+      new ParseFilesPipe(
+        new ParseFilePipeBuilder()
+          .addFileTypeValidator({
+            fileType: /(jpeg|jpg|png|webp)$/,
+          })
+          .addMaxSizeValidator({
+            maxSize: 5 * 1024 * 1024, // 5 MB in bytes
+          })
+          .build({
+            fileIsRequired: false,
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          }),
+      ),
+    )
+    files: ProjectFiles,
+  ): Promise<Project> {
+    console.log('files', files);
+    let project = await this.projectsService.findOne('_id', key);
+    if (project.creator._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to upload files this project');
+    }
+    if (files.length > 0) {
+      project = await this.projectsService.uploadFiles(project._id, files);
+    }
+    console.log('project', project);
+    return project;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Put('/:key/vote')
   @ApiOperation({ summary: 'Голосование за проект по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })

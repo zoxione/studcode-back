@@ -17,6 +17,7 @@
     "parse-topics": "node ./src/utils/parse-topics.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.515.0",
     "@kubb/cli": "^2.1.2",
     "@kubb/core": "^2.1.2",
     "@kubb/swagger": "^2.1.2",
@@ -31,6 +32,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/serve-static": "^4.0.0",
     "@nestjs/swagger": "^7.1.13",
+    "@nestjs/throttler": "^5.1.2",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
@@ -50,6 +52,7 @@
     "@types/cookie-parser": "^1.4.6",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.2",
+    "@types/multer": "^1.4.11",
     "@types/node": "^20.3.1",
     "@types/passport-jwt": "^3.0.11",
     "@types/supertest": "^2.0.12",

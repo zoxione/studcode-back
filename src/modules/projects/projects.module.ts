@@ -5,9 +5,15 @@ import { ProjectsController } from './projects.controller';
 import { Project, ProjectSchema } from './schemas/project.schema';
 import { TagsModule } from '../tags/tags.module';
 import { VotesModule } from '../votes/votes.module';
+import { UploadModule } from '../upload/upload.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]), TagsModule, VotesModule],
+  imports: [
+    MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
+    TagsModule,
+    VotesModule,
+    UploadModule,
+  ],
   controllers: [ProjectsController],
   providers: [ProjectsService],
   exports: [ProjectsService],

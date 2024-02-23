@@ -69,7 +69,6 @@ export class TagsService {
         $limit: 5, // Установка лимита для количества возвращаемых тегов
       },
     ]);
-    console.log(popularTags);
     const tagIds = popularTags.map((tag) => tag._id);
     const tags = await this.tagModel.find({ _id: { $in: tagIds } });
     return tags;

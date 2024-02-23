@@ -9,6 +9,9 @@ import { FindAllFilterProjectDto } from './dto/find-all-filter-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
+import { ProjectFiles } from './types/project-files';
+import { UploadService } from '../upload/upload.service';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class ProjectsService {
@@ -21,12 +24,19 @@ export class ProjectsService {
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     private tagsService: TagsService,
     private votesService: VotesService,
+    private uploadService: UploadService,
   ) {}
+
+  private generateSlug(id: mongoose.Types.ObjectId, title: string): string {
+    return `${title.replace(/\s/g, '-').toLowerCase()}-${id.toString()}`;
+  }
 
   async createOne(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = await this.projectModel.create(createProjectDto);
-    await createdProject.populate(this.populations);
-    return createdProject;
+    const updatedProject = await this.updateOne('_id', createdProject._id, {
+      slug: this.generateSlug(createdProject._id, createdProject.title),
+    });
+    return updatedProject;
   }
 
   async findAll({
@@ -177,6 +187,31 @@ export class ProjectsService {
     if (!updatedProject && options.throw) {
       throw new NotFoundException('Project Not Updated');
     }
+    return updatedProject;
+  }
+
+  async uploadFiles(project_id: mongoose.Types.ObjectId, files: ProjectFiles): Promise<Project> {
+    let projectFiles: { logo: string; screenshots: string[] } = {
+      logo: '',
+      screenshots: [],
+    };
+    let index = 0;
+    for (const file of files.flat()) {
+      if (file.fieldname === 'logo_file') {
+        const res = await this.uploadService.upload(`project-${project_id}-logo.${file.mimetype.split('/')[1]}`, file);
+        projectFiles.logo = res;
+      } else if (file.fieldname === 'screenshots_files') {
+        const res = await this.uploadService.upload(
+          `project-${project_id}-screenshot-${index}.${file.mimetype.split('/')[1]}`,
+          file,
+        );
+        projectFiles.screenshots.push(res);
+        index += 1;
+      }
+    }
+    const updatedProject = await this.updateOne('_id', project_id, {
+      ...projectFiles,
+    });
     return updatedProject;
   }
 

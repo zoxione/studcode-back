@@ -35,5 +35,12 @@ module.exports = {
         },
       },
     ],
+    'prefer-const': [
+      'warn',
+      {
+        destructuring: 'any',
+        ignoreReadBeforeAssign: false,
+      },
+    ],
   },
 };

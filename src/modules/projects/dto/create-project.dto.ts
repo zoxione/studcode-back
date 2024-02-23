@@ -68,6 +68,11 @@ export class CreateProjectDto {
   @IsOptional()
   readonly rating: number;
 
+  @ApiProperty({ description: 'Ключевое слово', type: String })
+  @IsString()
+  @IsOptional()
+  readonly slug: string;
+
   @ApiProperty({ description: 'Теги', type: [String] })
   @IsArray()
   @IsString({ each: true })

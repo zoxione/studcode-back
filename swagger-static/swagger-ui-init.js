@@ -225,7 +225,46 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/projects/vote/{key}": {
+      "/api/v1/projects/{key}/uploads": {
+        "post": {
+          "operationId": "ProjectsController_uploadFiles",
+          "summary": "Загрузка файлов проекта",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "projects"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/projects/{key}/vote": {
         "put": {
           "operationId": "ProjectsController_voteOneById",
           "summary": "Голосование за проект по ID",
@@ -361,6 +400,26 @@ window.onload = function() {
           },
           "tags": [
             "tags"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/upload": {
+        "post": {
+          "operationId": "UploadController_uploadFile",
+          "summary": "Загрузка файла",
+          "parameters": [],
+          "responses": {
+            "201": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "upload"
           ],
           "security": [
             {
@@ -981,6 +1040,10 @@ window.onload = function() {
               "type": "number",
               "description": "Рейтинг"
             },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            },
             "tags": {
               "description": "Теги",
               "type": "array",
@@ -1004,6 +1067,7 @@ window.onload = function() {
             "screenshots",
             "price",
             "rating",
+            "slug",
             "tags",
             "creator"
           ]
@@ -1327,6 +1391,10 @@ window.onload = function() {
               "type": "number",
               "description": "Рейтинг"
             },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            },
             "tags": {
               "description": "Теги",
               "type": "array",
@@ -1355,6 +1423,7 @@ window.onload = function() {
             "screenshots",
             "price",
             "rating",
+            "slug",
             "tags",
             "creator"
           ]

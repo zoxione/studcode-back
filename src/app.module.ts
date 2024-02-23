@@ -12,6 +12,7 @@ import { join } from 'path';
 import { AwardsModule } from './modules/awards/awards.module';
 import { VotesModule } from './modules/votes/votes.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -25,6 +26,7 @@ import { AppController } from './app.controller';
     AwardsModule,
     VotesModule,
     ReviewsModule,
+    UploadModule,
     AuthModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),

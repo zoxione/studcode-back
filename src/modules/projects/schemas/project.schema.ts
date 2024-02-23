@@ -65,6 +65,10 @@ class Project {
   @Prop({ type: Number, default: 0.0 })
   rating: number;
 
+  @ApiProperty({ description: 'Ключевое слово', type: String })
+  @Prop({ type: String, default: '' })
+  slug: string;
+
   @ApiProperty({ description: 'Теги', type: [Tag] })
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], default: [] })
   tags: Tag[];
