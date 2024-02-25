@@ -131,7 +131,13 @@ export class ProjectsService {
     let foundProject: Project | null = null;
     switch (field) {
       case '_id': {
-        foundProject = await this.projectModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          foundProject = await this.projectModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
+        }
+        break;
+      }
+      case 'slug': {
+        foundProject = await this.projectModel.findOne({ slug: fieldValue }).populate(this.populations).exec();
         break;
       }
       default: {
@@ -172,8 +178,19 @@ export class ProjectsService {
     let updatedProject: Project | null = null;
     switch (field) {
       case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          updatedProject = await this.projectModel
+            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+              new: true,
+            })
+            .populate(this.populations)
+            .exec();
+        }
+        break;
+      }
+      case 'slug': {
         updatedProject = await this.projectModel
-          .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+          .findOneAndUpdate({ slug: fieldValue }, updateDto, {
             new: true,
           })
           .populate(this.populations)
@@ -295,8 +312,17 @@ export class ProjectsService {
     let deletedProject: Project | null = null;
     switch (field) {
       case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          deletedProject = await this.projectModel
+            .findByIdAndRemove({ _id: fieldValue })
+            .populate(this.populations)
+            .exec();
+        }
+        break;
+      }
+      case 'slug': {
         deletedProject = await this.projectModel
-          .findByIdAndRemove({ _id: fieldValue })
+          .findByIdAndRemove({ slug: fieldValue })
           .populate(this.populations)
           .exec();
         break;

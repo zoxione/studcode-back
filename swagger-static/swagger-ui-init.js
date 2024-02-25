@@ -96,7 +96,7 @@ window.onload = function() {
       "/api/v1/projects/{key}": {
         "get": {
           "operationId": "ProjectsController_findOneById",
-          "summary": "Получение проекта по ID",
+          "summary": "Получение проекта по ID/slug",
           "parameters": [
             {
               "name": "key",
@@ -136,7 +136,7 @@ window.onload = function() {
         },
         "put": {
           "operationId": "ProjectsController_updateOneById",
-          "summary": "Обновление проекта по ID",
+          "summary": "Обновление проекта по ID/slug",
           "parameters": [
             {
               "name": "key",
@@ -186,7 +186,7 @@ window.onload = function() {
         },
         "delete": {
           "operationId": "ProjectsController_deleteOneById",
-          "summary": "Удаление проекта по ID",
+          "summary": "Удаление проекта по ID/slug",
           "parameters": [
             {
               "name": "key",

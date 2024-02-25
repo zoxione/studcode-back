@@ -52,17 +52,21 @@ export class ProjectsController {
   }
 
   @Get('/:key')
-  @ApiOperation({ summary: 'Получение проекта по ID' })
+  @ApiOperation({ summary: 'Получение проекта по ID/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async findOneById(@Param('key') key: string): Promise<Project> {
-    return this.projectsService.findOne('_id', key);
+    let foundProject = await this.projectsService.findOne('_id', key, { throw: false });
+    if (!foundProject) {
+      foundProject = await this.projectsService.findOne('slug', key, { throw: true });
+    }
+    return foundProject;
   }
 
   @UseGuards(AccessTokenGuard)
   @Put('/:key')
-  @ApiOperation({ summary: 'Обновление проекта по ID' })
+  @ApiOperation({ summary: 'Обновление проекта по ID/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -75,7 +79,11 @@ export class ProjectsController {
     if (project.creator._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this project');
     }
-    return this.projectsService.updateOne('_id', key, updateDto);
+    let updatedProject = await this.projectsService.updateOne('_id', key, updateDto, { throw: false });
+    if (!updatedProject) {
+      updatedProject = await this.projectsService.updateOne('slug', key, updateDto, { throw: true });
+    }
+    return updatedProject;
   }
 
   @UseGuards(AccessTokenGuard)
@@ -133,7 +141,7 @@ export class ProjectsController {
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:key')
-  @ApiOperation({ summary: 'Удаление проекта по ID' })
+  @ApiOperation({ summary: 'Удаление проекта по ID/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
@@ -142,6 +150,10 @@ export class ProjectsController {
     if (project.creator._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this project');
     }
-    return this.projectsService.deleteOne('_id', key);
+    let deletedProject = await this.projectsService.deleteOne('_id', key, { throw: false });
+    if (!deletedProject) {
+      deletedProject = await this.projectsService.deleteOne('slug', key, { throw: true });
+    }
+    return deletedProject;
   }
 }
