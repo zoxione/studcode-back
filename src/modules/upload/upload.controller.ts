@@ -37,7 +37,6 @@ export class UploadController {
     )
     file: Express.Multer.File,
   ) {
-    console.log(file);
     return await this.uploadService.upload(file.originalname, file);
   }
 }

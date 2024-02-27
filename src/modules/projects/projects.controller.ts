@@ -117,7 +117,6 @@ export class ProjectsController {
     )
     files: ProjectFiles,
   ): Promise<Project> {
-    console.log('files', files);
     let project = await this.projectsService.findOne('_id', key);
     if (project.creator._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to upload files this project');
@@ -125,7 +124,6 @@ export class ProjectsController {
     if (files.length > 0) {
       project = await this.projectsService.uploadFiles(project._id, files);
     }
-    console.log('project', project);
     return project;
   }
 

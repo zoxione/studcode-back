@@ -590,6 +590,45 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/users/{key}/uploads": {
+        "post": {
+          "operationId": "UsersController_uploadFiles",
+          "summary": "Загрузка файлов ",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "users"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/teams": {
         "get": {
           "operationId": "TeamsController_findAll",

@@ -6,10 +6,15 @@ import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
+import { UserFiles } from './types/user-files';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<User>,
+    private uploadService: UploadService,
+  ) {}
 
   async createOne(createUserDto: CreateUserDto): Promise<User> {
     let foundUser = await this.userModel.findOne({ username: createUserDto.username }).exec();
@@ -168,6 +173,22 @@ export class UsersService {
       throw new NotFoundException('User Not Updated');
     }
     return updatedUser;
+  }
+
+  async uploadFiles(user_id: mongoose.Types.ObjectId, files: UserFiles): Promise<User> {
+    const userFiles: Pick<User, 'avatar'> = {
+      avatar: '',
+    };
+    for (const file of files.flat()) {
+      if (file.fieldname === 'avatar_file') {
+        const res = await this.uploadService.upload(`user-${user_id}-avatar.${file.mimetype.split('/')[1]}`, file);
+        userFiles.avatar = res;
+      }
+    }
+    const updatedProject = await this.updateOne('_id', user_id, {
+      ...userFiles,
+    });
+    return updatedProject;
   }
 
   async deleteOne(field: keyof User, fieldValue: unknown): Promise<User>;

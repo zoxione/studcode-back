@@ -5,11 +5,15 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseFilePipeBuilder,
+  Post,
   Put,
   Query,
   Req,
   UnauthorizedException,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
@@ -19,6 +23,10 @@ import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
 import { UsersService } from './users.service';
 import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { UserFiles } from './types/user-files';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ParseFilesPipe } from 'src/common/validation/parse-files-pipe';
+import { Project } from '../projects/schemas/project.schema';
 
 @ApiBearerAuth()
 @ApiTags('users')
@@ -72,6 +80,42 @@ export class UsersController {
       updatedUser = await this.usersService.updateOne('email', key, updateDto, { throw: true });
     }
     return updatedUser;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/:key/uploads')
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'avatar_file', maxCount: 1 }]))
+  @ApiOperation({ summary: 'Загрузка файлов ' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  async uploadFiles(
+    @Req() req: AuthUserRequest,
+    @Param('key') key: string,
+    @UploadedFiles(
+      new ParseFilesPipe(
+        new ParseFilePipeBuilder()
+          .addFileTypeValidator({
+            fileType: /(jpeg|jpg|png|webp)$/,
+          })
+          .addMaxSizeValidator({
+            maxSize: 5 * 1024 * 1024, // 5 MB in bytes
+          })
+          .build({
+            fileIsRequired: false,
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          }),
+      ),
+    )
+    files: UserFiles,
+  ): Promise<User> {
+    let user = await this.usersService.findOne('_id', key);
+    if (req.user.sub !== key && req.user.username !== key && req.user.email !== key) {
+      throw new UnauthorizedException('You are not allowed to upload files this user');
+    }
+    if (files.length > 0) {
+      user = await this.usersService.uploadFiles(user._id, files);
+    }
+    return user;
   }
 
   @UseGuards(AccessTokenGuard)

@@ -208,7 +208,7 @@ export class ProjectsService {
   }
 
   async uploadFiles(project_id: mongoose.Types.ObjectId, files: ProjectFiles): Promise<Project> {
-    let projectFiles: { logo: string; screenshots: string[] } = {
+    const projectFiles: Pick<Project, 'logo' | 'screenshots'> = {
       logo: '',
       screenshots: [],
     };
@@ -259,7 +259,7 @@ export class ProjectsService {
       throw new NotFoundException('Project Not Found');
     }
     try {
-      const vote = await this.votesService.findOne('project', project._id);
+      await this.votesService.findOne('project', project._id);
       throw new ConflictException(`Project with id ${voter_id} already voted`);
     } catch (e) {
       if (e.response.error === 'Not Found') {
