@@ -27,7 +27,7 @@ class Tag {
   icon: string;
 
   @ApiProperty({ description: 'Ключевое слово', type: String })
-  @Prop({ type: String, default: '' })
+  @Prop({ type: String, unique: true, default: '' })
   slug: string;
 
   @ApiProperty({ description: 'Описание', type: String })

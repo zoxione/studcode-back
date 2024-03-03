@@ -66,7 +66,7 @@ class Project {
   rating: number;
 
   @ApiProperty({ description: 'Ключевое слово', type: String })
-  @Prop({ type: String, default: '' })
+  @Prop({ type: String, unique: true, default: '' })
   slug: string;
 
   @ApiProperty({ description: 'Теги', type: [Tag] })

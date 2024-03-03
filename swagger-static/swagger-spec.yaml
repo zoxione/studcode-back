@@ -347,6 +347,29 @@ paths:
       tags: *ref_4
       security: *ref_5
   /api/v1/teams:
+    post:
+      operationId: TeamsController_createOne
+      summary: Создание новой команды
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Unauthorized
+      tags: &ref_6
+        - teams
+      security: &ref_7
+        - bearer: []
     get:
       operationId: TeamsController_findAll
       summary: Получение списка команд
@@ -360,10 +383,110 @@ paths:
                 $ref: '#/components/schemas/Team'
         '401':
           description: Unauthorized
-      tags:
-        - teams
-      security:
-        - bearer: []
+      tags: *ref_6
+      security: *ref_7
+  /api/v1/teams/{key}:
+    get:
+      operationId: TeamsController_findOneById
+      summary: Получение команды по ID/name
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_6
+      security: *ref_7
+    put:
+      operationId: TeamsController_updateOneById
+      summary: Обновление команды по ID
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTeamDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_6
+      security: *ref_7
+    delete:
+      operationId: TeamsController_deleteOneById
+      summary: Удаление команды по ID
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_6
+      security: *ref_7
+  /api/v1/teams/{key}/members:
+    put:
+      operationId: TeamsController_updateMembers
+      summary: Обновление участников команды по ID
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMembersTeamDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_6
+      security: *ref_7
   /api/v1/reviews:
     post:
       operationId: ReviewsController_createOne
@@ -384,9 +507,9 @@ paths:
                 $ref: '#/components/schemas/Review'
         '401':
           description: Unauthorized
-      tags: &ref_6
+      tags: &ref_8
         - reviews
-      security: &ref_7
+      security: &ref_9
         - bearer: []
     get:
       operationId: ReviewsController_findAll
@@ -401,8 +524,8 @@ paths:
                 $ref: '#/components/schemas/Review'
         '401':
           description: Unauthorized
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/reviews/{key}:
     get:
       operationId: ReviewsController_findOneById
@@ -424,8 +547,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
     put:
       operationId: ReviewsController_updateOneById
       summary: Обновление обзора по ID
@@ -452,8 +575,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
     delete:
       operationId: ReviewsController_deleteOneById
       summary: Удаление обзора по ID
@@ -474,8 +597,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/auth/register:
     post:
       operationId: AuthController_register
@@ -490,9 +613,9 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_8
+      tags: &ref_10
         - auth
-      security: &ref_9
+      security: &ref_11
         - bearer: []
   /api/v1/auth/login:
     post:
@@ -508,8 +631,8 @@ paths:
       responses:
         '201':
           description: ''
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/auth/logout:
     get:
       operationId: AuthController_logout
@@ -518,8 +641,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/auth/refresh:
     get:
       operationId: AuthController_refreshTokens
@@ -528,8 +651,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/auth/whoami:
     get:
       operationId: AuthController_whoami
@@ -538,8 +661,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
 info:
   title: Студенческий код
   description: Это открытое API для веб-приложения "Студенческий код".
@@ -893,6 +1016,57 @@ components:
     UpdateUserDto:
       type: object
       properties: {}
+    TeamMember:
+      type: object
+      properties:
+        user:
+          description: Идентификатор участника
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        role:
+          type: string
+          description: Роль
+          enum:
+            - owner
+            - member
+      required:
+        - user
+        - role
+    CreateTeamDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название
+        about:
+          type: string
+          description: О команде
+        status:
+          type: string
+          description: Статус
+          enum:
+            - opened
+            - closed
+        logo:
+          type: string
+          description: Ссылка на логотип
+        members:
+          description: Участники
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMember'
+        projects:
+          description: Проекты
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - about
+        - status
+        - logo
+        - members
+        - projects
     Team:
       type: object
       properties:
@@ -906,14 +1080,20 @@ components:
         about:
           type: string
           description: О команде
+        status:
+          type: string
+          description: Статус
+          enum:
+            - opened
+            - closed
         logo:
           type: string
           description: Ссылка на логотип
-        users:
+        members:
           description: Участники
           type: array
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/TeamMember'
         projects:
           description: Проекты
           type: array
@@ -923,9 +1103,54 @@ components:
         - _id
         - name
         - about
+        - status
         - logo
-        - users
+        - members
         - projects
+    UpdateTeamDto:
+      type: object
+      properties: {}
+    PayloadDto:
+      type: object
+      properties:
+        user:
+          type: string
+          description: Пользователь
+        role:
+          type: string
+          description: Роль
+          enum:
+            - owner
+            - member
+      required:
+        - user
+        - role
+    UpdateMemberActionDto:
+      type: object
+      properties:
+        payload:
+          description: Полезная информация
+          allOf:
+            - $ref: '#/components/schemas/PayloadDto'
+        action:
+          type: string
+          description: Действие
+          enum:
+            - add
+            - remove
+      required:
+        - payload
+        - action
+    UpdateMembersTeamDto:
+      type: object
+      properties:
+        members:
+          description: Участники
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdateMemberActionDto'
+      required:
+        - members
     CreateReviewDto:
       type: object
       properties:

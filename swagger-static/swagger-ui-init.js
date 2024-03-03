@@ -630,6 +630,44 @@ window.onload = function() {
         }
       },
       "/api/v1/teams": {
+        "post": {
+          "operationId": "TeamsController_createOne",
+          "summary": "Создание новой команды",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTeamDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
         "get": {
           "operationId": "TeamsController_findAll",
           "summary": "Получение списка команд",
@@ -647,6 +685,190 @@ window.onload = function() {
             },
             "401": {
               "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/teams/{key}": {
+        "get": {
+          "operationId": "TeamsController_findOneById",
+          "summary": "Получение команды по ID/name",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "put": {
+          "operationId": "TeamsController_updateOneById",
+          "summary": "Обновление команды по ID",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateTeamDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "TeamsController_deleteOneById",
+          "summary": "Удаление команды по ID",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/teams/{key}/members": {
+        "put": {
+          "operationId": "TeamsController_updateMembers",
+          "summary": "Обновление участников команды по ID",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateMembersTeamDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
             }
           },
           "tags": [
@@ -1475,6 +1697,78 @@ window.onload = function() {
           "type": "object",
           "properties": {}
         },
+        "TeamMember": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "description": "Идентификатор участника",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "role": {
+              "type": "string",
+              "description": "Роль",
+              "enum": [
+                "owner",
+                "member"
+              ]
+            }
+          },
+          "required": [
+            "user",
+            "role"
+          ]
+        },
+        "CreateTeamDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "about": {
+              "type": "string",
+              "description": "О команде"
+            },
+            "status": {
+              "type": "string",
+              "description": "Статус",
+              "enum": [
+                "opened",
+                "closed"
+              ]
+            },
+            "logo": {
+              "type": "string",
+              "description": "Ссылка на логотип"
+            },
+            "members": {
+              "description": "Участники",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TeamMember"
+              }
+            },
+            "projects": {
+              "description": "Проекты",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "about",
+            "status",
+            "logo",
+            "members",
+            "projects"
+          ]
+        },
         "Team": {
           "type": "object",
           "properties": {
@@ -1494,15 +1788,23 @@ window.onload = function() {
               "type": "string",
               "description": "О команде"
             },
+            "status": {
+              "type": "string",
+              "description": "Статус",
+              "enum": [
+                "opened",
+                "closed"
+              ]
+            },
             "logo": {
               "type": "string",
               "description": "Ссылка на логотип"
             },
-            "users": {
+            "members": {
               "description": "Участники",
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/User"
+                "$ref": "#/components/schemas/TeamMember"
               }
             },
             "projects": {
@@ -1517,9 +1819,75 @@ window.onload = function() {
             "_id",
             "name",
             "about",
+            "status",
             "logo",
-            "users",
+            "members",
             "projects"
+          ]
+        },
+        "UpdateTeamDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "PayloadDto": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "string",
+              "description": "Пользователь"
+            },
+            "role": {
+              "type": "string",
+              "description": "Роль",
+              "enum": [
+                "owner",
+                "member"
+              ]
+            }
+          },
+          "required": [
+            "user",
+            "role"
+          ]
+        },
+        "UpdateMemberActionDto": {
+          "type": "object",
+          "properties": {
+            "payload": {
+              "description": "Полезная информация",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/PayloadDto"
+                }
+              ]
+            },
+            "action": {
+              "type": "string",
+              "description": "Действие",
+              "enum": [
+                "add",
+                "remove"
+              ]
+            }
+          },
+          "required": [
+            "payload",
+            "action"
+          ]
+        },
+        "UpdateMembersTeamDto": {
+          "type": "object",
+          "properties": {
+            "members": {
+              "description": "Участники",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/UpdateMemberActionDto"
+              }
+            }
+          },
+          "required": [
+            "members"
           ]
         },
         "CreateReviewDto": {
