@@ -9,7 +9,6 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { AwardsModule } from './modules/awards/awards.module';
 import { VotesModule } from './modules/votes/votes.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { UploadModule } from './modules/upload/upload.module';
@@ -23,7 +22,6 @@ import { AppController } from './app.controller';
     TagsModule,
     UsersModule,
     TeamsModule,
-    AwardsModule,
     VotesModule,
     ReviewsModule,
     UploadModule,

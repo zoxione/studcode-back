@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Role } from '../types/role';
-import { Award } from '../../awards/schemas/award.schema';
 import { Project } from '../../projects/schemas/project.schema';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserFullNameDto } from '../dto/user-full-name.dto';
@@ -73,10 +72,6 @@ class User {
     vkontakte: string;
     telegram: string;
   };
-
-  @ApiProperty({ description: 'Награды', type: [Award] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Award' }], default: [] })
-  awards: Award[];
 
   @ApiProperty({ description: 'Проекты', type: [Project] })
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }], default: [] })

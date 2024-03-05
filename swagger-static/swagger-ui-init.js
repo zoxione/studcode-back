@@ -1438,58 +1438,6 @@ window.onload = function() {
             "telegram"
           ]
         },
-        "AwardNameDto": {
-          "type": "object",
-          "properties": {
-            "en": {
-              "type": "string",
-              "description": "Название на английском"
-            },
-            "ru": {
-              "type": "string",
-              "description": "Название на русском"
-            }
-          },
-          "required": [
-            "en",
-            "ru"
-          ]
-        },
-        "Award": {
-          "type": "object",
-          "properties": {
-            "_id": {
-              "description": "Идентификатор",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ObjectId"
-                }
-              ]
-            },
-            "name": {
-              "description": "Название",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/AwardNameDto"
-                }
-              ]
-            },
-            "icon": {
-              "type": "string",
-              "description": "Ссылка на иконку"
-            },
-            "description": {
-              "type": "string",
-              "description": "Описание"
-            }
-          },
-          "required": [
-            "_id",
-            "name",
-            "icon",
-            "description"
-          ]
-        },
         "User": {
           "type": "object",
           "properties": {
@@ -1553,13 +1501,6 @@ window.onload = function() {
                 }
               ]
             },
-            "awards": {
-              "description": "Награды",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Award"
-              }
-            },
             "projects": {
               "description": "Проекты",
               "type": "array",
@@ -1580,7 +1521,6 @@ window.onload = function() {
             "avatar",
             "about",
             "links",
-            "awards",
             "projects"
           ]
         },
@@ -2052,13 +1992,6 @@ window.onload = function() {
                 }
               ]
             },
-            "awards": {
-              "description": "Награды",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Award"
-              }
-            },
             "projects": {
               "description": "Проекты",
               "type": "array",
@@ -2078,7 +2011,6 @@ window.onload = function() {
             "avatar",
             "about",
             "links",
-            "awards",
             "projects"
           ]
         },

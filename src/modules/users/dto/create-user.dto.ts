@@ -11,7 +11,6 @@ import {
   IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { Award } from '../../awards/schemas/award.schema';
 import { Project } from '../../projects/schemas/project.schema';
 import { Role } from '../types/role';
 import { UserFullNameDto } from './user-full-name.dto';
@@ -68,12 +67,6 @@ export class CreateUserDto {
   @Type(() => UserLinksDto)
   @IsOptional()
   readonly links: UserLinksDto;
-
-  @ApiProperty({ description: 'Награды', type: [Award] })
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  readonly awards: string[];
 
   @ApiProperty({ description: 'Проекты', type: [Project] })
   @IsArray()
