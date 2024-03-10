@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
-import { LinkDto } from 'src/common/dto/link.dto';
+import { LinkDto } from '../../../common/dto/link.dto';
 import { ProjectPrice } from '../types/project-price';
 import { ProjectStatus } from '../types/project-status';
 import { ProjectType } from '../types/project-type';

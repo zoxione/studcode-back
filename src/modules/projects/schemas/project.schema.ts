@@ -7,8 +7,8 @@ import { Tag } from '../../tags/schemas/tag.schema';
 import { ProjectPrice } from '../types/project-price';
 import { ProjectStatus } from '../types/project-status';
 import { ProjectType } from '../types/project-type';
-import { Team } from 'src/modules/teams/schemas/team.schema';
-import { User } from 'src/modules/users/schemas/user.schema';
+import { Team } from '../../teams/schemas/team.schema';
+import { User } from '../../users/schemas/user.schema';
 
 type ProjectDocument = HydratedDocument<Project>;
 

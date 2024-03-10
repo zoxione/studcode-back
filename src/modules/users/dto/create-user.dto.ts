@@ -11,7 +11,7 @@ import {
   IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { LinkDto } from 'src/common/dto/link.dto';
+import { LinkDto } from '../../../common/dto/link.dto';
 import { UserRole } from '../types/user-role';
 import { UserFullNameDto } from './user-full-name.dto';
 

@@ -17,7 +17,7 @@ import {
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ParseFilesPipe } from 'src/common/validation/parse-files-pipe';
+import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { AuthUserRequest } from '../auth/types/auth-user-request';
 import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
