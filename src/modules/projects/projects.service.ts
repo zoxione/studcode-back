@@ -1,8 +1,11 @@
+import slugify from '@sindresorhus/slugify';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { startOfToday, subDays, subMonths, subWeeks, subYears } from 'date-fns';
+import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { TagsService } from '../tags/tags.service';
+import { UploadService } from '../upload/upload.service';
 import { VotesService } from '../votes/votes.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { FindAllFilterProjectDto } from './dto/find-all-filter-project.dto';
@@ -10,8 +13,7 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { Project } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
 import { ProjectFiles } from './types/project-files';
-import { UploadService } from '../upload/upload.service';
-import * as mongoose from 'mongoose';
+import { ProjectTimeFrame } from './types/project-time-frame';
 
 @Injectable()
 export class ProjectsService {
@@ -28,15 +30,20 @@ export class ProjectsService {
   ) {}
 
   private generateSlug(id: mongoose.Types.ObjectId, title: string): string {
-    return `${title.replace(/\s/g, '-').toLowerCase()}-${id.toString()}`;
+    return `${slugify(title, { decamelize: false })}-${id}`;
   }
 
   async createOne(createProjectDto: CreateProjectDto): Promise<Project> {
     const createdProject = await this.projectModel.create(createProjectDto);
-    const updatedProject = await this.updateOne('_id', createdProject._id, {
-      slug: this.generateSlug(createdProject._id, createdProject.title),
-    });
-    return updatedProject;
+    const updatedProject = await this.projectModel
+      .findByIdAndUpdate(
+        { _id: createdProject._id },
+        { $set: { slug: this.generateSlug(createdProject._id, createdProject.title) } },
+        { new: true },
+      )
+      .populate(this.populations)
+      .exec();
+    return updatedProject as Project;
   }
 
   async findAll({
@@ -44,17 +51,19 @@ export class ProjectsService {
     page = 1,
     limit = 20,
     order = '_id',
-    time_frame = 'all',
+    time_frame = ProjectTimeFrame.All,
     tag_slug = '',
-    creator_id = '',
     status = '',
+    creator_id = '',
+    team_id = '',
   }: FindAllFilterProjectDto): Promise<FindAllReturnProject> {
     const count = await this.projectModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const tag = tag_slug !== '' ? await this.tagsService.findOne('slug', tag_slug) : null;
     const tagSlugQuery = tag !== null ? { tags: tag._id } : {};
-    const creatorQuery = creator_id !== '' ? { creator: creator_id } : {};
     const statusQuery = status !== '' ? { status: status } : {};
+    const creatorQuery = creator_id !== '' ? { creator: creator_id } : {};
+    const teamQuery = team_id !== '' ? { team: team_id } : {};
     let startDate: Date;
     switch (time_frame) {
       case 'day':
@@ -77,8 +86,9 @@ export class ProjectsService {
       .find({
         ...searchQuery,
         ...tagSlugQuery,
-        ...creatorQuery,
         ...statusQuery,
+        ...creatorQuery,
+        ...teamQuery,
         created_at: { $gte: startDate },
       })
       .skip((page - 1) * limit)
@@ -94,8 +104,9 @@ export class ProjectsService {
         order,
         time_frame,
         tag_slug,
-        creator_id,
         status,
+        creator_id,
+        team_id,
       },
       info: {
         find_count: foundProjects.length,
@@ -180,9 +191,13 @@ export class ProjectsService {
       case '_id': {
         if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
           updatedProject = await this.projectModel
-            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
-              new: true,
-            })
+            .findOneAndUpdate(
+              { _id: fieldValue },
+              { $set: updateDto },
+              {
+                new: true,
+              },
+            )
             .populate(this.populations)
             .exec();
         }
@@ -190,9 +205,13 @@ export class ProjectsService {
       }
       case 'slug': {
         updatedProject = await this.projectModel
-          .findOneAndUpdate({ slug: fieldValue }, updateDto, {
-            new: true,
-          })
+          .findOneAndUpdate(
+            { slug: fieldValue },
+            { $set: updateDto },
+            {
+              new: true,
+            },
+          )
           .populate(this.populations)
           .exec();
         break;
@@ -203,6 +222,18 @@ export class ProjectsService {
     }
     if (!updatedProject && options.throw) {
       throw new NotFoundException('Project Not Updated');
+    }
+    if (updatedProject && updateDto.title) {
+      updatedProject = await this.projectModel
+        .findOneAndUpdate(
+          { _id: updatedProject._id },
+          { $set: { slug: this.generateSlug(updatedProject._id, updatedProject.title) } },
+          {
+            new: true,
+          },
+        )
+        .populate(this.populations)
+        .exec();
     }
     return updatedProject;
   }

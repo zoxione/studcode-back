@@ -11,10 +11,9 @@ import {
   IsUrl,
   ValidateNested,
 } from 'class-validator';
-import { Project } from '../../projects/schemas/project.schema';
-import { Role } from '../types/role';
+import { LinkDto } from 'src/common/dto/link.dto';
+import { UserRole } from '../types/user-role';
 import { UserFullNameDto } from './user-full-name.dto';
-import { UserLinksDto } from './user-links.dto';
 
 export class CreateUserDto {
   @ApiProperty({ description: 'Имя пользователя', type: String })
@@ -29,10 +28,10 @@ export class CreateUserDto {
   @IsString()
   readonly password: string;
 
-  @ApiProperty({ description: 'Роль', type: String, enum: Role })
-  @IsEnum(Role)
+  @ApiProperty({ description: 'Роль', type: String, enum: UserRole })
+  @IsEnum(UserRole)
   @IsOptional()
-  readonly role: string;
+  readonly role: UserRole;
 
   @ApiProperty({ description: 'Подтверждение почты', type: Boolean })
   @IsBoolean()
@@ -61,16 +60,10 @@ export class CreateUserDto {
   @IsOptional()
   readonly about: string;
 
-  @ApiProperty({ description: 'Ссылки', type: UserLinksDto })
-  @IsObject()
-  @ValidateNested()
-  @Type(() => UserLinksDto)
-  @IsOptional()
-  readonly links: UserLinksDto;
-
-  @ApiProperty({ description: 'Проекты', type: [Project] })
+  @ApiProperty({ description: 'Ссылки', type: [LinkDto] })
   @IsArray()
-  @IsString({ each: true })
+  @ValidateNested({ each: true })
+  @Type(() => LinkDto)
   @IsOptional()
-  readonly projects: string[];
+  readonly links: LinkDto[];
 }

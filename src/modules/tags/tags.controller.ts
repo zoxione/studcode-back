@@ -14,14 +14,14 @@ import { FindAllReturnTag } from './types/find-all-return-tag';
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
-  // @UseGuards(AccessTokenGuard)
-  // @Post('/')
-  // @ApiOperation({ summary: 'Создание нового тега' })
-  // @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
-  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  // async createOne(@Body() createTagDto: CreateTagDto): Promise<Tag> {
-  //   return this.tagsService.createOne(createTagDto);
-  // }
+  @UseGuards(AccessTokenGuard)
+  @Post('/')
+  @ApiOperation({ summary: 'Создание нового тега' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  async createOne(@Body() createTagDto: CreateTagDto): Promise<Tag> {
+    return this.tagsService.createOne(createTagDto);
+  }
 
   @Get('/')
   @ApiOperation({ summary: 'Получение списка тегов' })

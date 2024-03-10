@@ -1,3 +1,4 @@
+import slugify from '@sindresorhus/slugify';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -16,9 +17,16 @@ export class TagsService {
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
   ) {}
 
+  private generateSlug(title: string): string {
+    return `${slugify(title, { decamelize: false })}`;
+  }
+
   async createOne(createTagDto: CreateTagDto): Promise<Tag> {
     const createdTag = await this.tagModel.create(createTagDto);
-    return createdTag;
+    const updatedTag = await this.tagModel
+      .findByIdAndUpdate({ _id: createdTag._id }, { $set: { slug: this.generateSlug(createdTag.name) } }, { new: true })
+      .exec();
+    return updatedTag as Tag;
   }
 
   async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterTagDto): Promise<FindAllReturnTag> {
@@ -169,6 +177,17 @@ export class TagsService {
     }
     if (!updatedTag && options.throw) {
       throw new NotFoundException('Tag Not Updated');
+    }
+    if (updatedTag && updateDto.name) {
+      updatedTag = await this.tagModel
+        .findOneAndUpdate(
+          { _id: updatedTag._id },
+          { $set: { slug: this.generateSlug(updatedTag.name) } },
+          {
+            new: true,
+          },
+        )
+        .exec();
     }
     return updatedTag;
   }

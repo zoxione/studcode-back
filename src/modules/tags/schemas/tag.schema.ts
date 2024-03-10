@@ -1,7 +1,6 @@
-import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { TagNameDto } from '../dto/tag-name.dto';
 
 type TagDocument = HydratedDocument<Tag>;
 
@@ -10,29 +9,21 @@ class Tag {
   @ApiProperty({ description: 'Идентификатор', type: mongoose.Types.ObjectId })
   _id: mongoose.Types.ObjectId;
 
-  @ApiProperty({ description: 'Название', type: TagNameDto })
-  @Prop(
-    raw({
-      en: { type: String, default: '' },
-      ru: { type: String, default: '' },
-    }),
-  )
-  name: {
-    en: string;
-    ru: string;
-  };
+  @ApiProperty({ description: 'Название', type: String })
+  @Prop({ type: String, default: '' })
+  name: string;
 
   @ApiProperty({ description: 'Ссылка на иконку', type: String })
   @Prop({ type: String, default: '' })
   icon: string;
 
-  @ApiProperty({ description: 'Ключевое слово', type: String })
-  @Prop({ type: String, unique: true, default: '' })
-  slug: string;
-
   @ApiProperty({ description: 'Описание', type: String })
   @Prop({ type: String, default: '' })
   description: string;
+
+  @ApiProperty({ description: 'Ключевое слово', type: String })
+  @Prop({ type: String, unique: true, default: '' })
+  slug: string;
 }
 
 const TagSchema = SchemaFactory.createForClass(Tag);
@@ -42,4 +33,4 @@ TagSchema.set('timestamps', {
   updatedAt: 'updated_at',
 });
 
-export { TagDocument, Tag, TagSchema };
+export { Tag, TagDocument, TagSchema };

@@ -307,6 +307,44 @@ window.onload = function() {
         }
       },
       "/api/v1/tags": {
+        "post": {
+          "operationId": "TagsController_createOne",
+          "summary": "Создание нового тега",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateTagDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "tags"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
         "get": {
           "operationId": "TagsController_findAll",
           "summary": "Получение списка тегов",
@@ -408,26 +446,6 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/upload": {
-        "post": {
-          "operationId": "UploadController_uploadFile",
-          "summary": "Загрузка файла",
-          "parameters": [],
-          "responses": {
-            "201": {
-              "description": ""
-            }
-          },
-          "tags": [
-            "upload"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
       "/api/v1/users": {
         "get": {
           "operationId": "UsersController_findAll",
@@ -435,14 +453,7 @@ window.onload = function() {
           "parameters": [],
           "responses": {
             "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
+              "description": "Success"
             },
             "401": {
               "description": "Unauthorized"
@@ -474,14 +485,7 @@ window.onload = function() {
           ],
           "responses": {
             "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
+              "description": "Success"
             },
             "401": {
               "description": "Unauthorized"
@@ -524,14 +528,7 @@ window.onload = function() {
           },
           "responses": {
             "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
+              "description": "Success"
             },
             "401": {
               "description": "Unauthorized"
@@ -564,14 +561,7 @@ window.onload = function() {
           ],
           "responses": {
             "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/User"
-                  }
-                }
-              }
+              "description": "Success"
             },
             "401": {
               "description": "Unauthorized"
@@ -606,14 +596,7 @@ window.onload = function() {
           ],
           "responses": {
             "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Project"
-                  }
-                }
-              }
+              "description": "Success"
             },
             "401": {
               "description": "Unauthorized"
@@ -1219,26 +1202,36 @@ window.onload = function() {
         }
       },
       "schemas": {
-        "ProjectLinksDto": {
+        "LinkDto": {
           "type": "object",
           "properties": {
-            "main": {
+            "type": {
               "type": "string",
-              "description": "Основная ссылка"
+              "description": "Тип",
+              "enum": [
+                "main",
+                "github",
+                "gitlab",
+                "vk",
+                "telegram",
+                "discord",
+                "youtube",
+                "other"
+              ]
             },
-            "github": {
+            "label": {
               "type": "string",
-              "description": "Ссылка на GitHub"
+              "description": "Метка"
             },
-            "demo": {
+            "url": {
               "type": "string",
-              "description": "Ссылка на демо"
+              "description": "URL"
             }
           },
           "required": [
-            "main",
-            "github",
-            "demo"
+            "type",
+            "label",
+            "url"
           ]
         },
         "CreateProjectDto": {
@@ -1261,6 +1254,19 @@ window.onload = function() {
                 "archived"
               ]
             },
+            "type": {
+              "type": "string",
+              "description": "Тип",
+              "enum": [
+                "web",
+                "mobile",
+                "desktop",
+                "iot",
+                "game",
+                "ui_ux",
+                "other"
+              ]
+            },
             "description": {
               "type": "string",
               "description": "Описание"
@@ -1271,18 +1277,17 @@ window.onload = function() {
             },
             "links": {
               "description": "Ссылки",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ProjectLinksDto"
-                }
-              ]
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/LinkDto"
+              }
             },
             "logo": {
               "type": "string",
               "description": "Ссылка на логотип"
             },
             "screenshots": {
-              "description": "Массив скриншотов",
+              "description": "Скриншоты",
               "type": "array",
               "items": {
                 "type": "string"
@@ -1305,22 +1310,27 @@ window.onload = function() {
               "type": "string",
               "description": "Ключевое слово"
             },
+            "creator": {
+              "type": "string",
+              "description": "Создатель"
+            },
+            "team": {
+              "type": "string",
+              "description": "Команда"
+            },
             "tags": {
               "description": "Теги",
               "type": "array",
               "items": {
                 "type": "string"
               }
-            },
-            "creator": {
-              "type": "string",
-              "description": "Создатель"
             }
           },
           "required": [
             "title",
             "tagline",
             "status",
+            "type",
             "description",
             "flames",
             "links",
@@ -1329,113 +1339,45 @@ window.onload = function() {
             "price",
             "rating",
             "slug",
-            "tags",
-            "creator"
+            "creator",
+            "team",
+            "tags"
           ]
         },
         "ObjectId": {
           "type": "object",
           "properties": {}
         },
-        "TagNameDto": {
+        "Link": {
           "type": "object",
           "properties": {
-            "en": {
+            "type": {
               "type": "string",
-              "description": "Название на английском"
-            },
-            "ru": {
-              "type": "string",
-              "description": "Название на русском"
-            }
-          },
-          "required": [
-            "en",
-            "ru"
-          ]
-        },
-        "Tag": {
-          "type": "object",
-          "properties": {
-            "_id": {
-              "description": "Идентификатор",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ObjectId"
-                }
+              "description": "Тип",
+              "enum": [
+                "main",
+                "github",
+                "gitlab",
+                "vk",
+                "telegram",
+                "discord",
+                "youtube",
+                "other"
               ]
             },
-            "name": {
-              "description": "Название",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/TagNameDto"
-                }
-              ]
-            },
-            "icon": {
+            "label": {
               "type": "string",
-              "description": "Ссылка на иконку"
+              "description": "Метка"
             },
-            "slug": {
+            "url": {
               "type": "string",
-              "description": "Ключевое слово"
-            },
-            "description": {
-              "type": "string",
-              "description": "Описание"
+              "description": "URL"
             }
           },
           "required": [
-            "_id",
-            "name",
-            "icon",
-            "slug",
-            "description"
-          ]
-        },
-        "UserFullNameDto": {
-          "type": "object",
-          "properties": {
-            "surname": {
-              "type": "string",
-              "description": "Фамилия"
-            },
-            "name": {
-              "type": "string",
-              "description": "Имя"
-            },
-            "patronymic": {
-              "type": "string",
-              "description": "Отчество"
-            }
-          },
-          "required": [
-            "surname",
-            "name",
-            "patronymic"
-          ]
-        },
-        "UserLinksDto": {
-          "type": "object",
-          "properties": {
-            "github": {
-              "type": "string",
-              "description": "Гитхаб"
-            },
-            "vkontakte": {
-              "type": "string",
-              "description": "Вконтакте"
-            },
-            "telegram": {
-              "type": "string",
-              "description": "Телеграм"
-            }
-          },
-          "required": [
-            "github",
-            "vkontakte",
-            "telegram"
+            "type",
+            "label",
+            "url"
           ]
         },
         "User": {
@@ -1481,7 +1423,7 @@ window.onload = function() {
               "description": "ФИО",
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/UserFullNameDto"
+                  "$ref": "#/components/schemas/"
                 }
               ]
             },
@@ -1495,17 +1437,9 @@ window.onload = function() {
             },
             "links": {
               "description": "Ссылки",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/UserLinksDto"
-                }
-              ]
-            },
-            "projects": {
-              "description": "Проекты",
               "type": "array",
               "items": {
-                "type": "array"
+                "$ref": "#/components/schemas/Link"
               }
             }
           },
@@ -1520,8 +1454,121 @@ window.onload = function() {
             "full_name",
             "avatar",
             "about",
-            "links",
-            "projects"
+            "links"
+          ]
+        },
+        "TeamMember": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "description": "Идентификатор участника",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "role": {
+              "type": "string",
+              "description": "Роль",
+              "enum": [
+                "owner",
+                "member"
+              ]
+            }
+          },
+          "required": [
+            "user",
+            "role"
+          ]
+        },
+        "Team": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "description": "Идентификатор",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "about": {
+              "type": "string",
+              "description": "О команде"
+            },
+            "status": {
+              "type": "string",
+              "description": "Статус",
+              "enum": [
+                "opened",
+                "closed"
+              ]
+            },
+            "logo": {
+              "type": "string",
+              "description": "Ссылка на логотип"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            },
+            "members": {
+              "description": "Участники",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TeamMember"
+              }
+            }
+          },
+          "required": [
+            "_id",
+            "name",
+            "about",
+            "status",
+            "logo",
+            "slug",
+            "members"
+          ]
+        },
+        "Tag": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "description": "Идентификатор",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "icon": {
+              "type": "string",
+              "description": "Ссылка на иконку"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            }
+          },
+          "required": [
+            "_id",
+            "name",
+            "icon",
+            "description",
+            "slug"
           ]
         },
         "Project": {
@@ -1552,6 +1599,19 @@ window.onload = function() {
                 "archived"
               ]
             },
+            "type": {
+              "type": "string",
+              "description": "Тип",
+              "enum": [
+                "web",
+                "mobile",
+                "desktop",
+                "iot",
+                "game",
+                "ui_ux",
+                "other"
+              ]
+            },
             "description": {
               "type": "string",
               "description": "Описание"
@@ -1562,18 +1622,17 @@ window.onload = function() {
             },
             "links": {
               "description": "Ссылки",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ProjectLinksDto"
-                }
-              ]
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Link"
+              }
             },
             "logo": {
               "type": "string",
               "description": "Ссылка на логотип"
             },
             "screenshots": {
-              "description": "Массив скриншотов",
+              "description": "Скриншоты",
               "type": "array",
               "items": {
                 "type": "string"
@@ -1596,13 +1655,6 @@ window.onload = function() {
               "type": "string",
               "description": "Ключевое слово"
             },
-            "tags": {
-              "description": "Теги",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Tag"
-              }
-            },
             "creator": {
               "description": "Создатель",
               "allOf": [
@@ -1610,6 +1662,21 @@ window.onload = function() {
                   "$ref": "#/components/schemas/User"
                 }
               ]
+            },
+            "team": {
+              "description": "Команда",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Team"
+                }
+              ]
+            },
+            "tags": {
+              "description": "Теги",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Tag"
+              }
             }
           },
           "required": [
@@ -1617,6 +1684,7 @@ window.onload = function() {
             "title",
             "tagline",
             "status",
+            "type",
             "description",
             "flames",
             "links",
@@ -1625,28 +1693,52 @@ window.onload = function() {
             "price",
             "rating",
             "slug",
-            "tags",
-            "creator"
+            "creator",
+            "team",
+            "tags"
           ]
         },
         "UpdateProjectDto": {
           "type": "object",
           "properties": {}
         },
+        "CreateTagDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "icon": {
+              "type": "string",
+              "description": "Ссылка на иконку"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            }
+          },
+          "required": [
+            "name",
+            "icon",
+            "description",
+            "slug"
+          ]
+        },
         "UpdateUserDto": {
           "type": "object",
           "properties": {}
         },
-        "TeamMember": {
+        "TeamMemberDto": {
           "type": "object",
           "properties": {
             "user": {
-              "description": "Идентификатор участника",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ObjectId"
-                }
-              ]
+              "type": "string",
+              "description": "Пользователь"
             },
             "role": {
               "type": "string",
@@ -1685,18 +1777,15 @@ window.onload = function() {
               "type": "string",
               "description": "Ссылка на логотип"
             },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            },
             "members": {
               "description": "Участники",
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/TeamMember"
-              }
-            },
-            "projects": {
-              "description": "Проекты",
-              "type": "array",
-              "items": {
-                "type": "string"
+                "$ref": "#/components/schemas/TeamMemberDto"
               }
             }
           },
@@ -1705,99 +1794,22 @@ window.onload = function() {
             "about",
             "status",
             "logo",
-            "members",
-            "projects"
-          ]
-        },
-        "Team": {
-          "type": "object",
-          "properties": {
-            "_id": {
-              "description": "Идентификатор",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/ObjectId"
-                }
-              ]
-            },
-            "name": {
-              "type": "string",
-              "description": "Название"
-            },
-            "about": {
-              "type": "string",
-              "description": "О команде"
-            },
-            "status": {
-              "type": "string",
-              "description": "Статус",
-              "enum": [
-                "opened",
-                "closed"
-              ]
-            },
-            "logo": {
-              "type": "string",
-              "description": "Ссылка на логотип"
-            },
-            "members": {
-              "description": "Участники",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/TeamMember"
-              }
-            },
-            "projects": {
-              "description": "Проекты",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Project"
-              }
-            }
-          },
-          "required": [
-            "_id",
-            "name",
-            "about",
-            "status",
-            "logo",
-            "members",
-            "projects"
+            "slug",
+            "members"
           ]
         },
         "UpdateTeamDto": {
           "type": "object",
           "properties": {}
         },
-        "PayloadDto": {
+        "UpdateMembersTeamItemDto": {
           "type": "object",
           "properties": {
-            "user": {
-              "type": "string",
-              "description": "Пользователь"
-            },
-            "role": {
-              "type": "string",
-              "description": "Роль",
-              "enum": [
-                "owner",
-                "member"
-              ]
-            }
-          },
-          "required": [
-            "user",
-            "role"
-          ]
-        },
-        "UpdateMemberActionDto": {
-          "type": "object",
-          "properties": {
-            "payload": {
-              "description": "Полезная информация",
+            "member": {
+              "description": "Участник",
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/PayloadDto"
+                  "$ref": "#/components/schemas/TeamMemberDto"
                 }
               ]
             },
@@ -1811,7 +1823,7 @@ window.onload = function() {
             }
           },
           "required": [
-            "payload",
+            "member",
             "action"
           ]
         },
@@ -1822,7 +1834,7 @@ window.onload = function() {
               "description": "Участники",
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/UpdateMemberActionDto"
+                "$ref": "#/components/schemas/UpdateMembersTeamItemDto"
               }
             }
           },
@@ -1839,7 +1851,15 @@ window.onload = function() {
             },
             "rating": {
               "type": "number",
-              "description": "Текст"
+              "description": "Оценка"
+            },
+            "likes": {
+              "type": "number",
+              "description": "Количество лайков"
+            },
+            "dislikes": {
+              "type": "number",
+              "description": "Количество дизлайков"
             },
             "project": {
               "type": "string",
@@ -1848,29 +1868,15 @@ window.onload = function() {
             "reviewer": {
               "type": "string",
               "description": "Рецензент"
-            },
-            "likes": {
-              "description": "Пользователи, поставившие лайки",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "dislikes": {
-              "description": "Пользователи, поставившие дизлайки",
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
             }
           },
           "required": [
             "text",
             "rating",
-            "project",
-            "reviewer",
             "likes",
-            "dislikes"
+            "dislikes",
+            "project",
+            "reviewer"
           ]
         },
         "Review": {
@@ -1892,6 +1898,14 @@ window.onload = function() {
               "type": "number",
               "description": "Оценка"
             },
+            "likes": {
+              "type": "number",
+              "description": "Количество лайков"
+            },
+            "dislikes": {
+              "type": "number",
+              "description": "Количество дизлайков"
+            },
             "project": {
               "description": "Проект",
               "allOf": [
@@ -1907,35 +1921,43 @@ window.onload = function() {
                   "$ref": "#/components/schemas/User"
                 }
               ]
-            },
-            "likes": {
-              "description": "Пользователи, поставившие лайки",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/ObjectId"
-              }
-            },
-            "dislikes": {
-              "description": "Пользователи, поставившие дизлайки",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/ObjectId"
-              }
             }
           },
           "required": [
             "_id",
             "text",
             "rating",
-            "project",
-            "reviewer",
             "likes",
-            "dislikes"
+            "dislikes",
+            "project",
+            "reviewer"
           ]
         },
         "UpdateReviewDto": {
           "type": "object",
           "properties": {}
+        },
+        "UserFullNameDto": {
+          "type": "object",
+          "properties": {
+            "surname": {
+              "type": "string",
+              "description": "Фамилия"
+            },
+            "name": {
+              "type": "string",
+              "description": "Имя"
+            },
+            "patronymic": {
+              "type": "string",
+              "description": "Отчество"
+            }
+          },
+          "required": [
+            "surname",
+            "name",
+            "patronymic"
+          ]
         },
         "CreateUserDto": {
           "type": "object",
@@ -1986,17 +2008,9 @@ window.onload = function() {
             },
             "links": {
               "description": "Ссылки",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/UserLinksDto"
-                }
-              ]
-            },
-            "projects": {
-              "description": "Проекты",
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/Project"
+                "$ref": "#/components/schemas/LinkDto"
               }
             }
           },
@@ -2010,8 +2024,7 @@ window.onload = function() {
             "full_name",
             "avatar",
             "about",
-            "links",
-            "projects"
+            "links"
           ]
         },
         "SignInDto": {

@@ -1,36 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsEnum, IsObject, ValidateNested } from 'class-validator';
 import { TeamAction } from '../types/team-action';
-import { TeamMemberRole } from '../types/team-member-role';
+import { TeamMemberDto } from './team-member.dto';
 
-class PayloadDto {
-  @ApiProperty({ description: 'Пользователь', type: String })
-  @IsString()
-  readonly user: string;
-
-  @ApiProperty({ description: 'Роль', type: String, enum: TeamMemberRole })
-  @IsEnum(TeamMemberRole)
-  @IsOptional()
-  readonly role: string;
-}
-
-class UpdateMemberActionDto {
-  @ApiProperty({ description: 'Полезная информация', type: PayloadDto })
+class UpdateMembersTeamItemDto {
+  @ApiProperty({ description: 'Участник', type: TeamMemberDto })
   @IsObject()
   @ValidateNested()
-  @Type(() => PayloadDto)
-  readonly payload: PayloadDto;
+  @Type(() => TeamMemberDto)
+  readonly member: TeamMemberDto;
 
   @ApiProperty({ description: 'Действие', type: String, enum: TeamAction })
   @IsEnum(TeamAction)
-  readonly action: string;
+  readonly action: TeamAction;
 }
 
 export class UpdateMembersTeamDto {
-  @ApiProperty({ description: 'Участники', type: [UpdateMemberActionDto] })
+  @ApiProperty({ description: 'Участники', type: [UpdateMembersTeamItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateMemberActionDto)
-  readonly members: UpdateMemberActionDto[];
+  @Type(() => UpdateMembersTeamItemDto)
+  readonly members: UpdateMembersTeamItemDto[];
 }

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class UserFullNameDto {
   @ApiProperty({ description: 'Фамилия', type: String })
@@ -12,5 +12,6 @@ export class UserFullNameDto {
 
   @ApiProperty({ description: 'Отчество', type: String })
   @IsString()
+  @IsOptional()
   readonly patronymic: string;
 }

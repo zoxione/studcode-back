@@ -19,6 +19,14 @@ class Review {
   @Prop({ type: Number, default: 0 })
   rating: number;
 
+  @ApiProperty({ description: 'Количество лайков', type: Number })
+  @Prop({ type: Number, default: 0 })
+  likes: number;
+
+  @ApiProperty({ description: 'Количество дизлайков', type: Number })
+  @Prop({ type: Number, default: 0 })
+  dislikes: number;
+
   @ApiProperty({ description: 'Проект', type: Project })
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Project', default: null })
   project: Project;
@@ -26,14 +34,6 @@ class Review {
   @ApiProperty({ description: 'Рецензент', type: User })
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
   reviewer: User;
-
-  @ApiProperty({ description: 'Пользователи, поставившие лайки', type: [mongoose.Types.ObjectId] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] })
-  likes: mongoose.Types.ObjectId[];
-
-  @ApiProperty({ description: 'Пользователи, поставившие дизлайки', type: [mongoose.Types.ObjectId] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], default: [] })
-  dislikes: mongoose.Types.ObjectId[];
 }
 
 const ReviewSchema = SchemaFactory.createForClass(Review);

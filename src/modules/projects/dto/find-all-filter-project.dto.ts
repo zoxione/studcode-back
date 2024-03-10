@@ -5,7 +5,7 @@ import { ProjectTimeFrame } from '../types/project-time-frame';
 export class FindAllFilterProjectDto extends FindAllFilterDto {
   @IsEnum(ProjectTimeFrame)
   @IsOptional()
-  readonly time_frame?: string;
+  readonly time_frame?: ProjectTimeFrame;
 
   @IsString()
   @IsOptional()
@@ -13,9 +13,13 @@ export class FindAllFilterProjectDto extends FindAllFilterDto {
 
   @IsString()
   @IsOptional()
+  readonly status?: string;
+
+  @IsString()
+  @IsOptional()
   readonly creator_id?: string;
 
   @IsString()
   @IsOptional()
-  readonly status?: string;
+  readonly team_id?: string;
 }

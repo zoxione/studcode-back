@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { Project } from '../../projects/schemas/project.schema';
 import { TeamStatus } from '../types/team-status';
 import { TeamMember, TeamMemberSchema } from './team-member.schema';
 
@@ -28,13 +27,13 @@ class Team {
   @Prop({ type: String, default: '' })
   logo: string;
 
+  @ApiProperty({ description: 'Ключевое слово', type: String })
+  @Prop({ type: String, unique: true, default: '' })
+  slug: string;
+
   @ApiProperty({ description: 'Участники', type: [TeamMember] })
   @Prop({ type: [TeamMemberSchema], default: [] })
   members: TeamMember[];
-
-  @ApiProperty({ description: 'Проекты', type: [Project] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }], default: [] })
-  projects: Project[];
 }
 
 const TeamSchema = SchemaFactory.createForClass(Team);
