@@ -1,12 +1,14 @@
-import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import * as mongoose from 'mongoose';
+import { HydratedDocument } from 'mongoose';
+import { Link, LinkSchema } from '../../../common/schemas/link.schema';
+import { Tag } from '../../tags/schemas/tag.schema';
 import { ProjectPrice } from '../types/project-price';
 import { ProjectStatus } from '../types/project-status';
-import { Tag } from '../../tags/schemas/tag.schema';
-import { User } from '../../users/schemas/user.schema';
-import { ApiProperty } from '@nestjs/swagger';
-import { ProjectLinksDto } from '../dto/project-links.dto';
+import { ProjectType } from '../types/project-type';
+import { Team } from 'src/modules/teams/schemas/team.schema';
+import { User } from 'src/modules/users/schemas/user.schema';
 
 type ProjectDocument = HydratedDocument<Project>;
 
@@ -27,6 +29,10 @@ class Project {
   @Prop({ type: String, enum: ProjectStatus, default: ProjectStatus.Draft })
   status: string;
 
+  @ApiProperty({ description: 'Тип', type: String, enum: ProjectType })
+  @Prop({ type: String, enum: ProjectType, default: ProjectType.Other })
+  type: string;
+
   @ApiProperty({ description: 'Описание', type: String })
   @Prop({ type: String, default: '' })
   description: string;
@@ -35,25 +41,15 @@ class Project {
   @Prop({ type: Number, default: 0 })
   flames: number;
 
-  @ApiProperty({ description: 'Ссылки', type: ProjectLinksDto })
-  @Prop(
-    raw({
-      main: { type: String, default: '' },
-      github: { type: String, default: '' },
-      demo: { type: String, default: '' },
-    }),
-  )
-  links: {
-    main: string;
-    github: string;
-    demo: string;
-  };
+  @ApiProperty({ description: 'Ссылки', type: [Link] })
+  @Prop({ type: [LinkSchema], default: [] })
+  links: Link[];
 
   @ApiProperty({ description: 'Ссылка на логотип', type: String })
   @Prop({ type: String, default: '' })
   logo: string;
 
-  @ApiProperty({ description: 'Массив скриншотов', type: [String] })
+  @ApiProperty({ description: 'Скриншоты', type: [String] })
   @Prop({ type: [String], default: [] })
   screenshots: string[];
 
@@ -69,13 +65,17 @@ class Project {
   @Prop({ type: String, unique: true, default: '' })
   slug: string;
 
-  @ApiProperty({ description: 'Теги', type: [Tag] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], default: [] })
-  tags: Tag[];
-
   @ApiProperty({ description: 'Создатель', type: User })
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
   creator: User;
+
+  @ApiProperty({ description: 'Команда', type: Team })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Team', default: null })
+  team: Team;
+
+  @ApiProperty({ description: 'Теги', type: [Tag] })
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tag' }], default: [] })
+  tags: Tag[];
 }
 
 const ProjectSchema = SchemaFactory.createForClass(Project);
@@ -85,4 +85,4 @@ ProjectSchema.set('timestamps', {
   updatedAt: 'updated_at',
 });
 
-export { ProjectDocument, Project, ProjectSchema };
+export { Project, ProjectDocument, ProjectSchema };

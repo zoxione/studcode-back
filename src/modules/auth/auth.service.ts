@@ -29,7 +29,7 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Tokens & { session: Session } & { access_token_exp: number; refresh_token_exp: number }> {
-    const user = await this.usersService.findOne('email', email, { secret: true });
+    const user = await this.usersService.findOne('email', email, { secret: true, throw: true });
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
       throw new UnauthorizedException('Password is incorrect');
@@ -47,7 +47,7 @@ export class AuthService {
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
-    const user = await this.usersService.findOne('_id', userId, { secret: true });
+    const user = await this.usersService.findOne('_id', userId, { secret: true, throw: true });
     if (!user || !user.refresh_token) {
       throw new ForbiddenException('Access Denied');
     }

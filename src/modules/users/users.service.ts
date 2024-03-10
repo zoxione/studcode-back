@@ -1,16 +1,18 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { UploadService } from '../upload/upload.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
 import { UserFiles } from './types/user-files';
-import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class UsersService {
+  private readonly populations = [];
+
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private uploadService: UploadService,
@@ -42,6 +44,7 @@ export class UsersService {
       .select('-password -refresh_token')
       .skip((page - 1) * limit)
       .limit(limit)
+      .populate(this.populations)
       .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
@@ -90,16 +93,28 @@ export class UsersService {
     switch (field) {
       case '_id': {
         if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          foundUser = await this.userModel.findOne({ _id: fieldValue }).select(select).exec();
+          foundUser = await this.userModel
+            .findOne({ _id: fieldValue })
+            .select(select)
+            .populate(this.populations)
+            .exec();
         }
         break;
       }
       case 'username': {
-        foundUser = await this.userModel.findOne({ username: fieldValue }).select(select).exec();
+        foundUser = await this.userModel
+          .findOne({ username: fieldValue })
+          .select(select)
+          .populate(this.populations)
+          .exec();
         break;
       }
       case 'email': {
-        foundUser = await this.userModel.findOne({ email: fieldValue }).select(select).exec();
+        foundUser = await this.userModel
+          .findOne({ email: fieldValue })
+          .select(select)
+          .populate(this.populations)
+          .exec();
         break;
       }
       default: {
@@ -145,6 +160,7 @@ export class UsersService {
             .findOneAndUpdate({ _id: fieldValue }, updateDto, {
               new: true,
             })
+            .populate(this.populations)
             .exec();
         }
         break;
@@ -154,6 +170,7 @@ export class UsersService {
           .findOneAndUpdate({ username: fieldValue }, updateDto, {
             new: true,
           })
+          .populate(this.populations)
           .exec();
         break;
       }
@@ -162,6 +179,7 @@ export class UsersService {
           .findOneAndUpdate({ email: fieldValue }, updateDto, {
             new: true,
           })
+          .populate(this.populations)
           .exec();
         break;
       }
@@ -173,22 +191,6 @@ export class UsersService {
       throw new NotFoundException('User Not Updated');
     }
     return updatedUser;
-  }
-
-  async uploadFiles(user_id: mongoose.Types.ObjectId, files: UserFiles): Promise<User> {
-    const userFiles: Pick<User, 'avatar'> = {
-      avatar: '',
-    };
-    for (const file of files.flat()) {
-      if (file.fieldname === 'avatar_file') {
-        const res = await this.uploadService.upload(`user-${user_id}-avatar.${file.mimetype.split('/')[1]}`, file);
-        userFiles.avatar = res;
-      }
-    }
-    const updatedProject = await this.updateOne('_id', user_id, {
-      ...userFiles,
-    });
-    return updatedProject;
   }
 
   async deleteOne(field: keyof User, fieldValue: unknown): Promise<User>;
@@ -220,16 +222,19 @@ export class UsersService {
     switch (field) {
       case '_id': {
         if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          deletedUser = await this.userModel.findByIdAndRemove({ _id: fieldValue }).exec();
+          deletedUser = await this.userModel.findByIdAndRemove({ _id: fieldValue }).populate(this.populations).exec();
         }
         break;
       }
       case 'username': {
-        deletedUser = await this.userModel.findByIdAndRemove({ username: fieldValue }).exec();
+        deletedUser = await this.userModel
+          .findByIdAndRemove({ username: fieldValue })
+          .populate(this.populations)
+          .exec();
         break;
       }
       case 'email': {
-        deletedUser = await this.userModel.findByIdAndRemove({ email: fieldValue }).exec();
+        deletedUser = await this.userModel.findByIdAndRemove({ email: fieldValue }).populate(this.populations).exec();
         break;
       }
       default: {
@@ -240,5 +245,21 @@ export class UsersService {
       throw new NotFoundException('User Not Deleted');
     }
     return deletedUser;
+  }
+
+  async uploadFiles(user_id: mongoose.Types.ObjectId, files: UserFiles): Promise<User> {
+    const userFiles: Pick<User, 'avatar'> = {
+      avatar: '',
+    };
+    for (const file of files.flat()) {
+      if (file.fieldname === 'avatar_file') {
+        const res = await this.uploadService.upload(`user-${user_id}-avatar.${file.mimetype.split('/')[1]}`, file);
+        userFiles.avatar = res;
+      }
+    }
+    const updatedProject = await this.updateOne('_id', user_id, {
+      ...userFiles,
+    });
+    return updatedProject;
   }
 }

@@ -40,7 +40,10 @@ export class TeamsController {
   async findOneById(@Param('key') key: string): Promise<Team> {
     let foundTeam = await this.teamsService.findOne('_id', key, { throw: false });
     if (!foundTeam) {
-      foundTeam = await this.teamsService.findOne('name', key, { throw: true });
+      foundTeam = await this.teamsService.findOne('name', key, { throw: false });
+    }
+    if (!foundTeam) {
+      foundTeam = await this.teamsService.findOne('slug', key, { throw: true });
     }
     return foundTeam;
   }
@@ -52,19 +55,12 @@ export class TeamsController {
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateTeamDto): Promise<Team> {
-    return this.teamsService.updateOne('_id', key, updateDto);
-  }
-
-  @UseGuards(AccessTokenGuard)
-  @Put('/:key/members')
-  @ApiOperation({ summary: 'Обновление участников команды по ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateMembers(@Param('key') key: string, @Body() updateDto: UpdateMembersTeamDto): Promise<Team> {
-    let updatedTeam = await this.teamsService.updateMembersOne('_id', key, updateDto, { throw: false });
+    let updatedTeam = await this.teamsService.updateOne('_id', key, updateDto, { throw: false });
     if (!updatedTeam) {
-      updatedTeam = await this.teamsService.updateMembersOne('name', key, updateDto, { throw: true });
+      updatedTeam = await this.teamsService.updateOne('name', key, updateDto, { throw: false });
+    }
+    if (!updatedTeam) {
+      updatedTeam = await this.teamsService.updateOne('slug', key, updateDto, { throw: true });
     }
     return updatedTeam;
   }
@@ -76,6 +72,30 @@ export class TeamsController {
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async deleteOneById(@Param('key') key: string): Promise<Team> {
-    return this.teamsService.deleteOne('_id', key);
+    let deletedTeam = await this.teamsService.deleteOne('_id', key, { throw: false });
+    if (!deletedTeam) {
+      deletedTeam = await this.teamsService.deleteOne('name', key, { throw: false });
+    }
+    if (!deletedTeam) {
+      deletedTeam = await this.teamsService.deleteOne('slug', key, { throw: true });
+    }
+    return deletedTeam;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Put('/:key/members')
+  @ApiOperation({ summary: 'Обновление участников команды по ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async updateMembers(@Param('key') key: string, @Body() updateDto: UpdateMembersTeamDto): Promise<Team> {
+    let updatedTeam = await this.teamsService.updateMembersOne('_id', key, updateDto, { throw: false });
+    if (!updatedTeam) {
+      updatedTeam = await this.teamsService.updateMembersOne('name', key, updateDto, { throw: false });
+    }
+    if (!updatedTeam) {
+      updatedTeam = await this.teamsService.updateMembersOne('slug', key, updateDto, { throw: true });
+    }
+    return updatedTeam;
   }
 }

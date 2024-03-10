@@ -1,11 +1,9 @@
-import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Role } from '../types/role';
-import { Award } from '../../awards/schemas/award.schema';
-import { Project } from '../../projects/schemas/project.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { UserFullNameDto } from '../dto/user-full-name.dto';
-import { UserLinksDto } from '../dto/user-links.dto';
+import mongoose, { HydratedDocument } from 'mongoose';
+import { Link, LinkSchema } from '../../../common/schemas/link.schema';
+import { UserRole } from '../types/user-role';
+import { UserFullName, UserFullNameSchema } from './user-full-name.schema';
 
 type UserDocument = HydratedDocument<User>;
 
@@ -26,8 +24,8 @@ class User {
   @Prop({ type: String, required: true })
   password: string;
 
-  @ApiProperty({ description: 'Роль', type: String, enum: Role })
-  @Prop({ type: String, enum: Role, default: Role.User })
+  @ApiProperty({ description: 'Роль', type: String, enum: UserRole })
+  @Prop({ type: String, enum: UserRole, default: UserRole.User })
   role: string;
 
   @ApiProperty({ description: 'Подтверждение почты', type: Boolean })
@@ -38,19 +36,9 @@ class User {
   @Prop({ type: String, default: '' })
   refresh_token: string;
 
-  @ApiProperty({ description: 'ФИО', type: UserFullNameDto })
-  @Prop(
-    raw({
-      surname: { type: String, default: '' },
-      name: { type: String, default: '' },
-      patronymic: { type: String, default: '' },
-    }),
-  )
-  full_name: {
-    surname: string;
-    name: string;
-    patronymic: string;
-  };
+  @ApiProperty({ description: 'ФИО', type: UserFullNameSchema })
+  @Prop({ type: UserFullNameSchema, default: null })
+  full_name: UserFullName;
 
   @ApiProperty({ description: 'Ссылка на аватар', type: String })
   @Prop({ type: String, default: '' })
@@ -60,27 +48,9 @@ class User {
   @Prop({ type: String, default: '' })
   about: string;
 
-  @ApiProperty({ description: 'Ссылки', type: UserLinksDto })
-  @Prop(
-    raw({
-      github: { type: String, default: '' },
-      vkontakte: { type: String, default: '' },
-      telegram: { type: String, default: '' },
-    }),
-  )
-  links: {
-    github: string;
-    vkontakte: string;
-    telegram: string;
-  };
-
-  @ApiProperty({ description: 'Награды', type: [Award] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Award' }], default: [] })
-  awards: Award[];
-
-  @ApiProperty({ description: 'Проекты', type: [Project] })
-  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Project' }], default: [] })
-  projects: Project[];
+  @ApiProperty({ description: 'Ссылки', type: [Link] })
+  @Prop({ type: [LinkSchema], default: [] })
+  links: Link[];
 }
 
 const UserSchema = SchemaFactory.createForClass(User);

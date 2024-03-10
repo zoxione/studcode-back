@@ -166,10 +166,16 @@ paths:
       tags: *ref_0
       security: *ref_1
   /api/v1/tags:
-    get:
-      operationId: TagsController_findAll
-      summary: Получение списка тегов
+    post:
+      operationId: TagsController_createOne
+      summary: Создание нового тега
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTagDto'
       responses:
         '200':
           description: Success
@@ -183,6 +189,21 @@ paths:
         - tags
       security: &ref_3
         - bearer: []
+    get:
+      operationId: TagsController_findAll
+      summary: Получение списка тегов
+      parameters: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '401':
+          description: Unauthorized
+      tags: *ref_2
+      security: *ref_3
   /api/v1/tags/popular:
     get:
       operationId: TagsController_findAllPopular
@@ -222,18 +243,6 @@ paths:
           description: Not Found
       tags: *ref_2
       security: *ref_3
-  /api/v1/upload:
-    post:
-      operationId: UploadController_uploadFile
-      summary: Загрузка файла
-      parameters: []
-      responses:
-        '201':
-          description: ''
-      tags:
-        - upload
-      security:
-        - bearer: []
   /api/v1/users:
     get:
       operationId: UsersController_findAll
@@ -242,10 +251,6 @@ paths:
       responses:
         '200':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
       tags: &ref_4
@@ -265,10 +270,6 @@ paths:
       responses:
         '200':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
         '404':
@@ -293,10 +294,6 @@ paths:
       responses:
         '200':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
         '404':
@@ -315,10 +312,6 @@ paths:
       responses:
         '200':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/User'
         '401':
           description: Unauthorized
         '404':
@@ -338,10 +331,6 @@ paths:
       responses:
         '200':
           description: Success
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Project'
         '401':
           description: Unauthorized
       tags: *ref_4
@@ -677,22 +666,31 @@ components:
       bearerFormat: JWT
       type: http
   schemas:
-    ProjectLinksDto:
+    LinkDto:
       type: object
       properties:
-        main:
+        type:
           type: string
-          description: Основная ссылка
-        github:
+          description: Тип
+          enum:
+            - main
+            - github
+            - gitlab
+            - vk
+            - telegram
+            - discord
+            - youtube
+            - other
+        label:
           type: string
-          description: Ссылка на GitHub
-        demo:
+          description: Метка
+        url:
           type: string
-          description: Ссылка на демо
+          description: URL
       required:
-        - main
-        - github
-        - demo
+        - type
+        - label
+        - url
     CreateProjectDto:
       type: object
       properties:
@@ -709,6 +707,17 @@ components:
             - draft
             - published
             - archived
+        type:
+          type: string
+          description: Тип
+          enum:
+            - web
+            - mobile
+            - desktop
+            - iot
+            - game
+            - ui_ux
+            - other
         description:
           type: string
           description: Описание
@@ -717,13 +726,14 @@ components:
           description: Количество огоньков
         links:
           description: Ссылки
-          allOf:
-            - $ref: '#/components/schemas/ProjectLinksDto'
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkDto'
         logo:
           type: string
           description: Ссылка на логотип
         screenshots:
-          description: Массив скриншотов
+          description: Скриншоты
           type: array
           items:
             type: string
@@ -740,18 +750,22 @@ components:
         slug:
           type: string
           description: Ключевое слово
+        creator:
+          type: string
+          description: Создатель
+        team:
+          type: string
+          description: Команда
         tags:
           description: Теги
           type: array
           items:
             type: string
-        creator:
-          type: string
-          description: Создатель
       required:
         - title
         - tagline
         - status
+        - type
         - description
         - flames
         - links
@@ -760,115 +774,37 @@ components:
         - price
         - rating
         - slug
-        - tags
         - creator
+        - team
+        - tags
     ObjectId:
       type: object
       properties: {}
-    TagNameDto:
+    Link:
       type: object
       properties:
-        en:
+        type:
           type: string
-          description: Название на английском
-        ru:
+          description: Тип
+          enum:
+            - main
+            - github
+            - gitlab
+            - vk
+            - telegram
+            - discord
+            - youtube
+            - other
+        label:
           type: string
-          description: Название на русском
+          description: Метка
+        url:
+          type: string
+          description: URL
       required:
-        - en
-        - ru
-    Tag:
-      type: object
-      properties:
-        _id:
-          description: Идентификатор
-          allOf:
-            - $ref: '#/components/schemas/ObjectId'
-        name:
-          description: Название
-          allOf:
-            - $ref: '#/components/schemas/TagNameDto'
-        icon:
-          type: string
-          description: Ссылка на иконку
-        slug:
-          type: string
-          description: Ключевое слово
-        description:
-          type: string
-          description: Описание
-      required:
-        - _id
-        - name
-        - icon
-        - slug
-        - description
-    UserFullNameDto:
-      type: object
-      properties:
-        surname:
-          type: string
-          description: Фамилия
-        name:
-          type: string
-          description: Имя
-        patronymic:
-          type: string
-          description: Отчество
-      required:
-        - surname
-        - name
-        - patronymic
-    UserLinksDto:
-      type: object
-      properties:
-        github:
-          type: string
-          description: Гитхаб
-        vkontakte:
-          type: string
-          description: Вконтакте
-        telegram:
-          type: string
-          description: Телеграм
-      required:
-        - github
-        - vkontakte
-        - telegram
-    AwardNameDto:
-      type: object
-      properties:
-        en:
-          type: string
-          description: Название на английском
-        ru:
-          type: string
-          description: Название на русском
-      required:
-        - en
-        - ru
-    Award:
-      type: object
-      properties:
-        _id:
-          description: Идентификатор
-          allOf:
-            - $ref: '#/components/schemas/ObjectId'
-        name:
-          description: Название
-          allOf:
-            - $ref: '#/components/schemas/AwardNameDto'
-        icon:
-          type: string
-          description: Ссылка на иконку
-        description:
-          type: string
-          description: Описание
-      required:
-        - _id
-        - name
-        - icon
-        - description
+        - type
+        - label
+        - url
     User:
       type: object
       properties:
@@ -900,7 +836,7 @@ components:
         full_name:
           description: ФИО
           allOf:
-            - $ref: '#/components/schemas/UserFullNameDto'
+            - $ref: '#/components/schemas/'
         avatar:
           type: string
           description: Ссылка на аватар
@@ -909,18 +845,9 @@ components:
           description: О себе
         links:
           description: Ссылки
-          allOf:
-            - $ref: '#/components/schemas/UserLinksDto'
-        awards:
-          description: Награды
           type: array
           items:
-            $ref: '#/components/schemas/Award'
-        projects:
-          description: Проекты
-          type: array
-          items:
-            type: array
+            $ref: '#/components/schemas/Link'
       required:
         - _id
         - username
@@ -933,8 +860,85 @@ components:
         - avatar
         - about
         - links
-        - awards
-        - projects
+    TeamMember:
+      type: object
+      properties:
+        user:
+          description: Идентификатор участника
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        role:
+          type: string
+          description: Роль
+          enum:
+            - owner
+            - member
+      required:
+        - user
+        - role
+    Team:
+      type: object
+      properties:
+        _id:
+          description: Идентификатор
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          description: Название
+        about:
+          type: string
+          description: О команде
+        status:
+          type: string
+          description: Статус
+          enum:
+            - opened
+            - closed
+        logo:
+          type: string
+          description: Ссылка на логотип
+        slug:
+          type: string
+          description: Ключевое слово
+        members:
+          description: Участники
+          type: array
+          items:
+            $ref: '#/components/schemas/TeamMember'
+      required:
+        - _id
+        - name
+        - about
+        - status
+        - logo
+        - slug
+        - members
+    Tag:
+      type: object
+      properties:
+        _id:
+          description: Идентификатор
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          description: Название
+        icon:
+          type: string
+          description: Ссылка на иконку
+        description:
+          type: string
+          description: Описание
+        slug:
+          type: string
+          description: Ключевое слово
+      required:
+        - _id
+        - name
+        - icon
+        - description
+        - slug
     Project:
       type: object
       properties:
@@ -955,6 +959,17 @@ components:
             - draft
             - published
             - archived
+        type:
+          type: string
+          description: Тип
+          enum:
+            - web
+            - mobile
+            - desktop
+            - iot
+            - game
+            - ui_ux
+            - other
         description:
           type: string
           description: Описание
@@ -963,13 +978,14 @@ components:
           description: Количество огоньков
         links:
           description: Ссылки
-          allOf:
-            - $ref: '#/components/schemas/ProjectLinksDto'
+          type: array
+          items:
+            $ref: '#/components/schemas/Link'
         logo:
           type: string
           description: Ссылка на логотип
         screenshots:
-          description: Массив скриншотов
+          description: Скриншоты
           type: array
           items:
             type: string
@@ -986,20 +1002,25 @@ components:
         slug:
           type: string
           description: Ключевое слово
+        creator:
+          description: Создатель
+          allOf:
+            - $ref: '#/components/schemas/User'
+        team:
+          description: Команда
+          allOf:
+            - $ref: '#/components/schemas/Team'
         tags:
           description: Теги
           type: array
           items:
             $ref: '#/components/schemas/Tag'
-        creator:
-          description: Создатель
-          allOf:
-            - $ref: '#/components/schemas/User'
       required:
         - _id
         - title
         - tagline
         - status
+        - type
         - description
         - flames
         - links
@@ -1008,21 +1029,41 @@ components:
         - price
         - rating
         - slug
-        - tags
         - creator
+        - team
+        - tags
     UpdateProjectDto:
       type: object
       properties: {}
+    CreateTagDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название
+        icon:
+          type: string
+          description: Ссылка на иконку
+        description:
+          type: string
+          description: Описание
+        slug:
+          type: string
+          description: Ключевое слово
+      required:
+        - name
+        - icon
+        - description
+        - slug
     UpdateUserDto:
       type: object
       properties: {}
-    TeamMember:
+    TeamMemberDto:
       type: object
       properties:
         user:
-          description: Идентификатор участника
-          allOf:
-            - $ref: '#/components/schemas/ObjectId'
+          type: string
+          description: Пользователь
         role:
           type: string
           description: Роль
@@ -1050,88 +1091,31 @@ components:
         logo:
           type: string
           description: Ссылка на логотип
+        slug:
+          type: string
+          description: Ключевое слово
         members:
           description: Участники
           type: array
           items:
-            $ref: '#/components/schemas/TeamMember'
-        projects:
-          description: Проекты
-          type: array
-          items:
-            type: string
+            $ref: '#/components/schemas/TeamMemberDto'
       required:
         - name
         - about
         - status
         - logo
+        - slug
         - members
-        - projects
-    Team:
-      type: object
-      properties:
-        _id:
-          description: Идентификатор
-          allOf:
-            - $ref: '#/components/schemas/ObjectId'
-        name:
-          type: string
-          description: Название
-        about:
-          type: string
-          description: О команде
-        status:
-          type: string
-          description: Статус
-          enum:
-            - opened
-            - closed
-        logo:
-          type: string
-          description: Ссылка на логотип
-        members:
-          description: Участники
-          type: array
-          items:
-            $ref: '#/components/schemas/TeamMember'
-        projects:
-          description: Проекты
-          type: array
-          items:
-            $ref: '#/components/schemas/Project'
-      required:
-        - _id
-        - name
-        - about
-        - status
-        - logo
-        - members
-        - projects
     UpdateTeamDto:
       type: object
       properties: {}
-    PayloadDto:
+    UpdateMembersTeamItemDto:
       type: object
       properties:
-        user:
-          type: string
-          description: Пользователь
-        role:
-          type: string
-          description: Роль
-          enum:
-            - owner
-            - member
-      required:
-        - user
-        - role
-    UpdateMemberActionDto:
-      type: object
-      properties:
-        payload:
-          description: Полезная информация
+        member:
+          description: Участник
           allOf:
-            - $ref: '#/components/schemas/PayloadDto'
+            - $ref: '#/components/schemas/TeamMemberDto'
         action:
           type: string
           description: Действие
@@ -1139,7 +1123,7 @@ components:
             - add
             - remove
       required:
-        - payload
+        - member
         - action
     UpdateMembersTeamDto:
       type: object
@@ -1148,7 +1132,7 @@ components:
           description: Участники
           type: array
           items:
-            $ref: '#/components/schemas/UpdateMemberActionDto'
+            $ref: '#/components/schemas/UpdateMembersTeamItemDto'
       required:
         - members
     CreateReviewDto:
@@ -1159,30 +1143,26 @@ components:
           description: Текст
         rating:
           type: number
-          description: Текст
+          description: Оценка
+        likes:
+          type: number
+          description: Количество лайков
+        dislikes:
+          type: number
+          description: Количество дизлайков
         project:
           type: string
           description: Проект
         reviewer:
           type: string
           description: Рецензент
-        likes:
-          description: Пользователи, поставившие лайки
-          type: array
-          items:
-            type: string
-        dislikes:
-          description: Пользователи, поставившие дизлайки
-          type: array
-          items:
-            type: string
       required:
         - text
         - rating
-        - project
-        - reviewer
         - likes
         - dislikes
+        - project
+        - reviewer
     Review:
       type: object
       properties:
@@ -1196,6 +1176,12 @@ components:
         rating:
           type: number
           description: Оценка
+        likes:
+          type: number
+          description: Количество лайков
+        dislikes:
+          type: number
+          description: Количество дизлайков
         project:
           description: Проект
           allOf:
@@ -1204,27 +1190,33 @@ components:
           description: Рецензент
           allOf:
             - $ref: '#/components/schemas/User'
-        likes:
-          description: Пользователи, поставившие лайки
-          type: array
-          items:
-            $ref: '#/components/schemas/ObjectId'
-        dislikes:
-          description: Пользователи, поставившие дизлайки
-          type: array
-          items:
-            $ref: '#/components/schemas/ObjectId'
       required:
         - _id
         - text
         - rating
-        - project
-        - reviewer
         - likes
         - dislikes
+        - project
+        - reviewer
     UpdateReviewDto:
       type: object
       properties: {}
+    UserFullNameDto:
+      type: object
+      properties:
+        surname:
+          type: string
+          description: Фамилия
+        name:
+          type: string
+          description: Имя
+        patronymic:
+          type: string
+          description: Отчество
+      required:
+        - surname
+        - name
+        - patronymic
     CreateUserDto:
       type: object
       properties:
@@ -1261,18 +1253,9 @@ components:
           description: О себе
         links:
           description: Ссылки
-          allOf:
-            - $ref: '#/components/schemas/UserLinksDto'
-        awards:
-          description: Награды
           type: array
           items:
-            $ref: '#/components/schemas/Award'
-        projects:
-          description: Проекты
-          type: array
-          items:
-            $ref: '#/components/schemas/Project'
+            $ref: '#/components/schemas/LinkDto'
       required:
         - username
         - email
@@ -1284,8 +1267,6 @@ components:
         - avatar
         - about
         - links
-        - awards
-        - projects
     SignInDto:
       type: object
       properties:

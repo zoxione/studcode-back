@@ -1,19 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsEnum,
-  IsInt,
-  IsNumber,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUrl,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
+import { LinkDto } from 'src/common/dto/link.dto';
 import { ProjectPrice } from '../types/project-price';
 import { ProjectStatus } from '../types/project-status';
-import { ProjectLinksDto } from './project-links.dto';
+import { ProjectType } from '../types/project-type';
 
 export class CreateProjectDto {
   @ApiProperty({ description: 'Название', type: String })
@@ -28,7 +19,12 @@ export class CreateProjectDto {
   @ApiProperty({ description: 'Статус', type: String, enum: ProjectStatus })
   @IsEnum(ProjectStatus)
   @IsOptional()
-  readonly status: string;
+  readonly status: ProjectStatus;
+
+  @ApiProperty({ description: 'Тип', type: String, enum: ProjectType })
+  @IsEnum(ProjectType)
+  @IsOptional()
+  readonly type: ProjectType;
 
   @ApiProperty({ description: 'Описание', type: String })
   @IsString()
@@ -40,19 +36,19 @@ export class CreateProjectDto {
   @IsOptional()
   readonly flames: number;
 
-  @ApiProperty({ description: 'Ссылки', type: ProjectLinksDto })
-  @IsObject()
-  @ValidateNested()
-  @Type(() => ProjectLinksDto)
+  @ApiProperty({ description: 'Ссылки', type: [LinkDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => LinkDto)
   @IsOptional()
-  readonly links: ProjectLinksDto;
+  readonly links: LinkDto[];
 
   @ApiProperty({ description: 'Ссылка на логотип', type: String })
   @IsUrl()
   @IsOptional()
   readonly logo: string;
 
-  @ApiProperty({ description: 'Массив скриншотов', type: [String] })
+  @ApiProperty({ description: 'Скриншоты', type: [String] })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
@@ -61,7 +57,7 @@ export class CreateProjectDto {
   @ApiProperty({ description: 'Цена', type: String, enum: ProjectPrice })
   @IsEnum(ProjectPrice)
   @IsOptional()
-  readonly price: string;
+  readonly price: ProjectPrice;
 
   @ApiProperty({ description: 'Рейтинг', type: Number })
   @IsNumber()
@@ -73,13 +69,19 @@ export class CreateProjectDto {
   @IsOptional()
   readonly slug: string;
 
+  @ApiProperty({ description: 'Создатель', type: String })
+  @IsString()
+  @IsOptional()
+  readonly creator: string;
+
+  @ApiProperty({ description: 'Команда', type: String })
+  @IsString()
+  @IsOptional()
+  readonly team: string;
+
   @ApiProperty({ description: 'Теги', type: [String] })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
   readonly tags: string[];
-
-  @ApiProperty({ description: 'Создатель', type: String })
-  @IsString()
-  readonly creator: string;
 }

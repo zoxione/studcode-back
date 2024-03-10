@@ -1,3 +1,4 @@
+import slugify from '@sindresorhus/slugify';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -15,15 +16,19 @@ export class TeamsService {
 
   constructor(@InjectModel(Team.name) private readonly teamModel: Model<Team>) {}
 
+  private generateSlug(name: string): string {
+    return `${slugify(name, { decamelize: false })}`;
+  }
+
   private updateMembers(newMembers: TeamMember[], updateDto: UpdateMembersTeamDto): TeamMember[] {
     updateDto.members.forEach((item) => {
       if (item.action === 'add') {
-        if (!newMembers.some((member) => member.user.toString() === item.payload.user)) {
-          newMembers.push({ user: new mongoose.Types.ObjectId(item.payload.user), role: item.payload.role });
+        if (!newMembers.some((member) => member.user.toString() === item.member.user)) {
+          newMembers.push({ user: new mongoose.Types.ObjectId(item.member.user), role: item.member.role });
         }
       } else if (item.action === 'remove') {
-        if (newMembers.some((member) => member.user.toString() === item.payload.user)) {
-          newMembers = newMembers.filter((member) => member.user.toString() !== item.payload.user);
+        if (newMembers.some((member) => member.user.toString() === item.member.user)) {
+          newMembers = newMembers.filter((member) => member.user.toString() !== item.member.user);
         }
       }
     });
@@ -32,7 +37,14 @@ export class TeamsService {
 
   async createOne(createTeamDto: CreateTeamDto): Promise<Team> {
     const createdTeam = await this.teamModel.create(createTeamDto);
-    return createdTeam;
+    const updatedTeam = await this.teamModel
+      .findByIdAndUpdate(
+        { _id: createdTeam._id },
+        { $set: { slug: this.generateSlug(createdTeam.name) } },
+        { new: true },
+      )
+      .exec();
+    return updatedTeam as Team;
   }
 
   async findAll({
@@ -103,6 +115,10 @@ export class TeamsService {
         foundTeam = await this.teamModel.findOne({ name: fieldValue }).populate(this.populations).exec();
         break;
       }
+      case 'slug': {
+        foundTeam = await this.teamModel.findOne({ slug: fieldValue }).populate(this.populations).exec();
+        break;
+      }
       default: {
         break;
       }
@@ -141,8 +157,28 @@ export class TeamsService {
     let updatedTeam: Team | null = null;
     switch (field) {
       case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          updatedTeam = await this.teamModel
+            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+              new: true,
+            })
+            .populate(this.populations)
+            .exec();
+        }
+        break;
+      }
+      case 'name': {
         updatedTeam = await this.teamModel
-          .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+          .findOneAndUpdate({ name: fieldValue }, updateDto, {
+            new: true,
+          })
+          .populate(this.populations)
+          .exec();
+        break;
+      }
+      case 'slug': {
+        updatedTeam = await this.teamModel
+          .findOneAndUpdate({ slug: fieldValue }, updateDto, {
             new: true,
           })
           .populate(this.populations)
@@ -156,7 +192,70 @@ export class TeamsService {
     if (!updatedTeam && options.throw) {
       throw new NotFoundException('Team Not Updated');
     }
+    if (updatedTeam && updateDto.name) {
+      updatedTeam = await this.teamModel
+        .findOneAndUpdate(
+          { _id: updatedTeam._id },
+          { $set: { slug: this.generateSlug(updatedTeam.name) } },
+          {
+            new: true,
+          },
+        )
+        .populate(this.populations)
+        .exec();
+    }
     return updatedTeam;
+  }
+
+  async deleteOne(field: keyof Team, fieldValue: unknown): Promise<Team>;
+  async deleteOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: true;
+    },
+  ): Promise<Team>;
+  async deleteOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: false;
+    },
+  ): Promise<Team | null>;
+  async deleteOne(
+    field: keyof Team,
+    fieldValue: unknown,
+    options: {
+      secret?: boolean;
+      throw?: boolean;
+    } = { secret: false, throw: true },
+  ): Promise<Team | null> {
+    let deletedTeam: Team | null = null;
+    switch (field) {
+      case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          deletedTeam = await this.teamModel.findByIdAndRemove({ _id: fieldValue }).populate(this.populations).exec();
+        }
+        break;
+      }
+      case 'name': {
+        deletedTeam = await this.teamModel.findByIdAndRemove({ name: fieldValue }).populate(this.populations).exec();
+        break;
+      }
+      case 'slug': {
+        deletedTeam = await this.teamModel.findByIdAndRemove({ slug: fieldValue }).populate(this.populations).exec();
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+    if (!deletedTeam && options.throw) {
+      throw new NotFoundException('Team Not Deleted');
+    }
+    return deletedTeam;
   }
 
   async updateMembersOne(field: keyof Team, fieldValue: unknown, updateDto: UpdateMembersTeamDto): Promise<Team>;
@@ -222,6 +321,23 @@ export class TeamsService {
           .exec();
         break;
       }
+      case 'slug': {
+        updatedTeam = await this.teamModel.findOne({ slug: fieldValue }).exec();
+        if (!updatedTeam) {
+          break;
+        }
+        updatedTeam = await this.teamModel
+          .findOneAndUpdate(
+            { slug: fieldValue },
+            { members: this.updateMembers(updatedTeam.members, updateDto) },
+            {
+              new: true,
+            },
+          )
+          .populate(this.populations)
+          .exec();
+        break;
+      }
       default: {
         break;
       }
@@ -230,46 +346,5 @@ export class TeamsService {
       throw new NotFoundException('Team Not Updated');
     }
     return updatedTeam;
-  }
-
-  async deleteOne(field: keyof Team, fieldValue: unknown): Promise<Team>;
-  async deleteOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: true;
-    },
-  ): Promise<Team>;
-  async deleteOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: false;
-    },
-  ): Promise<Team | null>;
-  async deleteOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: boolean;
-    } = { secret: false, throw: true },
-  ): Promise<Team | null> {
-    let deletedTeam: Team | null = null;
-    switch (field) {
-      case '_id': {
-        deletedTeam = await this.teamModel.findByIdAndRemove({ _id: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-    if (!deletedTeam && options.throw) {
-      throw new NotFoundException('Team Not Deleted');
-    }
-    return deletedTeam;
   }
 }

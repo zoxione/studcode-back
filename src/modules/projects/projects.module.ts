@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ProjectsService } from './projects.service';
-import { ProjectsController } from './projects.controller';
-import { Project, ProjectSchema } from './schemas/project.schema';
 import { TagsModule } from '../tags/tags.module';
-import { VotesModule } from '../votes/votes.module';
 import { UploadModule } from '../upload/upload.module';
+import { VotesModule } from '../votes/votes.module';
+import { ProjectsController } from './projects.controller';
+import { ProjectsService } from './projects.service';
+import { Project, ProjectSchema } from './schemas/project.schema';
 
 @Module({
   imports: [
