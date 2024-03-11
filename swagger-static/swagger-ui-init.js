@@ -583,7 +583,7 @@ window.onload = function() {
       "/api/v1/users/{key}/uploads": {
         "post": {
           "operationId": "UsersController_uploadFiles",
-          "summary": "Загрузка файлов ",
+          "summary": "Загрузка файлов пользователя",
           "parameters": [
             {
               "name": "key",
@@ -852,6 +852,38 @@ window.onload = function() {
             },
             "404": {
               "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/teams/{key}/uploads": {
+        "post": {
+          "operationId": "TeamsController_uploadFiles",
+          "summary": "Загрузка файлов команды",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            },
+            "401": {
+              "description": "Unauthorized"
             }
           },
           "tags": [

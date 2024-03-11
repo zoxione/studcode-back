@@ -9,12 +9,17 @@ import { Team } from './schemas/team.schema';
 import { FindAllReturnTeam } from './types/find-all-return-team';
 import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
 import { TeamMember } from './schemas/team-member.schema';
+import { TeamFiles } from './types/team-files';
+import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class TeamsService {
   private readonly populations = [{ path: 'members.user', select: '_id username avatar full_name' }];
 
-  constructor(@InjectModel(Team.name) private readonly teamModel: Model<Team>) {}
+  constructor(
+    @InjectModel(Team.name) private readonly teamModel: Model<Team>,
+    private uploadService: UploadService,
+  ) {}
 
   private generateSlug(name: string): string {
     return `${slugify(name, { decamelize: false })}`;
@@ -346,5 +351,21 @@ export class TeamsService {
       throw new NotFoundException('Team Not Updated');
     }
     return updatedTeam;
+  }
+
+  async uploadFiles(team_id: mongoose.Types.ObjectId, files: TeamFiles): Promise<Team> {
+    const userFiles: Pick<Team, 'logo'> = {
+      logo: '',
+    };
+    for (const file of files.flat()) {
+      if (file.fieldname === 'logo_file') {
+        const res = await this.uploadService.upload(`team-${team_id}-logo.${file.mimetype.split('/')[1]}`, file);
+        userFiles.logo = res;
+      }
+    }
+    const updatedProject = await this.updateOne('_id', team_id, {
+      ...userFiles,
+    });
+    return updatedProject;
   }
 }

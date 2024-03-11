@@ -321,7 +321,7 @@ paths:
   /api/v1/users/{key}/uploads:
     post:
       operationId: UsersController_uploadFiles
-      summary: 'Загрузка файлов '
+      summary: Загрузка файлов пользователя
       parameters:
         - name: key
           required: true
@@ -474,6 +474,23 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
+      tags: *ref_6
+      security: *ref_7
+  /api/v1/teams/{key}/uploads:
+    post:
+      operationId: TeamsController_uploadFiles
+      summary: Загрузка файлов команды
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+        '401':
+          description: Unauthorized
       tags: *ref_6
       security: *ref_7
   /api/v1/reviews:

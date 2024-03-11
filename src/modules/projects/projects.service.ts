@@ -239,10 +239,7 @@ export class ProjectsService {
   }
 
   async uploadFiles(project_id: mongoose.Types.ObjectId, files: ProjectFiles): Promise<Project> {
-    const projectFiles: Pick<Project, 'logo' | 'screenshots'> = {
-      logo: '',
-      screenshots: [],
-    };
+    const projectFiles: Partial<Pick<Project, 'logo' | 'screenshots'>> = {};
     let index = 0;
     for (const file of files.flat()) {
       if (file.fieldname === 'logo_file') {
@@ -253,6 +250,9 @@ export class ProjectsService {
           `project-${project_id}-screenshot-${index}.${file.mimetype.split('/')[1]}`,
           file,
         );
+        if (!projectFiles.screenshots) {
+          projectFiles.screenshots = [];
+        }
         projectFiles.screenshots.push(res);
         index += 1;
       }

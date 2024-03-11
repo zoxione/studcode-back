@@ -1,4 +1,19 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  ParseFilePipeBuilder,
+  Post,
+  Put,
+  Query,
+  Req,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateTeamDto } from './dto/create-team.dto';
@@ -8,6 +23,9 @@ import { Team } from './schemas/team.schema';
 import { TeamsService } from './teams.service';
 import { FindAllReturnTeam } from './types/find-all-return-team';
 import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { ParseFilesPipe } from 'src/common/validation/parse-files-pipe';
+import { TeamFiles } from './types/team-files';
 
 @ApiBearerAuth()
 @ApiTags('teams')
@@ -97,5 +115,37 @@ export class TeamsController {
       updatedTeam = await this.teamsService.updateMembersOne('slug', key, updateDto, { throw: true });
     }
     return updatedTeam;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/:key/uploads')
+  @UseInterceptors(FileFieldsInterceptor([{ name: 'logo_file', maxCount: 1 }]))
+  @ApiOperation({ summary: 'Загрузка файлов команды' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  async uploadFiles(
+    @Param('key') key: string,
+    @UploadedFiles(
+      new ParseFilesPipe(
+        new ParseFilePipeBuilder()
+          .addFileTypeValidator({
+            fileType: /(jpeg|jpg|png|webp)$/,
+          })
+          .addMaxSizeValidator({
+            maxSize: 5 * 1024 * 1024, // 5 MB in bytes
+          })
+          .build({
+            fileIsRequired: false,
+            errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+          }),
+      ),
+    )
+    files: TeamFiles,
+  ): Promise<Team> {
+    let team = await this.teamsService.findOne('_id', key);
+    if (files.length > 0) {
+      team = await this.teamsService.uploadFiles(team._id, files);
+    }
+    return team;
   }
 }

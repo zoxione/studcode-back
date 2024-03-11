@@ -76,9 +76,9 @@ export class ProjectsController {
     @Body() updateDto: UpdateProjectDto,
   ): Promise<Project> {
     const project = await this.projectsService.findOne('_id', key);
-    // if (project.creator._id.toString() !== req.user.sub) {
-    //   throw new UnauthorizedException('You are not allowed to update this project');
-    // }
+    if (project.creator._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to update this project');
+    }
     let updatedProject = await this.projectsService.updateOne('_id', key, updateDto, { throw: false });
     if (!updatedProject) {
       updatedProject = await this.projectsService.updateOne('slug', key, updateDto, { throw: true });
@@ -118,9 +118,9 @@ export class ProjectsController {
     files: ProjectFiles,
   ): Promise<Project> {
     let project = await this.projectsService.findOne('_id', key);
-    // if (project.creator._id.toString() !== req.user.sub) {
-    //   throw new UnauthorizedException('You are not allowed to upload files this project');
-    // }
+    if (project.creator._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to upload files this project');
+    }
     if (files.length > 0) {
       project = await this.projectsService.uploadFiles(project._id, files);
     }
@@ -145,9 +145,9 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async deleteOneById(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Project> {
     const project = await this.projectsService.findOne('_id', key);
-    // if (project.creator._id.toString() !== req.user.sub) {
-    //   throw new UnauthorizedException('You are not allowed to update this project');
-    // }
+    if (project.creator._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to update this project');
+    }
     let deletedProject = await this.projectsService.deleteOne('_id', key, { throw: false });
     if (!deletedProject) {
       deletedProject = await this.projectsService.deleteOne('slug', key, { throw: true });

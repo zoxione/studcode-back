@@ -104,7 +104,7 @@ export class UsersController {
   @UseGuards(AccessTokenGuard)
   @Post('/:key/uploads')
   @UseInterceptors(FileFieldsInterceptor([{ name: 'avatar_file', maxCount: 1 }]))
-  @ApiOperation({ summary: 'Загрузка файлов ' })
+  @ApiOperation({ summary: 'Загрузка файлов пользователя' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async uploadFiles(
