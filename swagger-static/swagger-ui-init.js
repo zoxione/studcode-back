@@ -265,7 +265,7 @@ window.onload = function() {
         }
       },
       "/api/v1/projects/{key}/vote": {
-        "put": {
+        "post": {
           "operationId": "ProjectsController_voteOneById",
           "summary": "Голосование за проект по ID",
           "parameters": [
@@ -1058,6 +1058,90 @@ window.onload = function() {
         "delete": {
           "operationId": "ReviewsController_deleteOneById",
           "summary": "Удаление обзора по ID",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews/{key}/like": {
+        "post": {
+          "operationId": "ReviewsController_likeOne",
+          "summary": "Лайк обзора по ID",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews/{key}/dislike": {
+        "post": {
+          "operationId": "ReviewsController_dislikeOne",
+          "summary": "Дизлайк обзора по ID",
           "parameters": [
             {
               "name": "key",

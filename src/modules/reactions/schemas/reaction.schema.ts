@@ -2,18 +2,18 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { User } from '../../users/schemas/user.schema';
-import { ReviewReactionType } from '../types/review-reaction-type';
-import { Review } from './review.schema';
+import { ReactionType } from '../types/reaction-type';
+import { Review } from '../../reviews/schemas/review.schema';
 
-type ReviewReactionDocument = HydratedDocument<ReviewReaction>;
+type ReactionDocument = HydratedDocument<Reaction>;
 
 @Schema()
-class ReviewReaction {
+class Reaction {
   @ApiProperty({ description: 'Идентификатор', type: mongoose.Types.ObjectId })
   _id: mongoose.Types.ObjectId;
 
-  @ApiProperty({ description: 'Тип', type: String, enum: ReviewReactionType })
-  @Prop({ type: String, enum: ReviewReactionType, default: ReviewReactionType.None })
+  @ApiProperty({ description: 'Тип', type: String, enum: ReactionType })
+  @Prop({ type: String, enum: ReactionType, default: ReactionType.None })
   type: string;
 
   @ApiProperty({ description: 'Пользователь', type: User })
@@ -25,11 +25,11 @@ class ReviewReaction {
   review: Review;
 }
 
-const ReviewReactionSchema = SchemaFactory.createForClass(ReviewReaction);
-ReviewReactionSchema.index({ text: 'text' });
-ReviewReactionSchema.set('timestamps', {
+const ReactionSchema = SchemaFactory.createForClass(Reaction);
+ReactionSchema.index({ text: 'text' });
+ReactionSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
 });
 
-export { ReviewReaction, ReviewReactionDocument, ReviewReactionSchema };
+export { Reaction, ReactionDocument, ReactionSchema };

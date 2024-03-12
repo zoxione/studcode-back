@@ -1,12 +1,17 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ProjectsService } from '../projects/projects.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindAllFilterReviewDto } from './dto/find-all-filter-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './schemas/review.schema';
 import { FindAllReturnReview } from './types/find-all-return-review';
+import { ReactionsService } from '../reactions/reactions.service';
+import { ReactionType } from '../reactions/types/reaction-type';
+import { CreateReactionDto } from '../reactions/dto/create-reaction.dto';
+import { Reaction } from '../reactions/schemas/reaction.schema';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class ReviewsService {
@@ -23,6 +28,8 @@ export class ReviewsService {
 
   constructor(
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+    @InjectModel(Reaction.name) private readonly reactionModel: Model<Reaction>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
     private projectsService: ProjectsService,
   ) {}
 
@@ -209,5 +216,75 @@ export class ReviewsService {
       throw new NotFoundException('Review Not Deleted');
     }
     return deletedReview;
+  }
+
+  async reactionOne(
+    field: keyof Review,
+    fieldValue: unknown,
+    createReactionDto: Pick<CreateReactionDto, 'type' | 'reacted_by'>,
+  ): Promise<Review> {
+    let review;
+    switch (field) {
+      case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          review = await this.reviewModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
+        }
+        break;
+      }
+      default: {
+        break;
+      }
+    }
+    if (!review) {
+      throw new NotFoundException('Review Not Found');
+    }
+
+    const user = await this.userModel.findOne({ _id: createReactionDto.reacted_by });
+    if (!user) {
+      throw new NotFoundException('User Not Found');
+    }
+
+    const reaction = await this.reactionModel.findOne({
+      review: review._id,
+      reacted_by: user._id,
+    });
+
+    if (!reaction || reaction.type !== createReactionDto.type) {
+      await this.reactionModel.updateOne(
+        {
+          review: review._id,
+          reacted_by: user._id,
+        },
+        {
+          $set: {
+            type: createReactionDto.type,
+            review: review._id,
+            reacted_by: user._id,
+          },
+        },
+        {
+          upsert: true,
+        },
+      );
+      if (!reaction) {
+        if (createReactionDto.type === ReactionType.Like) {
+          review.likes += 1;
+        } else if (createReactionDto.type === ReactionType.Dislike) {
+          review.dislikes += 1;
+        }
+      } else if (reaction.type !== createReactionDto.type) {
+        if (createReactionDto.type === ReactionType.Like) {
+          review.likes += 1;
+          review.dislikes -= 1;
+        } else if (createReactionDto.type === ReactionType.Dislike) {
+          review.likes -= 1;
+          review.dislikes += 1;
+        }
+      }
+      review.save();
+    } else {
+      throw new ConflictException(`Review Already ${createReactionDto.type}d`);
+    }
+    return review;
   }
 }

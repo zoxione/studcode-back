@@ -128,13 +128,13 @@ export class ProjectsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Put('/:key/vote')
+  @Post('/:key/vote')
   @ApiOperation({ summary: 'Голосование за проект по ID' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async voteOneById(@Param('key') key: string, @Req() req: AuthUserRequest): Promise<Project> {
-    return this.projectsService.voteOne(key, req.user.sub);
+    return this.projectsService.voteOne('_id', key, req.user.sub);
   }
 
   @UseGuards(AccessTokenGuard)

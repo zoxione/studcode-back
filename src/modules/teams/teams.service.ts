@@ -48,6 +48,7 @@ export class TeamsService {
         { $set: { slug: this.generateSlug(createdTeam.name) } },
         { new: true },
       )
+      .populate(this.populations)
       .exec();
     return updatedTeam as Team;
   }

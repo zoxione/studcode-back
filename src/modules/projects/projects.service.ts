@@ -14,6 +14,8 @@ import { Project } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
 import { ProjectFiles } from './types/project-files';
 import { ProjectTimeFrame } from './types/project-time-frame';
+import { Vote } from '../votes/schemas/vote.schema';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -24,8 +26,9 @@ export class ProjectsService {
 
   constructor(
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
+    @InjectModel(Vote.name) private readonly voteModel: Model<Vote>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
     private tagsService: TagsService,
-    private votesService: VotesService,
     private uploadService: UploadService,
   ) {}
 
@@ -263,56 +266,51 @@ export class ProjectsService {
     return updatedProject;
   }
 
-  async voteOne(project_id: string, voter_id: string): Promise<Project>;
-  async voteOne(
-    project_id: string,
-    voter_id: string,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Project>;
-  async voteOne(
-    project_id: string,
-    voter_id: string,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Project | null>;
-  async voteOne(
-    project_id: string,
-    voter_id: string,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Project | null> {
-    const project = await this.projectModel.findOne({ _id: project_id });
+  async voteOne(field: keyof Project, fieldValue: unknown, voter_id: string): Promise<Project> {
+    let project;
+    switch (field) {
+      case '_id': {
+        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
+          project = await this.projectModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
+        }
+        break;
+      }
+      case 'slug': {
+        project = await this.projectModel.findOne({ slug: fieldValue }).populate(this.populations).exec();
+        break;
+      }
+      default: {
+        break;
+      }
+    }
     if (!project) {
       throw new NotFoundException('Project Not Found');
     }
-    try {
-      await this.votesService.findOne('project', project._id);
-      throw new ConflictException(`Project with id ${voter_id} already voted`);
-    } catch (e) {
-      if (e.response.error === 'Not Found') {
-        await this.votesService.createOne({ project: project_id, voter: voter_id });
-        const updatedProject = await this.projectModel
-          .findOneAndUpdate(
-            { _id: project_id },
-            { flames: project.flames + 1 },
-            {
-              new: true,
-            },
-          )
-          .populate(this.populations)
-          .exec();
-        if (!updatedProject && options.throw) {
-          throw new NotFoundException('Project Not Updated');
-        }
-        return updatedProject;
-      } else {
-        throw e;
-      }
+
+    const user = await this.userModel.findOne({ _id: voter_id });
+    if (!user) {
+      throw new NotFoundException('User Not Found');
     }
+
+    const vote = await this.voteModel.findOne({
+      project: project._id,
+      voter: user._id,
+    });
+    if (vote) {
+      await this.voteModel.deleteOne({
+        _id: vote._id,
+      });
+      project.flames -= 1;
+    } else {
+      await this.voteModel.create({
+        project: project._id,
+        voter: user._id,
+      });
+      project.flames += 1;
+    }
+
+    project.save();
+    return project;
   }
 
   async deleteOne(field: keyof Project, fieldValue: unknown): Promise<Project>;

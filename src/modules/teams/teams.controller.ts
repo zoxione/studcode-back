@@ -24,7 +24,7 @@ import { TeamsService } from './teams.service';
 import { FindAllReturnTeam } from './types/find-all-return-team';
 import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ParseFilesPipe } from 'src/common/validation/parse-files-pipe';
+import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { TeamFiles } from './types/team-files';
 
 @ApiBearerAuth()

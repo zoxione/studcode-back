@@ -60,26 +60,36 @@ export class TagsService {
         $match: { status: ProjectStatus.Published }, // Фильтрация по статусу 'Published'
       },
       {
-        $unwind: '$tags', // Развернуть массив тегов
+        $unwind: '$tags', // Разворачиваем массив тегов
       },
       {
         $group: {
-          _id: '$tags', // Группировка по тегу
-          count: { $sum: 1 }, // Подсчет количества проектов для каждого тега
+          _id: '$tags', // Группируем по тегам
+          count: { $sum: 1 }, // Считаем количество проектов для каждого тега
         },
       },
       {
-        $sort: {
-          count: -1, // Сортировка по убыванию количества проектов
+        $sort: { count: -1 }, // Сортируем в убывающем порядке по количеству проектов
+      },
+      {
+        $limit: 10, // Выбираем первые 10 тегов
+      },
+      {
+        $lookup: {
+          from: 'tags', // Имя коллекции тегов
+          localField: '_id',
+          foreignField: '_id',
+          as: 'tagData', // Добавляем данные о теге
         },
       },
       {
-        $limit: 5, // Установка лимита для количества возвращаемых тегов
+        $unwind: '$tagData', // Разворачиваем массив с данными о теге
+      },
+      {
+        $replaceRoot: { newRoot: '$tagData' }, // Заменяем корень документа на данные о теге
       },
     ]);
-    const tagIds = popularTags.map((tag) => tag._id);
-    const tags = await this.tagModel.find({ _id: { $in: tagIds } });
-    return tags;
+    return popularTags;
   }
 
   async findOne(field: keyof Tag, fieldValue: unknown): Promise<Tag>;

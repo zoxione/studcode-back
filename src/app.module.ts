@@ -13,6 +13,7 @@ import { VotesModule } from './modules/votes/votes.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { AppController } from './app.controller';
+import { ReactionsModule } from './modules/reactions/reactions.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AppController } from './app.controller';
     TeamsModule,
     VotesModule,
     ReviewsModule,
+    ReactionsModule,
     UploadModule,
     AuthModule,
     ServeStaticModule.forRoot({

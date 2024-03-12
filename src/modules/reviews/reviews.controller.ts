@@ -21,6 +21,8 @@ import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewsService } from './reviews.service';
 import { Review } from './schemas/review.schema';
 import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { CreateReactionDto } from '../reactions/dto/create-reaction.dto';
+import { ReactionType } from '../reactions/types/reaction-type';
 
 @ApiBearerAuth()
 @ApiTags('reviews')
@@ -84,5 +86,31 @@ export class ReviewsController {
       throw new UnauthorizedException('You are not allowed to update this review');
     }
     return this.reviewsService.deleteOne('_id', key);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/:key/like')
+  @ApiOperation({ summary: 'Лайк обзора по ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async likeOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
+    return this.reviewsService.reactionOne('_id', key, {
+      type: ReactionType.Like,
+      reacted_by: req.user.sub,
+    });
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('/:key/dislike')
+  @ApiOperation({ summary: 'Дизлайк обзора по ID' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async dislikeOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
+    return this.reviewsService.reactionOne('_id', key, {
+      type: ReactionType.Dislike,
+      reacted_by: req.user.sub,
+    });
   }
 }
