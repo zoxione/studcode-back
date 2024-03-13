@@ -1,55 +1,64 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { ProjectsService } from '../projects/projects.service';
+import { OperationOptions } from '../../common/types/operation-options';
+import { Project } from '../projects/schemas/project.schema';
+import { CreateReactionDto } from '../reactions/dto/create-reaction.dto';
+import { Reaction } from '../reactions/schemas/reaction.schema';
+import { ReactionType } from '../reactions/types/reaction-type';
+import { User } from '../users/schemas/user.schema';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindAllFilterReviewDto } from './dto/find-all-filter-review.dto';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { Review } from './schemas/review.schema';
 import { FindAllReturnReview } from './types/find-all-return-review';
-import { ReactionsService } from '../reactions/reactions.service';
-import { ReactionType } from '../reactions/types/reaction-type';
-import { CreateReactionDto } from '../reactions/dto/create-reaction.dto';
-import { Reaction } from '../reactions/schemas/reaction.schema';
-import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class ReviewsService {
-  private readonly populations = [
-    {
-      path: 'project',
-      select: '_id title',
-    },
-    {
-      path: 'reviewer',
-      select: '_id username full_name.surname full_name.name full_name.patronymic avatar',
-    },
-  ];
-
   constructor(
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
     @InjectModel(Reaction.name) private readonly reactionModel: Model<Reaction>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
-    private projectsService: ProjectsService,
+    @InjectModel(Project.name) private readonly projectModel: Model<Project>,
   ) {}
 
+  private calcAvgRating(reviewsProject: Review[]): number {
+    if (reviewsProject.length === 0) {
+      return 0;
+    }
+    return reviewsProject.reduce((sum, review) => sum + review.rating, 0) / reviewsProject.length;
+  }
+
+  private async updateProjectRating(project_id: mongoose.Types.ObjectId) {
+    const project = await this.projectModel.findOne({ _id: project_id });
+    if (!project) {
+      throw new NotFoundException('Project review not found');
+    }
+    const reviewsProject = await this.reviewModel.find({ project: project_id });
+    project.rating = this.calcAvgRating(reviewsProject);
+    await project.save();
+  }
+
   async createOne(createReviewDto: CreateReviewDto): Promise<Review> {
-    const existingReview = await this.reviewModel.findOne({
+    const foundReview = await this.reviewModel.findOne({
       project: createReviewDto.project,
       reviewer: createReviewDto.reviewer,
     });
-    if (existingReview) {
+    if (foundReview) {
       throw new ConflictException(`Review for project ${createReviewDto.project} already exists`);
     }
-    const existingProject = await this.projectsService.findOne('_id', createReviewDto.project);
+    const project = await this.projectModel.findOne({ _id: createReviewDto.project });
+    if (!project) {
+      throw new NotFoundException('Project not found');
+    }
+    const user = await this.userModel.findOne({ _id: createReviewDto.reviewer });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     const createdReview = await this.reviewModel.create(createReviewDto);
-    const reviewsProject = await this.reviewModel.find({ project: createReviewDto.project });
-    const avg_rating = reviewsProject.reduce((sum, review) => sum + review.rating, 0) / reviewsProject.length;
-    const updatedProject = await this.projectsService.updateOne('_id', createReviewDto.project, {
-      rating: avg_rating,
-    });
-    await createdReview.populate(this.populations);
-    return createdReview;
+    await this.updateProjectRating(project._id);
+    return createdReview.toObject();
   }
 
   async findAll({
@@ -69,7 +78,6 @@ export class ReviewsService {
       })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate(this.populations)
       .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
@@ -89,190 +97,100 @@ export class ReviewsService {
     };
   }
 
-  async findOne(field: keyof Review, fieldValue: unknown): Promise<Review>;
-  async findOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Review>;
-  async findOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Review | null>;
-  async findOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Review | null> {
-    let foundReview: Review | null = null;
-    switch (field) {
-      case '_id': {
-        foundReview = await this.reviewModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      case 'project': {
-        foundReview = await this.reviewModel.findOne({ project: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async findOne({ fields, fieldValue }: OperationOptions<Review>): Promise<Review> {
+    let foundReview = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      foundReview = await this.reviewModel.findOne({ [field]: fieldValue }).exec();
+      if (foundReview) break;
     }
-    if (!foundReview && options.throw) {
-      throw new NotFoundException('Review Not Found');
+    if (!foundReview) {
+      throw new NotFoundException('Review not found');
     }
-    return foundReview;
+    return foundReview.toObject();
   }
 
-  async updateOne(field: keyof Review, fieldValue: unknown, updateDto: Partial<UpdateReviewDto>): Promise<Review>;
-  async updateOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateReviewDto>,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Review>;
-  async updateOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateReviewDto>,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Review | null>;
-  async updateOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateReviewDto>,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Review | null> {
-    let updatedReview: Review | null = null;
-    switch (field) {
-      case '_id': {
-        updatedReview = await this.reviewModel
-          .findOneAndUpdate({ _id: fieldValue }, updateDto, {
+  async updateOne({
+    fields,
+    fieldValue,
+    updateDto,
+  }: { updateDto: UpdateReviewDto } & OperationOptions<Review>): Promise<Review> {
+    let updatedReview = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      updatedReview = await this.reviewModel
+        .findOneAndUpdate(
+          { [field]: fieldValue },
+          { $set: updateDto },
+          {
             new: true,
-          })
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      default: {
-        break;
-      }
+          },
+        )
+        .exec();
+      if (updatedReview) break;
     }
-    if (!updatedReview && options.throw) {
-      throw new NotFoundException('Review Not Updated');
+    if (!updatedReview) {
+      throw new NotFoundException('Review not updated');
     }
-    return updatedReview;
+    await this.updateProjectRating(updatedReview.project._id);
+    return updatedReview.toObject();
   }
 
-  async deleteOne(field: keyof Review, fieldValue: unknown): Promise<Review>;
-  async deleteOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: true;
-    },
-  ): Promise<Review>;
-  async deleteOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: false;
-    },
-  ): Promise<Review | null>;
-  async deleteOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: boolean;
-    } = { secret: false, throw: true },
-  ): Promise<Review | null> {
-    let deletedReview: Review | null = null;
-    switch (field) {
-      case '_id': {
-        deletedReview = await this.reviewModel.findByIdAndRemove({ _id: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async deleteOne({ fields, fieldValue }: OperationOptions<Review>): Promise<Review> {
+    let deletedReview = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      deletedReview = await this.reviewModel.findOneAndRemove({ [field]: fieldValue }).exec();
+      if (deletedReview) break;
     }
-    if (!deletedReview && options.throw) {
-      throw new NotFoundException('Review Not Deleted');
+    if (!deletedReview) {
+      throw new NotFoundException('Review not deleted');
     }
-    return deletedReview;
+    await this.updateProjectRating(deletedReview.project._id);
+    await this.reactionModel.deleteMany({ review: deletedReview._id }).exec();
+    return deletedReview.toObject();
   }
 
-  async reactionOne(
-    field: keyof Review,
-    fieldValue: unknown,
-    createReactionDto: Pick<CreateReactionDto, 'type' | 'reacted_by'>,
-  ): Promise<Review> {
-    let review;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          review = await this.reviewModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
-        }
-        break;
-      }
-      default: {
-        break;
-      }
+  async reactionOne({
+    fields,
+    fieldValue,
+    createReactionDto,
+  }: {
+    createReactionDto: Pick<CreateReactionDto, 'type' | 'reacted_by'>;
+  } & OperationOptions<Review>): Promise<Review> {
+    let review = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      review = await this.reviewModel.findOne({ [field]: fieldValue }).exec();
+      if (review) break;
     }
     if (!review) {
-      throw new NotFoundException('Review Not Found');
+      throw new NotFoundException('Review not found');
     }
-
     const user = await this.userModel.findOne({ _id: createReactionDto.reacted_by });
     if (!user) {
-      throw new NotFoundException('User Not Found');
+      throw new NotFoundException('User not found');
     }
 
     const reaction = await this.reactionModel.findOne({
       review: review._id,
       reacted_by: user._id,
     });
-
     if (!reaction || reaction.type !== createReactionDto.type) {
       await this.reactionModel.updateOne(
-        {
-          review: review._id,
-          reacted_by: user._id,
-        },
-        {
-          $set: {
-            type: createReactionDto.type,
-            review: review._id,
-            reacted_by: user._id,
-          },
-        },
-        {
-          upsert: true,
-        },
+        { review: review._id, reacted_by: user._id },
+        { $set: { type: createReactionDto.type, review: review._id, reacted_by: user._id } },
+        { upsert: true },
       );
       if (!reaction) {
+        // Если произошла первая реакция
         if (createReactionDto.type === ReactionType.Like) {
           review.likes += 1;
         } else if (createReactionDto.type === ReactionType.Dislike) {
           review.dislikes += 1;
         }
       } else if (reaction.type !== createReactionDto.type) {
+        // Если произошла реакция другого типа
         if (createReactionDto.type === ReactionType.Like) {
           review.likes += 1;
           review.dislikes -= 1;
@@ -281,10 +199,11 @@ export class ReviewsService {
           review.dislikes += 1;
         }
       }
-      review.save();
     } else {
-      throw new ConflictException(`Review Already ${createReactionDto.type}d`);
+      throw new ConflictException(`Review already ${createReactionDto.type}d`);
     }
+
+    await review.save();
     return review;
   }
 }

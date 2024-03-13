@@ -32,4 +32,19 @@ ReactionSchema.set('timestamps', {
   updatedAt: 'updated_at',
 });
 
+ReactionSchema.pre(/^find/, function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
+  this.populate([
+    { path: 'review', select: '_id rating' },
+    { path: 'reacted_by', select: '_id username avatar full_name' },
+  ]);
+  next();
+});
+ReactionSchema.pre('save', function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
+  this.populate([
+    { path: 'review', select: '_id rating' },
+    { path: 'reacted_by', select: '_id username avatar full_name' },
+  ]);
+  next();
+});
+
 export { Reaction, ReactionDocument, ReactionSchema };

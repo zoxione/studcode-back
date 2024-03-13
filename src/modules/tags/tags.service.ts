@@ -1,12 +1,12 @@
-import slugify from '@sindresorhus/slugify';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import slugify from '@sindresorhus/slugify';
 import mongoose, { Model } from 'mongoose';
+import { OperationOptions } from '../../common/types/operation-options';
 import { Project } from '../projects/schemas/project.schema';
 import { ProjectStatus } from '../projects/types/project-status';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { FindAllFilterTagDto } from './dto/find-all-filter-tag.dto';
-import { UpdateTagDto } from './dto/update-tag.dto';
 import { Tag } from './schemas/tag.schema';
 import { FindAllReturnTag } from './types/find-all-return-tag';
 
@@ -23,10 +23,9 @@ export class TagsService {
 
   async createOne(createTagDto: CreateTagDto): Promise<Tag> {
     const createdTag = await this.tagModel.create(createTagDto);
-    const updatedTag = await this.tagModel
-      .findByIdAndUpdate({ _id: createdTag._id }, { $set: { slug: this.generateSlug(createdTag.name) } }, { new: true })
-      .exec();
-    return updatedTag as Tag;
+    createdTag.slug = this.generateSlug(createdTag.name);
+    await createdTag.save();
+    return createdTag.toObject();
   }
 
   async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterTagDto): Promise<FindAllReturnTag> {
@@ -92,160 +91,16 @@ export class TagsService {
     return popularTags;
   }
 
-  async findOne(field: keyof Tag, fieldValue: unknown): Promise<Tag>;
-  async findOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Tag>;
-  async findOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Tag | null>;
-  async findOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Tag | null> {
-    let foundTag: Tag | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          foundTag = await this.tagModel.findOne({ _id: fieldValue }).exec();
-        }
-        break;
-      }
-      case 'slug': {
-        foundTag = await this.tagModel.findOne({ slug: fieldValue }).exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async findOne({ fields, fieldValue }: OperationOptions<Tag>): Promise<Tag> {
+    let foundTag = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      foundTag = await this.tagModel.findOne({ [field]: fieldValue }).exec();
+      if (foundTag) break;
     }
-    if (!foundTag && options.throw) {
-      throw new NotFoundException('Tag Not Found');
+    if (!foundTag) {
+      throw new NotFoundException('Tag not found');
     }
-    return foundTag;
-  }
-
-  async updateOne(field: keyof Tag, fieldValue: unknown, updateDto: Partial<UpdateTagDto>): Promise<Tag>;
-  async updateOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateTagDto>,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Tag>;
-  async updateOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateTagDto>,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Tag | null>;
-  async updateOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateTagDto>,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Tag | null> {
-    let updatedTag: Tag | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          updatedTag = await this.tagModel
-            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
-              new: true,
-            })
-            .exec();
-        }
-        break;
-      }
-      case 'slug': {
-        updatedTag = await this.tagModel
-          .findOneAndUpdate({ slug: fieldValue }, updateDto, {
-            new: true,
-          })
-          .exec();
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-    if (!updatedTag && options.throw) {
-      throw new NotFoundException('Tag Not Updated');
-    }
-    if (updatedTag && updateDto.name) {
-      updatedTag = await this.tagModel
-        .findOneAndUpdate(
-          { _id: updatedTag._id },
-          { $set: { slug: this.generateSlug(updatedTag.name) } },
-          {
-            new: true,
-          },
-        )
-        .exec();
-    }
-    return updatedTag;
-  }
-
-  async deleteOne(field: keyof Tag, fieldValue: unknown): Promise<Tag>;
-  async deleteOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: true;
-    },
-  ): Promise<Tag>;
-  async deleteOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: false;
-    },
-  ): Promise<Tag | null>;
-  async deleteOne(
-    field: keyof Tag,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: boolean;
-    } = { secret: false, throw: true },
-  ): Promise<Tag | null> {
-    let deletedTag: Tag | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          deletedTag = await this.tagModel.findByIdAndRemove({ _id: fieldValue }).exec();
-        }
-        break;
-      }
-      case 'slug': {
-        deletedTag = await this.tagModel.findByIdAndRemove({ slug: fieldValue }).exec();
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-    if (!deletedTag && options.throw) {
-      throw new NotFoundException('Tag Not Deleted');
-    }
-    return deletedTag;
+    return foundTag.toObject();
   }
 }

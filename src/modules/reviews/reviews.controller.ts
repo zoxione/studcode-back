@@ -14,20 +14,21 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { ReactionType } from '../reactions/types/reaction-type';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { FindAllFilterReviewDto } from './dto/find-all-filter-review.dto';
-import { FindAllReturnReview } from './types/find-all-return-review';
 import { UpdateReviewDto } from './dto/update-review.dto';
 import { ReviewsService } from './reviews.service';
 import { Review } from './schemas/review.schema';
-import { AuthUserRequest } from '../auth/types/auth-user-request';
-import { CreateReactionDto } from '../reactions/dto/create-reaction.dto';
-import { ReactionType } from '../reactions/types/reaction-type';
+import { FindAllReturnReview } from './types/find-all-return-review';
 
 @ApiBearerAuth()
 @ApiTags('reviews')
 @Controller({ path: 'reviews', version: '1' })
 export class ReviewsController {
+  private readonly fields: (keyof Review)[] = ['_id'];
+
   constructor(private readonly reviewsService: ReviewsService) {}
 
   @UseGuards(AccessTokenGuard)
@@ -48,69 +49,77 @@ export class ReviewsController {
   }
 
   @Get('/:key')
-  @ApiOperation({ summary: 'Получение обзора по ID' })
+  @ApiOperation({ summary: 'Получение обзора по _id' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('key') key: string): Promise<Review> {
-    return this.reviewsService.findOne('_id', key);
+  async findOne(@Param('key') key: string): Promise<Review> {
+    return this.reviewsService.findOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Put('/:key')
-  @ApiOperation({ summary: 'Обновление обзора по ID' })
+  @ApiOperation({ summary: 'Обновление обзора по _id' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(
+  async updateOne(
     @Req() req: AuthUserRequest,
     @Param('key') key: string,
     @Body() updateDto: UpdateReviewDto,
   ): Promise<Review> {
-    const review = await this.reviewsService.findOne('_id', key);
+    const review = await this.reviewsService.findOne({ fields: this.fields, fieldValue: key });
     if (review.reviewer._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this review');
     }
-    return this.reviewsService.updateOne('_id', key, updateDto);
+    return this.reviewsService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
   }
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:key')
-  @ApiOperation({ summary: 'Удаление обзора по ID' })
+  @ApiOperation({ summary: 'Удаление обзора по _id' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
-    const review = await this.reviewsService.findOne('_id', key);
+  async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
+    const review = await this.reviewsService.findOne({ fields: this.fields, fieldValue: key });
     if (review.reviewer._id.toString() !== req.user.sub) {
-      throw new UnauthorizedException('You are not allowed to update this review');
+      throw new UnauthorizedException('You are not allowed to delete this review');
     }
-    return this.reviewsService.deleteOne('_id', key);
+    return this.reviewsService.deleteOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/like')
-  @ApiOperation({ summary: 'Лайк обзора по ID' })
+  @ApiOperation({ summary: 'Лайк обзора по _id' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async likeOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
-    return this.reviewsService.reactionOne('_id', key, {
-      type: ReactionType.Like,
-      reacted_by: req.user.sub,
+    return this.reviewsService.reactionOne({
+      fields: this.fields,
+      fieldValue: key,
+      createReactionDto: {
+        type: ReactionType.Like,
+        reacted_by: req.user.sub,
+      },
     });
   }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/dislike')
-  @ApiOperation({ summary: 'Дизлайк обзора по ID' })
+  @ApiOperation({ summary: 'Дизлайк обзора по _id' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Review })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async dislikeOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Review> {
-    return this.reviewsService.reactionOne('_id', key, {
-      type: ReactionType.Dislike,
-      reacted_by: req.user.sub,
+    return this.reviewsService.reactionOne({
+      fields: this.fields,
+      fieldValue: key,
+      createReactionDto: {
+        type: ReactionType.Dislike,
+        reacted_by: req.user.sub,
+      },
     });
   }
 }

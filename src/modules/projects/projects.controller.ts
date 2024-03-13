@@ -27,11 +27,14 @@ import { ProjectsService } from './projects.service';
 import { Project } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
 import { ProjectFiles } from './types/project-files';
+import { ReturnProject } from './types/return-project';
 
 @ApiBearerAuth()
 @ApiTags('projects')
 @Controller({ path: 'projects', version: '1' })
 export class ProjectsController {
+  private readonly fields: (keyof Project)[] = ['_id', 'slug'];
+
   constructor(private readonly projectsService: ProjectsService) {}
 
   @UseGuards(AccessTokenGuard)
@@ -39,7 +42,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Создание нового проекта' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async createOne(@Body() createProjectDto: CreateProjectDto): Promise<Project> {
+  async createOne(@Body() createProjectDto: CreateProjectDto): Promise<ReturnProject> {
     return this.projectsService.createOne(createProjectDto);
   }
 
@@ -52,38 +55,44 @@ export class ProjectsController {
   }
 
   @Get('/:key')
-  @ApiOperation({ summary: 'Получение проекта по ID/slug' })
+  @ApiOperation({ summary: `Получение проекта по _id/slug` })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('key') key: string): Promise<Project> {
-    let foundProject = await this.projectsService.findOne('_id', key, { throw: false });
-    if (!foundProject) {
-      foundProject = await this.projectsService.findOne('slug', key, { throw: true });
-    }
-    return foundProject;
+  async findOne(@Param('key') key: string): Promise<ReturnProject> {
+    return this.projectsService.findOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Put('/:key')
-  @ApiOperation({ summary: 'Обновление проекта по ID/slug' })
+  @ApiOperation({ summary: 'Обновление проекта по _id/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(
+  async updateOne(
     @Req() req: AuthUserRequest,
     @Param('key') key: string,
     @Body() updateDto: UpdateProjectDto,
-  ): Promise<Project> {
-    const project = await this.projectsService.findOne('_id', key);
+  ): Promise<ReturnProject> {
+    const project = await this.projectsService.findOne({ fields: this.fields, fieldValue: key });
     if (project.creator._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this project');
     }
-    let updatedProject = await this.projectsService.updateOne('_id', key, updateDto, { throw: false });
-    if (!updatedProject) {
-      updatedProject = await this.projectsService.updateOne('slug', key, updateDto, { throw: true });
+    return this.projectsService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete('/:key')
+  @ApiOperation({ summary: 'Удаление проекта по _id/slug' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<ReturnProject> {
+    const project = await this.projectsService.findOne({ fields: this.fields, fieldValue: key });
+    if (project.creator._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to delete this project');
     }
-    return updatedProject;
+    return this.projectsService.deleteOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
@@ -94,7 +103,7 @@ export class ProjectsController {
       { name: 'screenshots_files', maxCount: 10 },
     ]),
   )
-  @ApiOperation({ summary: 'Загрузка файлов проекта' })
+  @ApiOperation({ summary: 'Загрузка файлов проекта по _id/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async uploadFiles(
@@ -116,42 +125,24 @@ export class ProjectsController {
       ),
     )
     files: ProjectFiles,
-  ): Promise<Project> {
-    let project = await this.projectsService.findOne('_id', key);
+  ): Promise<ReturnProject> {
+    let project = await this.projectsService.findOne({ fields: this.fields, fieldValue: key });
     if (project.creator._id.toString() !== req.user.sub) {
-      throw new UnauthorizedException('You are not allowed to upload files this project');
+      throw new UnauthorizedException('You are not allowed to upload file this project');
     }
     if (files.length > 0) {
-      project = await this.projectsService.uploadFiles(project._id, files);
+      project = await this.projectsService.uploadFiles({ fields: this.fields, fieldValue: key, files: files });
     }
     return project;
   }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/vote')
-  @ApiOperation({ summary: 'Голосование за проект по ID' })
+  @ApiOperation({ summary: 'Голосование за проект по _id/slug' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async voteOneById(@Param('key') key: string, @Req() req: AuthUserRequest): Promise<Project> {
-    return this.projectsService.voteOne('_id', key, req.user.sub);
-  }
-
-  @UseGuards(AccessTokenGuard)
-  @Delete('/:key')
-  @ApiOperation({ summary: 'Удаление проекта по ID/slug' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Project> {
-    const project = await this.projectsService.findOne('_id', key);
-    if (project.creator._id.toString() !== req.user.sub) {
-      throw new UnauthorizedException('You are not allowed to update this project');
-    }
-    let deletedProject = await this.projectsService.deleteOne('_id', key, { throw: false });
-    if (!deletedProject) {
-      deletedProject = await this.projectsService.deleteOne('slug', key, { throw: true });
-    }
-    return deletedProject;
+  async voteOne(@Param('key') key: string, @Req() req: AuthUserRequest): Promise<ReturnProject> {
+    return this.projectsService.voteOne({ fields: this.fields, fieldValue: key, voter_id: req.user.sub });
   }
 }

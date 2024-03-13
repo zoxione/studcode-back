@@ -43,4 +43,13 @@ TeamSchema.set('timestamps', {
   updatedAt: 'updated_at',
 });
 
+TeamSchema.pre(/^find/, function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
+  this.populate([{ path: 'members.user', select: '_id username avatar full_name' }]);
+  next();
+});
+TeamSchema.pre('save', function (next) {
+  this.populate([{ path: 'members.user', select: '_id username avatar full_name' }]);
+  next();
+});
+
 export { Team, TeamDocument, TeamSchema };

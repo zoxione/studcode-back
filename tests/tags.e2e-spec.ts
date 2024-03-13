@@ -4,9 +4,9 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import configuration from '../src/config/configuration';
-import { UpdateTagDto } from '../src/modules/tags/dto/update-tag.dto';
 import { Tag } from '../src/modules/tags/schemas/tag.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
+import { getRandomId } from '../src/utils/get-random-id';
 
 describe('Tags Controller (e2e)', () => {
   let app: INestApplication;
@@ -31,6 +31,7 @@ describe('Tags Controller (e2e)', () => {
   });
 
   const user = {
+    _id: getRandomId(),
     username: Math.random().toString(36).substring(7),
     email: `${Math.random().toString(36).substring(7)}@example.com`,
     password: Math.random().toString(36).substring(7),
@@ -39,11 +40,8 @@ describe('Tags Controller (e2e)', () => {
   const newTags = [
     {
       _id: 'f53528c0460a017f68186916',
-      name: {
-        en: 'AI',
-        ru: 'ИИ',
-      },
-      icon: 'https://sample.com/icon.png',
+      name: 'Tag1',
+      icon: '✨',
     },
     {
       _id: 'f53528c0460a017f68186917',
@@ -109,7 +107,7 @@ describe('Tags Controller (e2e)', () => {
     });
 
     it('(POST/E) - Создание нового тега без токена', async () => {
-      return request(app.getHttpServer()).post('/tags').send(newTags[1]).expect(401);
+      return request(app.getHttpServer()).post('/tags').set('Authorization', 'Bearer ').send(newTags[1]).expect(401);
     });
 
     it('(GET) - Получить все теги без фильтра', async () => {
@@ -118,17 +116,17 @@ describe('Tags Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newTags.length);
+          expect(res.body.results.length).toBe(newTags.length);
         });
     });
 
-    it('(GET) - Получить все теги с page=1', async () => {
+    it('(GET) - Получить все теги с page=2', async () => {
       return request(app.getHttpServer())
-        .get('/tags?page=1')
+        .get('/tags?page=2')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(0);
+          expect(res.body.results.length).toBe(0);
         });
     });
 
@@ -138,28 +136,38 @@ describe('Tags Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
+          expect(res.body.results.length).toBe(1);
         });
     });
 
-    it('(GET) - Получить все теги с page=1 и limit=1', async () => {
+    it('(GET) - Получить все теги с page=2 и limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/tags?page=1&limit=1')
+        .get('/tags?page=2&limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
+          expect(res.body.results.length).toBe(1);
         });
     });
 
-    it(`(GET) - Получить все теги с search=${newTags[0].name?.ru}`, async () => {
+    it(`(GET) - Получить все теги с search=${newTags[0].name}`, async () => {
       return request(app.getHttpServer())
-        .get(encodeURI(`/tags?search=${newTags[0].name?.ru}`))
+        .get(encodeURI(`/tags?search=${newTags[0].name}`))
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
-          expect(res.body.data[0].name?.ru).toEqual(newTags[0].name?.ru);
+          expect(res.body.results.length).toBe(1);
+          expect(res.body.results[0].name).toEqual(newTags[0].name);
+        });
+    });
+
+    it('(GET) - Получить все популярные теги', async () => {
+      return request(app.getHttpServer())
+        .get('/tags/popular')
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.length).toBe(0);
         });
     });
 
@@ -177,55 +185,9 @@ describe('Tags Controller (e2e)', () => {
       return request(app.getHttpServer()).get(`/tags/${clownId}`).expect(404);
     });
 
-    it('(PUT) - Обновить тег по ID', async () => {
-      const updateTag: Partial<UpdateTagDto> = {
-        name: {
-          en: 'Artificial Intelligence',
-          ru: 'Искусственный интеллект',
-        },
-      };
+    it('(GET) - Получить тег по slug', async () => {
       return request(app.getHttpServer())
-        .put(`/tags/${createdTag?._id}`)
-        .set('Authorization', 'Bearer ' + access_token)
-        .send(updateTag)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body.name).toEqual(updateTag.name);
-        });
-    });
-
-    it('(PUT/E) - Обновить несуществующий тег по ID', async () => {
-      const updateTag: Partial<UpdateTagDto> = {
-        name: {
-          en: 'Artificial Intelligence',
-          ru: 'Искусственный интеллект',
-        },
-      };
-      return request(app.getHttpServer())
-        .put(`/tags/${clownId}`)
-        .set('Authorization', 'Bearer ' + access_token)
-        .send(updateTag)
-        .expect(404);
-    });
-
-    it('(PUT/E) - Обновить тег по ID без токена', async () => {
-      const updateTag: Partial<UpdateTagDto> = {
-        name: {
-          en: 'Artificial Intelligence',
-          ru: 'Искусственный интеллект',
-        },
-      };
-      return request(app.getHttpServer())
-        .put(`/tags/${createdTag?._id}`)
-        .send(updateTag)
-        .expect(401);
-    });
-
-    it('(DELETE) - Удалить тег по ID', async () => {
-      return request(app.getHttpServer())
-        .delete(`/tags/${createdTag?._id}`)
-        .set('Authorization', 'Bearer ' + access_token)
+        .get(`/tags/${createdTag.slug}`)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -233,15 +195,8 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it('(DELETE/E) - Удалить несуществующий тег по ID', async () => {
-      return request(app.getHttpServer())
-        .delete(`/tags/${clownId}`)
-        .set('Authorization', 'Bearer ' + access_token)
-        .expect(404);
-    });
-
-    it('(DELETE/E) - Удалить тег по ID без токена', async () => {
-      return request(app.getHttpServer()).delete(`/tags/${newTags[1]._id}`).expect(401);
+    it('(GET/E) - Получить несуществующий тег по slug', async () => {
+      return request(app.getHttpServer()).get(`/tags/slug-${clownId}`).expect(404);
     });
   });
 });

@@ -8,6 +8,7 @@ import { UpdateProjectDto } from '../src/modules/projects/dto/update-project.dto
 import { Project } from '../src/modules/projects/schemas/project.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
 import { startOfToday, subYears } from 'date-fns';
+import { getRandomId } from '../src/utils/get-random-id';
 
 describe('Projects Controller (e2e)', () => {
   let app: INestApplication;
@@ -32,6 +33,7 @@ describe('Projects Controller (e2e)', () => {
   });
 
   const user = {
+    _id: getRandomId(),
     username: Math.random().toString(36).substring(7),
     email: `${Math.random().toString(36).substring(7)}@example.com`,
     password: Math.random().toString(36).substring(7),
@@ -43,14 +45,10 @@ describe('Projects Controller (e2e)', () => {
       title: 'One',
       tagline: 'Tagline',
       status: 'draft',
+      type: 'other',
       description: 'Description',
       flames: 0,
-      link: {
-        main: 'https://sample.com',
-        github: 'https://github.com/',
-        demo: 'https://www.youtube.com/',
-      },
-      avatar: 'https://sample.com/avatar.png',
+      logo: 'https://sample.com/avatar.png',
       screenshots: [
         'https://sample.com/screenshot_1.png',
         'https://sample.com/screenshot_2.png',
@@ -59,14 +57,16 @@ describe('Projects Controller (e2e)', () => {
         'https://sample.com/screenshot_5.png',
       ],
       price: 'free',
+      ration: 4,
+      creator: user._id,
       tags: [],
+      links: [{ type: 'github', label: 'Github', url: 'https://github.com' }],
       created_at: subYears(startOfToday(), 1),
       updated_at: subYears(startOfToday(), 1),
     },
     {
       _id: 'f53528c0460a017f68186917',
       title: 'Two',
-      tagline: 'Tagline',
     },
   ];
 
@@ -129,7 +129,11 @@ describe('Projects Controller (e2e)', () => {
     });
 
     it('(POST/E) - Создание нового проекта без токена', async () => {
-      return request(app.getHttpServer()).post('/projects').send(newProjects[1]).expect(401);
+      return request(app.getHttpServer())
+        .post('/projects')
+        .set('Authorization', 'Bearer ')
+        .send(newProjects[1])
+        .expect(401);
     });
 
     it('(GET) - Получить все проекты без фильтра', async () => {
@@ -138,17 +142,17 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newProjects.length);
+          expect(res.body.results.length).toBe(newProjects.length);
         });
     });
 
-    it('(GET) - Получить все проекты с page=1', async () => {
+    it('(GET) - Получить все проекты с page=2', async () => {
       return request(app.getHttpServer())
-        .get('/projects?page=1')
+        .get('/projects?page=2')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(0);
+          expect(res.body.results.length).toBe(0);
         });
     });
 
@@ -158,17 +162,17 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
+          expect(res.body.results.length).toBe(1);
         });
     });
 
-    it('(GET) - Получить все проекты с page=1 и limit=1', async () => {
+    it('(GET) - Получить все проекты с page=2 и limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/projects?page=1&limit=1')
+        .get('/projects?page=2&limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
+          expect(res.body.results.length).toBe(1);
         });
     });
 
@@ -178,18 +182,8 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
-          expect(res.body.data[0].title).toEqual(newProjects[0].title);
-        });
-    });
-
-    it(`(GET) - Получить все проекты с time_frame=day`, async () => {
-      return request(app.getHttpServer())
-        .get(`/projects?time_frame=day`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newProjects.length - 1);
+          expect(res.body.results.length).toBe(1);
+          expect(res.body.results[0].title).toEqual(newProjects[0].title);
         });
     });
 
@@ -199,7 +193,7 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newProjects.length - 1);
+          expect(res.body.results.length).toBe(newProjects.length - 1);
         });
     });
 
@@ -209,7 +203,7 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newProjects.length - 1);
+          expect(res.body.results.length).toBe(newProjects.length - 1);
         });
     });
 
@@ -219,7 +213,7 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newProjects.length);
+          expect(res.body.results.length).toBe(newProjects.length);
         });
     });
 
@@ -229,7 +223,7 @@ describe('Projects Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newProjects.length);
+          expect(res.body.results.length).toBe(newProjects.length);
         });
     });
 
@@ -247,10 +241,24 @@ describe('Projects Controller (e2e)', () => {
       return request(app.getHttpServer()).get(`/projects/${clownId}`).expect(404);
     });
 
+    it('(GET) - Получить проект по slug', async () => {
+      return request(app.getHttpServer())
+        .get(`/projects/${createdProject.slug}`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body._id).toEqual(createdProject._id);
+        });
+    });
+
+    it('(GET/E) - Получить несуществующий проект по slug', async () => {
+      return request(app.getHttpServer()).get(`/projects/slug-${clownId}`).expect(404);
+    });
+
     it('(PUT) - Обновить проект по ID', async () => {
       const updateProject: Partial<UpdateProjectDto> = { title: 'Updated title' };
       return request(app.getHttpServer())
-        .put(`/projects/${createdProject?._id}`)
+        .put(`/projects/${createdProject._id}`)
         .set('Authorization', 'Bearer ' + access_token)
         .send(updateProject)
         .expect(200)
@@ -272,14 +280,51 @@ describe('Projects Controller (e2e)', () => {
     it('(PUT/E) - Обновить проект по ID без токена', async () => {
       const updateProject: Partial<UpdateProjectDto> = { title: 'Updated title' };
       return request(app.getHttpServer())
-        .put(`/projects/${createdProject?._id}`)
+        .put(`/projects/${createdProject._id}`)
+        .set('Authorization', 'Bearer ')
         .send(updateProject)
+        .expect(401);
+    });
+
+    it('(POST) - Голосование за проект', async () => {
+      return request(app.getHttpServer())
+        .post(`/projects/${createdProject._id}/vote`)
+        .set('Authorization', 'Bearer ' + access_token)
+        .expect(201)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.flames).toEqual(createdProject.flames + 1);
+        });
+    });
+
+    it('(POST) - Повторное голосование за проект', async () => {
+      return request(app.getHttpServer())
+        .post(`/projects/${createdProject._id}/vote`)
+        .set('Authorization', 'Bearer ' + access_token)
+        .expect(201)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.flames).toEqual(createdProject.flames);
+        });
+    });
+
+    it('(POST/E) - Голосование за несуществующий проект', async () => {
+      return request(app.getHttpServer())
+        .post(`/projects/${clownId}/vote`)
+        .set('Authorization', 'Bearer ' + access_token)
+        .expect(404);
+    });
+
+    it('(POST/E) - Голосование за проект без токена', async () => {
+      return request(app.getHttpServer())
+        .post(`/projects/${createdProject._id}/vote`)
+        .set('Authorization', 'Bearer ')
         .expect(401);
     });
 
     it('(DELETE) - Удалить проект по ID', async () => {
       return request(app.getHttpServer())
-        .delete(`/projects/${createdProject?._id}`)
+        .delete(`/projects/${createdProject._id}`)
         .set('Authorization', 'Bearer ' + access_token)
         .expect(200)
         .then((res) => {
@@ -296,7 +341,10 @@ describe('Projects Controller (e2e)', () => {
     });
 
     it('(DELETE/E) - Удалить проект по ID без токена', async () => {
-      return request(app.getHttpServer()).delete(`/projects/${newProjects[1]._id}`).expect(401);
+      return request(app.getHttpServer())
+        .delete(`/projects/${newProjects[1]._id}`)
+        .set('Authorization', 'Bearer ')
+        .expect(401);
     });
   });
 });

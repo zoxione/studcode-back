@@ -95,8 +95,8 @@ window.onload = function() {
       },
       "/api/v1/projects/{key}": {
         "get": {
-          "operationId": "ProjectsController_findOneById",
-          "summary": "Получение проекта по ID/slug",
+          "operationId": "ProjectsController_findOne",
+          "summary": "Получение проекта по _id/slug",
           "parameters": [
             {
               "name": "key",
@@ -135,8 +135,8 @@ window.onload = function() {
           ]
         },
         "put": {
-          "operationId": "ProjectsController_updateOneById",
-          "summary": "Обновление проекта по ID/slug",
+          "operationId": "ProjectsController_updateOne",
+          "summary": "Обновление проекта по _id/slug",
           "parameters": [
             {
               "name": "key",
@@ -185,8 +185,8 @@ window.onload = function() {
           ]
         },
         "delete": {
-          "operationId": "ProjectsController_deleteOneById",
-          "summary": "Удаление проекта по ID/slug",
+          "operationId": "ProjectsController_deleteOne",
+          "summary": "Удаление проекта по _id/slug",
           "parameters": [
             {
               "name": "key",
@@ -228,7 +228,7 @@ window.onload = function() {
       "/api/v1/projects/{key}/uploads": {
         "post": {
           "operationId": "ProjectsController_uploadFiles",
-          "summary": "Загрузка файлов проекта",
+          "summary": "Загрузка файлов проекта по _id/slug",
           "parameters": [
             {
               "name": "key",
@@ -266,8 +266,8 @@ window.onload = function() {
       },
       "/api/v1/projects/{key}/vote": {
         "post": {
-          "operationId": "ProjectsController_voteOneById",
-          "summary": "Голосование за проект по ID",
+          "operationId": "ProjectsController_voteOne",
+          "summary": "Голосование за проект по _id/slug",
           "parameters": [
             {
               "name": "key",
@@ -406,8 +406,8 @@ window.onload = function() {
       },
       "/api/v1/tags/{key}": {
         "get": {
-          "operationId": "TagsController_findOneById",
-          "summary": "Получение тега по ID/slug",
+          "operationId": "TagsController_findOne",
+          "summary": "Получение тега по _id/slug",
           "parameters": [
             {
               "name": "key",
@@ -471,8 +471,8 @@ window.onload = function() {
       },
       "/api/v1/users/{key}": {
         "get": {
-          "operationId": "UsersController_findOneById",
-          "summary": "Получение пользователя по ID/username/email",
+          "operationId": "UsersController_findOne",
+          "summary": "Получение пользователя по _id/username/email",
           "parameters": [
             {
               "name": "key",
@@ -504,8 +504,8 @@ window.onload = function() {
           ]
         },
         "put": {
-          "operationId": "UsersController_updateOneById",
-          "summary": "Обновление пользователя по ID/username/email",
+          "operationId": "UsersController_updateOne",
+          "summary": "Обновление пользователя по _id/username/email",
           "parameters": [
             {
               "name": "key",
@@ -547,8 +547,8 @@ window.onload = function() {
           ]
         },
         "delete": {
-          "operationId": "UsersController_deleteOneById",
-          "summary": "Удаление пользователя по ID/username/email",
+          "operationId": "UsersController_deleteOne",
+          "summary": "Удаление пользователя по _id/username/email",
           "parameters": [
             {
               "name": "key",
@@ -583,7 +583,7 @@ window.onload = function() {
       "/api/v1/users/{key}/uploads": {
         "post": {
           "operationId": "UsersController_uploadFiles",
-          "summary": "Загрузка файлов пользователя",
+          "summary": "Загрузка файлов пользователя по _id/username/email",
           "parameters": [
             {
               "name": "key",
@@ -682,8 +682,8 @@ window.onload = function() {
       },
       "/api/v1/teams/{key}": {
         "get": {
-          "operationId": "TeamsController_findOneById",
-          "summary": "Получение команды по ID/name",
+          "operationId": "TeamsController_findOne",
+          "summary": "Получение команды по _id/name",
           "parameters": [
             {
               "name": "key",
@@ -722,8 +722,8 @@ window.onload = function() {
           ]
         },
         "put": {
-          "operationId": "TeamsController_updateOneById",
-          "summary": "Обновление команды по ID",
+          "operationId": "TeamsController_updateOne",
+          "summary": "Обновление команды по _id/name",
           "parameters": [
             {
               "name": "key",
@@ -772,8 +772,8 @@ window.onload = function() {
           ]
         },
         "delete": {
-          "operationId": "TeamsController_deleteOneById",
-          "summary": "Удаление команды по ID",
+          "operationId": "TeamsController_deleteOne",
+          "summary": "Удаление команды по _id/name",
           "parameters": [
             {
               "name": "key",
@@ -812,10 +812,42 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/teams/{key}/uploads": {
+        "post": {
+          "operationId": "TeamsController_uploadFiles",
+          "summary": "Загрузка файлов команды по _id/name",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/teams/{key}/members": {
         "put": {
           "operationId": "TeamsController_updateMembers",
-          "summary": "Обновление участников команды по ID",
+          "summary": "Обновление участников команды по _id/name",
           "parameters": [
             {
               "name": "key",
@@ -852,38 +884,6 @@ window.onload = function() {
             },
             "404": {
               "description": "Not Found"
-            }
-          },
-          "tags": [
-            "teams"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/teams/{key}/uploads": {
-        "post": {
-          "operationId": "TeamsController_uploadFiles",
-          "summary": "Загрузка файлов команды",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success"
-            },
-            "401": {
-              "description": "Unauthorized"
             }
           },
           "tags": [
@@ -966,8 +966,8 @@ window.onload = function() {
       },
       "/api/v1/reviews/{key}": {
         "get": {
-          "operationId": "ReviewsController_findOneById",
-          "summary": "Получение обзора по ID",
+          "operationId": "ReviewsController_findOne",
+          "summary": "Получение обзора по _id",
           "parameters": [
             {
               "name": "key",
@@ -1006,8 +1006,8 @@ window.onload = function() {
           ]
         },
         "put": {
-          "operationId": "ReviewsController_updateOneById",
-          "summary": "Обновление обзора по ID",
+          "operationId": "ReviewsController_updateOne",
+          "summary": "Обновление обзора по _id",
           "parameters": [
             {
               "name": "key",
@@ -1056,8 +1056,8 @@ window.onload = function() {
           ]
         },
         "delete": {
-          "operationId": "ReviewsController_deleteOneById",
-          "summary": "Удаление обзора по ID",
+          "operationId": "ReviewsController_deleteOne",
+          "summary": "Удаление обзора по _id",
           "parameters": [
             {
               "name": "key",
@@ -1099,7 +1099,7 @@ window.onload = function() {
       "/api/v1/reviews/{key}/like": {
         "post": {
           "operationId": "ReviewsController_likeOne",
-          "summary": "Лайк обзора по ID",
+          "summary": "Лайк обзора по _id",
           "parameters": [
             {
               "name": "key",
@@ -1141,7 +1141,7 @@ window.onload = function() {
       "/api/v1/reviews/{key}/dislike": {
         "post": {
           "operationId": "ReviewsController_dislikeOne",
-          "summary": "Дизлайк обзора по ID",
+          "summary": "Дизлайк обзора по _id",
           "parameters": [
             {
               "name": "key",

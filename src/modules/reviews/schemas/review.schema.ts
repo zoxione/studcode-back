@@ -43,4 +43,19 @@ ReviewSchema.set('timestamps', {
   updatedAt: 'updated_at',
 });
 
+ReviewSchema.pre(/^find/, function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
+  this.populate([
+    { path: 'project', select: '_id title' },
+    { path: 'reviewer', select: '_id username avatar full_name' },
+  ]);
+  next();
+});
+ReviewSchema.pre('save', function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
+  this.populate([
+    { path: 'project', select: '_id title' },
+    { path: 'reviewer', select: '_id username avatar full_name' },
+  ]);
+  next();
+});
+
 export { Review, ReviewDocument, ReviewSchema };

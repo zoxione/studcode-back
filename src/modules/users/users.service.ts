@@ -8,11 +8,10 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
 import { UserFiles } from './types/user-files';
+import { OperationOptions } from '../../common/types/operation-options';
 
 @Injectable()
 export class UsersService {
-  private readonly populations = [];
-
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
     private uploadService: UploadService,
@@ -44,7 +43,6 @@ export class UsersService {
       .select('-password -refresh_token')
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate(this.populations)
       .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
@@ -63,203 +61,80 @@ export class UsersService {
     };
   }
 
-  async findOne(field: keyof User, fieldValue: unknown): Promise<User>;
-  async findOne(
-    field: keyof User,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: true;
-    },
-  ): Promise<User>;
-  async findOne(
-    field: keyof User,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: false;
-    },
-  ): Promise<User | null>;
-  async findOne(
-    field: keyof User,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: boolean;
-    } = { secret: false, throw: true },
-  ): Promise<User | null> {
-    let foundUser: User | null = null;
-    const select = !options.secret ? '-password -refresh_token' : '';
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          foundUser = await this.userModel
-            .findOne({ _id: fieldValue })
-            .select(select)
-            .populate(this.populations)
-            .exec();
-        }
-        break;
-      }
-      case 'username': {
-        foundUser = await this.userModel
-          .findOne({ username: fieldValue })
-          .select(select)
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      case 'email': {
-        foundUser = await this.userModel
-          .findOne({ email: fieldValue })
-          .select(select)
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async findOne({ fields, fieldValue, secret = false }: { secret?: boolean } & OperationOptions<User>): Promise<User> {
+    let foundUser = null;
+    const select = !secret ? '-password -refresh_token' : '';
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      foundUser = await this.userModel
+        .findOne({ [field]: fieldValue })
+        .select(select)
+        .exec();
+      if (foundUser) break;
     }
-    if (!foundUser && options.throw) {
-      throw new NotFoundException('User Not Found');
+    if (!foundUser) {
+      throw new NotFoundException('User not found');
     }
-    return foundUser;
+    return foundUser.toObject();
   }
 
-  async updateOne(field: keyof User, fieldValue: unknown, updateDto: Partial<UpdateUserDto>): Promise<User>;
-  async updateOne(
-    field: keyof User,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateUserDto>,
-    options: {
-      throw?: true;
-    },
-  ): Promise<User>;
-  async updateOne(
-    field: keyof User,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateUserDto>,
-    options: {
-      throw?: false;
-    },
-  ): Promise<User | null>;
-  async updateOne(
-    field: keyof User,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateUserDto>,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<User | null> {
-    let updatedUser: User | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          updatedUser = await this.userModel
-            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
-              new: true,
-            })
-            .populate(this.populations)
-            .exec();
-        }
-        break;
-      }
-      case 'username': {
-        updatedUser = await this.userModel
-          .findOneAndUpdate({ username: fieldValue }, updateDto, {
+  async updateOne({
+    fields,
+    fieldValue,
+    updateDto,
+  }: { updateDto: UpdateUserDto } & OperationOptions<User>): Promise<User> {
+    let updatedUser = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      updatedUser = await this.userModel
+        .findOneAndUpdate(
+          { [field]: fieldValue },
+          { $set: updateDto },
+          {
             new: true,
-          })
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      case 'email': {
-        updatedUser = await this.userModel
-          .findOneAndUpdate({ email: fieldValue }, updateDto, {
-            new: true,
-          })
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      default: {
-        break;
-      }
+          },
+        )
+        .exec();
+      if (updatedUser) break;
     }
-    if (!updatedUser && options.throw) {
-      throw new NotFoundException('User Not Updated');
+    if (!updatedUser) {
+      throw new NotFoundException('User not updated');
     }
-    return updatedUser;
+    return updatedUser.toObject();
   }
 
-  async deleteOne(field: keyof User, fieldValue: unknown): Promise<User>;
-  async deleteOne(
-    field: keyof User,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: true;
-    },
-  ): Promise<User>;
-  async deleteOne(
-    field: keyof User,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: false;
-    },
-  ): Promise<User | null>;
-  async deleteOne(
-    field: keyof User,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: boolean;
-    } = { secret: false, throw: true },
-  ): Promise<User | null> {
-    let deletedUser: User | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          deletedUser = await this.userModel.findByIdAndRemove({ _id: fieldValue }).populate(this.populations).exec();
-        }
-        break;
-      }
-      case 'username': {
-        deletedUser = await this.userModel
-          .findByIdAndRemove({ username: fieldValue })
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      case 'email': {
-        deletedUser = await this.userModel.findByIdAndRemove({ email: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async deleteOne({ fields, fieldValue }: OperationOptions<User>): Promise<User> {
+    let deletedUser = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      deletedUser = await this.userModel.findOneAndRemove({ [field]: fieldValue }).exec();
+      if (deletedUser) break;
     }
-    if (!deletedUser && options.throw) {
-      throw new NotFoundException('User Not Deleted');
+    if (!deletedUser) {
+      throw new NotFoundException('User not deleted');
     }
-    return deletedUser;
+    return deletedUser.toObject();
   }
 
-  async uploadFiles(user_id: mongoose.Types.ObjectId, files: UserFiles): Promise<User> {
-    const userFiles: Pick<User, 'avatar'> = {
-      avatar: '',
-    };
+  async uploadFiles({ fields, fieldValue, files }: { files: UserFiles } & OperationOptions<User>): Promise<User> {
+    let user = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      user = await this.userModel.findOne({ [field]: fieldValue }).exec();
+      if (user) break;
+    }
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
     for (const file of files.flat()) {
       if (file.fieldname === 'avatar_file') {
-        const res = await this.uploadService.upload(`user-${user_id}-avatar.${file.mimetype.split('/')[1]}`, file);
-        userFiles.avatar = res;
+        const res = await this.uploadService.upload(`user-${user._id}-avatar.${file.mimetype.split('/')[1]}`, file);
+        user.avatar = res;
       }
     }
-    const updatedProject = await this.updateOne('_id', user_id, {
-      ...userFiles,
-    });
-    return updatedProject;
+
+    await user.save();
+    return user.toObject();
   }
 }

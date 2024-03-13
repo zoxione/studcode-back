@@ -31,6 +31,8 @@ import { UsersService } from './users.service';
 @ApiTags('users')
 @Controller({ path: 'users', version: '1' })
 export class UsersController {
+  private readonly fields: (keyof User)[] = ['_id', 'username', 'email'];
+
   constructor(private readonly usersService: UsersService) {}
 
   @Get('/')
@@ -42,69 +44,50 @@ export class UsersController {
   }
 
   @Get('/:key')
-  @ApiOperation({ summary: 'Получение пользователя по ID/username/email' })
+  @ApiOperation({ summary: 'Получение пользователя по _id/username/email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('key') key: string): Promise<User> {
-    let foundUser = await this.usersService.findOne('_id', key, { throw: false });
-    if (!foundUser) {
-      foundUser = await this.usersService.findOne('username', key, { throw: false });
-    }
-    if (!foundUser) {
-      foundUser = await this.usersService.findOne('email', key, { throw: true });
-    }
-    return foundUser;
+  async findOne(@Param('key') key: string): Promise<User> {
+    return this.usersService.findOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Put('/:key')
-  @ApiOperation({ summary: 'Обновление пользователя по ID/username/email' })
+  @ApiOperation({ summary: 'Обновление пользователя по _id/username/email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(
+  async updateOne(
     @Req() req: AuthUserRequest,
     @Param('key') key: string,
     @Body() updateDto: UpdateUserDto,
   ): Promise<User> {
-    if (req.user.sub !== key && req.user.username !== key && req.user.email !== key) {
+    const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
+    if (user._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this user');
     }
-    let updatedUser = await this.usersService.updateOne('_id', key, updateDto, { throw: false });
-    if (!updatedUser) {
-      updatedUser = await this.usersService.updateOne('username', key, updateDto, { throw: false });
-    }
-    if (!updatedUser) {
-      updatedUser = await this.usersService.updateOne('email', key, updateDto, { throw: true });
-    }
-    return updatedUser;
+    return this.usersService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
   }
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:key')
-  @ApiOperation({ summary: 'Удаление пользователя по ID/username/email' })
+  @ApiOperation({ summary: 'Удаление пользователя по _id/username/email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
-    if (req.user.sub !== key && req.user.username !== key && req.user.email !== key) {
+  async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
+    const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
+    if (user._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this user');
     }
-    let deletedUser = await this.usersService.deleteOne('_id', key, { throw: false });
-    if (!deletedUser) {
-      deletedUser = await this.usersService.deleteOne('username', key, { throw: false });
-    }
-    if (!deletedUser) {
-      deletedUser = await this.usersService.deleteOne('email', key, { throw: true });
-    }
-    return deletedUser;
+    return this.usersService.deleteOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/uploads')
   @UseInterceptors(FileFieldsInterceptor([{ name: 'avatar_file', maxCount: 1 }]))
-  @ApiOperation({ summary: 'Загрузка файлов пользователя' })
+  @ApiOperation({ summary: 'Загрузка файлов пользователя по _id/username/email' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async uploadFiles(
@@ -127,12 +110,12 @@ export class UsersController {
     )
     files: UserFiles,
   ): Promise<User> {
-    let user = await this.usersService.findOne('_id', key);
-    if (req.user.sub !== key && req.user.username !== key && req.user.email !== key) {
-      throw new UnauthorizedException('You are not allowed to upload files this user');
+    let user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
+    if (user._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to update this user');
     }
     if (files.length > 0) {
-      user = await this.usersService.uploadFiles(user._id, files);
+      user = await this.usersService.uploadFiles({ fields: this.fields, fieldValue: key, files: files });
     }
     return user;
   }

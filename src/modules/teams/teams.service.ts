@@ -1,21 +1,19 @@
-import slugify from '@sindresorhus/slugify';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import slugify from '@sindresorhus/slugify';
 import mongoose, { Model } from 'mongoose';
+import { OperationOptions } from '../../common/types/operation-options';
+import { UploadService } from '../upload/upload.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
+import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { Team } from './schemas/team.schema';
 import { FindAllReturnTeam } from './types/find-all-return-team';
-import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
-import { TeamMember } from './schemas/team-member.schema';
 import { TeamFiles } from './types/team-files';
-import { UploadService } from '../upload/upload.service';
 
 @Injectable()
 export class TeamsService {
-  private readonly populations = [{ path: 'members.user', select: '_id username avatar full_name' }];
-
   constructor(
     @InjectModel(Team.name) private readonly teamModel: Model<Team>,
     private uploadService: UploadService,
@@ -25,32 +23,11 @@ export class TeamsService {
     return `${slugify(name, { decamelize: false })}`;
   }
 
-  private updateMembers(newMembers: TeamMember[], updateDto: UpdateMembersTeamDto): TeamMember[] {
-    updateDto.members.forEach((item) => {
-      if (item.action === 'add') {
-        if (!newMembers.some((member) => member.user.toString() === item.member.user)) {
-          newMembers.push({ user: new mongoose.Types.ObjectId(item.member.user), role: item.member.role });
-        }
-      } else if (item.action === 'remove') {
-        if (newMembers.some((member) => member.user.toString() === item.member.user)) {
-          newMembers = newMembers.filter((member) => member.user.toString() !== item.member.user);
-        }
-      }
-    });
-    return newMembers;
-  }
-
   async createOne(createTeamDto: CreateTeamDto): Promise<Team> {
     const createdTeam = await this.teamModel.create(createTeamDto);
-    const updatedTeam = await this.teamModel
-      .findByIdAndUpdate(
-        { _id: createdTeam._id },
-        { $set: { slug: this.generateSlug(createdTeam.name) } },
-        { new: true },
-      )
-      .populate(this.populations)
-      .exec();
-    return updatedTeam as Team;
+    createdTeam.slug = this.generateSlug(createdTeam.name);
+    await createdTeam.save();
+    return createdTeam.toObject();
   }
 
   async findAll({
@@ -67,7 +44,6 @@ export class TeamsService {
       .find({ ...searchQuery, ...memberQuery })
       .skip((page - 1) * limit)
       .limit(limit)
-      .populate(this.populations)
       .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
@@ -87,286 +63,127 @@ export class TeamsService {
     };
   }
 
-  async findOne(field: keyof Team, fieldValue: unknown): Promise<Team>;
-  async findOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Team>;
-  async findOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Team | null>;
-  async findOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Team | null> {
-    let foundTeam: Team | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          foundTeam = await this.teamModel.findOne({ _id: fieldValue }).populate(this.populations).exec();
-        }
-        break;
-      }
-      case 'name': {
-        foundTeam = await this.teamModel.findOne({ name: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      case 'slug': {
-        foundTeam = await this.teamModel.findOne({ slug: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async findOne({ fields, fieldValue }: OperationOptions<Team>): Promise<Team> {
+    let foundTeam = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      foundTeam = await this.teamModel.findOne({ [field]: fieldValue }).exec();
+      if (foundTeam) break;
     }
-    if (!foundTeam && options.throw) {
-      throw new NotFoundException('Team Not Found');
+    if (!foundTeam) {
+      throw new NotFoundException('Team not found');
     }
-    return foundTeam;
+    return foundTeam.toObject();
   }
 
-  async updateOne(field: keyof Team, fieldValue: unknown, updateDto: Partial<UpdateTeamDto>): Promise<Team>;
-  async updateOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateTeamDto>,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Team>;
-  async updateOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateTeamDto>,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Team | null>;
-  async updateOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    updateDto: Partial<UpdateTeamDto>,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Team | null> {
-    let updatedTeam: Team | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          updatedTeam = await this.teamModel
-            .findOneAndUpdate({ _id: fieldValue }, updateDto, {
-              new: true,
-            })
-            .populate(this.populations)
-            .exec();
-        }
-        break;
-      }
-      case 'name': {
-        updatedTeam = await this.teamModel
-          .findOneAndUpdate({ name: fieldValue }, updateDto, {
-            new: true,
-          })
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      case 'slug': {
-        updatedTeam = await this.teamModel
-          .findOneAndUpdate({ slug: fieldValue }, updateDto, {
-            new: true,
-          })
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      default: {
-        break;
-      }
-    }
-    if (!updatedTeam && options.throw) {
-      throw new NotFoundException('Team Not Updated');
-    }
-    if (updatedTeam && updateDto.name) {
+  async updateOne({
+    fields,
+    fieldValue,
+    updateDto,
+  }: { updateDto: UpdateTeamDto } & OperationOptions<Team>): Promise<Team> {
+    let updatedTeam = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
       updatedTeam = await this.teamModel
         .findOneAndUpdate(
-          { _id: updatedTeam._id },
-          { $set: { slug: this.generateSlug(updatedTeam.name) } },
+          { [field]: fieldValue },
+          { $set: updateDto },
           {
             new: true,
           },
         )
-        .populate(this.populations)
         .exec();
+      if (updatedTeam) break;
     }
-    return updatedTeam;
+    if (!updatedTeam) {
+      throw new NotFoundException('Team not updated');
+    }
+    if (updateDto.name) {
+      updatedTeam.slug = this.generateSlug(updatedTeam.name);
+      await updatedTeam.save();
+    }
+    return updatedTeam.toObject();
   }
 
-  async deleteOne(field: keyof Team, fieldValue: unknown): Promise<Team>;
-  async deleteOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: true;
-    },
-  ): Promise<Team>;
-  async deleteOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: false;
-    },
-  ): Promise<Team | null>;
-  async deleteOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    options: {
-      secret?: boolean;
-      throw?: boolean;
-    } = { secret: false, throw: true },
-  ): Promise<Team | null> {
-    let deletedTeam: Team | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          deletedTeam = await this.teamModel.findByIdAndRemove({ _id: fieldValue }).populate(this.populations).exec();
-        }
-        break;
-      }
-      case 'name': {
-        deletedTeam = await this.teamModel.findByIdAndRemove({ name: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      case 'slug': {
-        deletedTeam = await this.teamModel.findByIdAndRemove({ slug: fieldValue }).populate(this.populations).exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async deleteOne({ fields, fieldValue }: OperationOptions<Team>): Promise<Team> {
+    let deletedTeam = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      deletedTeam = await this.teamModel.findOneAndRemove({ [field]: fieldValue }).exec();
+      if (deletedTeam) break;
     }
-    if (!deletedTeam && options.throw) {
-      throw new NotFoundException('Team Not Deleted');
+    if (!deletedTeam) {
+      throw new NotFoundException('Team not deleted');
     }
-    return deletedTeam;
+    return deletedTeam.toObject();
   }
 
-  async updateMembersOne(field: keyof Team, fieldValue: unknown, updateDto: UpdateMembersTeamDto): Promise<Team>;
-  async updateMembersOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    updateDto: UpdateMembersTeamDto,
-    options: {
-      throw?: true;
-    },
-  ): Promise<Team>;
-  async updateMembersOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    updateDto: UpdateMembersTeamDto,
-    options: {
-      throw?: false;
-    },
-  ): Promise<Team | null>;
-  async updateMembersOne(
-    field: keyof Team,
-    fieldValue: unknown,
-    updateDto: UpdateMembersTeamDto,
-    options: {
-      throw?: boolean;
-    } = { throw: true },
-  ): Promise<Team | null> {
-    let updatedTeam: Team | null = null;
-    switch (field) {
-      case '_id': {
-        if (mongoose.Types.ObjectId.isValid(fieldValue as string)) {
-          updatedTeam = await this.teamModel.findOne({ _id: fieldValue }).exec();
-          if (!updatedTeam) {
-            break;
-          }
-          updatedTeam = await this.teamModel
-            .findOneAndUpdate(
-              { _id: fieldValue },
-              { members: this.updateMembers(updatedTeam.members, updateDto) },
-              {
-                new: true,
-              },
-            )
-            .populate(this.populations)
-            .exec();
-        }
-        break;
-      }
-      case 'name': {
-        updatedTeam = await this.teamModel.findOne({ name: fieldValue }).exec();
-        if (!updatedTeam) {
-          break;
-        }
-        updatedTeam = await this.teamModel
-          .findOneAndUpdate(
-            { name: fieldValue },
-            { members: this.updateMembers(updatedTeam.members, updateDto) },
-            {
-              new: true,
-            },
-          )
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      case 'slug': {
-        updatedTeam = await this.teamModel.findOne({ slug: fieldValue }).exec();
-        if (!updatedTeam) {
-          break;
-        }
-        updatedTeam = await this.teamModel
-          .findOneAndUpdate(
-            { slug: fieldValue },
-            { members: this.updateMembers(updatedTeam.members, updateDto) },
-            {
-              new: true,
-            },
-          )
-          .populate(this.populations)
-          .exec();
-        break;
-      }
-      default: {
-        break;
-      }
+  async uploadFiles({ fields, fieldValue, files }: { files: TeamFiles } & OperationOptions<Team>): Promise<Team> {
+    let team = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      team = await this.teamModel.findOne({ [field]: fieldValue }).exec();
+      if (team) break;
     }
-    if (!updatedTeam && options.throw) {
-      throw new NotFoundException('Team Not Updated');
+    if (!team) {
+      throw new NotFoundException('Team not found');
     }
-    return updatedTeam;
-  }
 
-  async uploadFiles(team_id: mongoose.Types.ObjectId, files: TeamFiles): Promise<Team> {
-    const userFiles: Pick<Team, 'logo'> = {
-      logo: '',
-    };
     for (const file of files.flat()) {
       if (file.fieldname === 'logo_file') {
-        const res = await this.uploadService.upload(`team-${team_id}-logo.${file.mimetype.split('/')[1]}`, file);
-        userFiles.logo = res;
+        const res = await this.uploadService.upload(`team-${team._id}-logo.${file.mimetype.split('/')[1]}`, file);
+        team.logo = res;
       }
     }
-    const updatedProject = await this.updateOne('_id', team_id, {
-      ...userFiles,
-    });
-    return updatedProject;
+
+    await team.save();
+    return team.toObject();
+  }
+
+  async updateMembers({
+    fields,
+    fieldValue,
+    updateMembersDto,
+  }: { updateMembersDto: UpdateMembersTeamDto } & OperationOptions<Team>): Promise<Team> {
+    let team = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      team = await this.teamModel.findOne({ [field]: fieldValue }).exec();
+      if (team) break;
+    }
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    let newMembers = team.members;
+    for (const item of updateMembersDto.members) {
+      if (item.action === 'add') {
+        const memberIndex = team.members.findIndex((member) => member.user._id.toString() === item.member.user);
+        if (memberIndex !== -1) {
+          newMembers[memberIndex] = { user: new mongoose.Types.ObjectId(item.member.user), role: item.member.role };
+        } else {
+          newMembers.push({ user: new mongoose.Types.ObjectId(item.member.user), role: item.member.role });
+        }
+      } else if (item.action === 'remove') {
+        const memberIndex = team.members.findIndex((member) => member.user._id.toString() === item.member.user);
+        if (memberIndex !== -1) {
+          newMembers = team.members.filter((member) => member.user._id.toString() !== item.member.user);
+        }
+      }
+    }
+
+    team = await this.teamModel
+      .findOneAndUpdate(
+        { _id: team._id },
+        { $set: { members: newMembers } },
+        {
+          new: true,
+        },
+      )
+      .exec();
+    if (!team) {
+      throw new NotFoundException('Team not updated');
+    }
+    return team.toObject();
   }
 }

@@ -6,6 +6,7 @@ import { AppModule } from '../src/app.module';
 import configuration from '../src/config/configuration';
 import { UpdateUserDto } from '../src/modules/users/dto/update-user.dto';
 import { User } from '../src/modules/users/schemas/user.schema';
+import { getRandomId } from '../src/utils/get-random-id';
 
 describe('Users Controller (e2e)', () => {
   let app: INestApplication;
@@ -30,6 +31,7 @@ describe('Users Controller (e2e)', () => {
   });
 
   const user = {
+    _id: getRandomId(),
     username: Math.random().toString(36).substring(7),
     email: `${Math.random().toString(36).substring(7)}@example.com`,
     password: Math.random().toString(36).substring(7),
@@ -42,21 +44,16 @@ describe('Users Controller (e2e)', () => {
       email: 'zoxione@gmail.com',
       password: 'password',
       role: 'admin',
+      verify_email: true,
       refresh_token: 'token',
-      name: {
-        last: 'last',
-        first: 'first',
-        middle: 'middle',
+      full_name: {
+        surname: 'surname',
+        name: 'name',
+        patronymic: 'patronymic',
       },
       avatar: 'https://sample.com/avatar.png',
       about: 'about',
-      link: {
-        github: 'https://github.com/',
-        vkontakte: 'https://vk.com/',
-        telegram: 'https://telegram.org',
-      },
-      awards: [],
-      projects: [],
+      link: [],
     },
     {
       _id: 'f53528c0460a017f68186917',
@@ -127,17 +124,17 @@ describe('Users Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(newUsers.length + 1);
+          expect(res.body.results.length).toBe(newUsers.length + 1);
         });
     });
 
-    it('(GET) - Получить всех пользователей с page=1', async () => {
+    it('(GET) - Получить всех пользователей с page=2', async () => {
       return request(app.getHttpServer())
-        .get('/users?page=1')
+        .get('/users?page=2')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(0);
+          expect(res.body.results.length).toBe(0);
         });
     });
 
@@ -147,17 +144,17 @@ describe('Users Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
+          expect(res.body.results.length).toBe(1);
         });
     });
 
-    it('(GET) - Получить всех пользователей с page=1 и limit=1', async () => {
+    it('(GET) - Получить всех пользователей с page=2 и limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/users?page=1&limit=1')
+        .get('/users?page=2&limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
+          expect(res.body.results.length).toBe(1);
         });
     });
 
@@ -167,8 +164,8 @@ describe('Users Controller (e2e)', () => {
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.data.length).toBe(1);
-          expect(res.body.data[0].username).toEqual(newUsers[0].username);
+          expect(res.body.results.length).toBe(1);
+          expect(res.body.results[0].username).toEqual(newUsers[0].username);
         });
     });
 
@@ -186,12 +183,40 @@ describe('Users Controller (e2e)', () => {
       return request(app.getHttpServer()).get(`/users/${clownId}`).expect(404);
     });
 
+    it('(GET) - Получить пользователя по username', async () => {
+      return request(app.getHttpServer())
+        .get(`/users/${createdUser.username}`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body._id).toEqual(createdUser._id);
+        });
+    });
+
+    it('(GET/E) - Получить несуществующего пользователя по username', async () => {
+      return request(app.getHttpServer()).get(`/users/clown`).expect(404);
+    });
+
+    it('(GET) - Получить пользователя по email', async () => {
+      return request(app.getHttpServer())
+        .get(`/users/${createdUser.email}`)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body._id).toEqual(createdUser._id);
+        });
+    });
+
+    it('(GET/E) - Получить несуществующего пользователя по email', async () => {
+      return request(app.getHttpServer()).get(`/users/clown@example.com`).expect(404);
+    });
+
     it('(PUT) - Обновить пользователя по ID', async () => {
       const updateUser: Partial<UpdateUserDto> = {
         username: 'new username',
       };
       return request(app.getHttpServer())
-        .put(`/users/${createdUser?._id}`)
+        .put(`/users/${user._id}`)
         .set('Authorization', 'Bearer ' + access_token)
         .send(updateUser)
         .expect(200)
@@ -217,19 +242,20 @@ describe('Users Controller (e2e)', () => {
         username: 'new username',
       };
       return request(app.getHttpServer())
-        .put(`/users/${createdUser?._id}`)
+        .put(`/users/${createdUser._id}`)
+        .set('Authorization', 'Bearer ')
         .send(updateUser)
         .expect(401);
     });
 
     it('(DELETE) - Удалить пользователя по ID', async () => {
       return request(app.getHttpServer())
-        .delete(`/users/${createdUser?._id}`)
+        .delete(`/users/${user._id}`)
         .set('Authorization', 'Bearer ' + access_token)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdUser._id);
+          expect(res.body._id).toEqual(user._id);
         });
     });
 
@@ -241,7 +267,10 @@ describe('Users Controller (e2e)', () => {
     });
 
     it('(DELETE/E) - Удалить пользователя по ID без токена', async () => {
-      return request(app.getHttpServer()).delete(`/users/${newUsers[1]._id}`).expect(401);
+      return request(app.getHttpServer())
+        .delete(`/users/${newUsers[1]._id}`)
+        .set('Authorization', 'Bearer ')
+        .expect(401);
     });
   });
 });

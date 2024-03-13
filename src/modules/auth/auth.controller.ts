@@ -20,7 +20,7 @@ export class AuthController {
 
   @Post('/register')
   @ApiOperation({ summary: 'Регистрация нового пользователя' })
-  register(@Body() createUserDto: CreateUserDto): Promise<User> {
+  async register(@Body() createUserDto: CreateUserDto): Promise<User> {
     return this.authService.signUp(createUserDto);
   }
 
@@ -51,7 +51,7 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   @Get('/logout')
   @ApiOperation({ summary: 'Выход из аккаунта' })
-  logout(@Req() req: AuthUserRequest, @Res({ passthrough: true }) response: Response) {
+  async logout(@Req() req: AuthUserRequest, @Res({ passthrough: true }) response: Response) {
     response.clearCookie(configuration().access_token_name, {
       httpOnly: true,
       secure: configuration().node_env === 'production',

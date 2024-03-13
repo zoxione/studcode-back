@@ -29,7 +29,11 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<Tokens & { session: Session } & { access_token_exp: number; refresh_token_exp: number }> {
-    const user = await this.usersService.findOne('email', email, { secret: true, throw: true });
+    const user = await this.usersService.findOne({
+      fields: ['email'],
+      fieldValue: email,
+      secret: true,
+    });
     const passwordMatches = await bcrypt.compare(password, user.password);
     if (!passwordMatches) {
       throw new UnauthorizedException('Password is incorrect');
@@ -47,13 +51,17 @@ export class AuthService {
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
-    const user = await this.usersService.findOne('_id', userId, { secret: true, throw: true });
+    const user = await this.usersService.findOne({
+      fields: ['_id'],
+      fieldValue: userId,
+      secret: true,
+    });
     if (!user || !user.refresh_token) {
-      throw new ForbiddenException('Access Denied');
+      throw new ForbiddenException('Access denied');
     }
     const refreshTokenMatches = await bcrypt.compare(refreshToken, user.refresh_token);
     if (!refreshTokenMatches) {
-      throw new ForbiddenException('Access Denied');
+      throw new ForbiddenException('Access denied');
     }
     const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.avatar);
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
@@ -63,7 +71,11 @@ export class AuthService {
   }
 
   async signOut(userId: string) {
-    const updatedUser = await this.usersService.updateOne('_id', userId, { refresh_token: '' });
+    const updatedUser = await this.usersService.updateOne({
+      fields: ['_id'],
+      fieldValue: userId,
+      updateDto: { refresh_token: '' },
+    });
     if (updatedUser.refresh_token !== '') {
       throw new BadRequestException('Unknown error');
     }
@@ -77,8 +89,10 @@ export class AuthService {
 
   async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await this.hashData(refreshToken);
-    await this.usersService.updateOne('_id', userId, {
-      refresh_token: hashedRefreshToken,
+    await this.usersService.updateOne({
+      fields: ['_id'],
+      fieldValue: userId,
+      updateDto: { refresh_token: hashedRefreshToken },
     });
   }
 

@@ -10,27 +10,31 @@ import {
   Put,
   Query,
   Req,
+  UnauthorizedException,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
+import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { Team } from './schemas/team.schema';
 import { TeamsService } from './teams.service';
 import { FindAllReturnTeam } from './types/find-all-return-team';
-import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { TeamFiles } from './types/team-files';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
 
 @ApiBearerAuth()
 @ApiTags('teams')
 @Controller({ path: 'teams', version: '1' })
 export class TeamsController {
+  private readonly fields: (keyof Team)[] = ['_id', 'name', 'slug'];
+
   constructor(private readonly teamsService: TeamsService) {}
 
   @UseGuards(AccessTokenGuard)
@@ -51,79 +55,54 @@ export class TeamsController {
   }
 
   @Get('/:key')
-  @ApiOperation({ summary: 'Получение команды по ID/name' })
+  @ApiOperation({ summary: 'Получение команды по _id/name' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOneById(@Param('key') key: string): Promise<Team> {
-    let foundTeam = await this.teamsService.findOne('_id', key, { throw: false });
-    if (!foundTeam) {
-      foundTeam = await this.teamsService.findOne('name', key, { throw: false });
-    }
-    if (!foundTeam) {
-      foundTeam = await this.teamsService.findOne('slug', key, { throw: true });
-    }
-    return foundTeam;
+  async findOne(@Param('key') key: string): Promise<Team> {
+    return this.teamsService.findOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Put('/:key')
-  @ApiOperation({ summary: 'Обновление команды по ID' })
+  @ApiOperation({ summary: 'Обновление команды по _id/name' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOneById(@Param('key') key: string, @Body() updateDto: UpdateTeamDto): Promise<Team> {
-    let updatedTeam = await this.teamsService.updateOne('_id', key, updateDto, { throw: false });
-    if (!updatedTeam) {
-      updatedTeam = await this.teamsService.updateOne('name', key, updateDto, { throw: false });
+  async updateOne(
+    @Req() req: AuthUserRequest,
+    @Param('key') key: string,
+    @Body() updateDto: UpdateTeamDto,
+  ): Promise<Team> {
+    const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+      throw new UnauthorizedException('You are not allowed to update this team');
     }
-    if (!updatedTeam) {
-      updatedTeam = await this.teamsService.updateOne('slug', key, updateDto, { throw: true });
-    }
-    return updatedTeam;
+    return this.teamsService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
   }
 
   @UseGuards(AccessTokenGuard)
   @Delete('/:key')
-  @ApiOperation({ summary: 'Удаление команды по ID' })
+  @ApiOperation({ summary: 'Удаление команды по _id/name' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOneById(@Param('key') key: string): Promise<Team> {
-    let deletedTeam = await this.teamsService.deleteOne('_id', key, { throw: false });
-    if (!deletedTeam) {
-      deletedTeam = await this.teamsService.deleteOne('name', key, { throw: false });
+  async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<Team> {
+    const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+      throw new UnauthorizedException('You are not allowed to update this team');
     }
-    if (!deletedTeam) {
-      deletedTeam = await this.teamsService.deleteOne('slug', key, { throw: true });
-    }
-    return deletedTeam;
-  }
-
-  @UseGuards(AccessTokenGuard)
-  @Put('/:key/members')
-  @ApiOperation({ summary: 'Обновление участников команды по ID' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateMembers(@Param('key') key: string, @Body() updateDto: UpdateMembersTeamDto): Promise<Team> {
-    let updatedTeam = await this.teamsService.updateMembersOne('_id', key, updateDto, { throw: false });
-    if (!updatedTeam) {
-      updatedTeam = await this.teamsService.updateMembersOne('name', key, updateDto, { throw: false });
-    }
-    if (!updatedTeam) {
-      updatedTeam = await this.teamsService.updateMembersOne('slug', key, updateDto, { throw: true });
-    }
-    return updatedTeam;
+    return this.teamsService.deleteOne({ fields: this.fields, fieldValue: key });
   }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/uploads')
   @UseInterceptors(FileFieldsInterceptor([{ name: 'logo_file', maxCount: 1 }]))
-  @ApiOperation({ summary: 'Загрузка файлов команды' })
+  @ApiOperation({ summary: 'Загрузка файлов команды по _id/name' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async uploadFiles(
+    @Req() req: AuthUserRequest,
     @Param('key') key: string,
     @UploadedFiles(
       new ParseFilesPipe(
@@ -142,10 +121,35 @@ export class TeamsController {
     )
     files: TeamFiles,
   ): Promise<Team> {
-    let team = await this.teamsService.findOne('_id', key);
+    let team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+      throw new UnauthorizedException('You are not allowed to update this team');
+    }
     if (files.length > 0) {
-      team = await this.teamsService.uploadFiles(team._id, files);
+      team = await this.teamsService.uploadFiles({ fields: this.fields, fieldValue: key, files: files });
     }
     return team;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Put('/:key/members')
+  @ApiOperation({ summary: 'Обновление участников команды по _id/name' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async updateMembers(
+    @Req() req: AuthUserRequest,
+    @Param('key') key: string,
+    @Body() updateMembersDto: UpdateMembersTeamDto,
+  ): Promise<Team> {
+    const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+      throw new UnauthorizedException('You are not allowed to update this team');
+    }
+    return this.teamsService.updateMembers({
+      fields: this.fields,
+      fieldValue: key,
+      updateMembersDto: updateMembersDto,
+    });
   }
 }
