@@ -110,11 +110,7 @@ export class ReviewsService {
     return foundReview.toObject();
   }
 
-  async updateOne({
-    fields,
-    fieldValue,
-    updateDto,
-  }: { updateDto: UpdateReviewDto } & OperationOptions<Review>): Promise<Review> {
+  async updateOne({ fields, fieldValue, updateDto }: { updateDto: UpdateReviewDto } & OperationOptions<Review>): Promise<Review> {
     let updatedReview = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
@@ -200,7 +196,13 @@ export class ReviewsService {
         }
       }
     } else {
-      throw new ConflictException(`Review already ${createReactionDto.type}d`);
+      // Если реакция уже существует и тип не изменился
+      await this.reactionModel.deleteOne({ review: review._id, reacted_by: user._id });
+      if (reaction.type === ReactionType.Like) {
+        review.likes -= 1;
+      } else if (reaction.type === ReactionType.Dislike) {
+        review.dislikes -= 1;
+      }
     }
 
     await review.save();

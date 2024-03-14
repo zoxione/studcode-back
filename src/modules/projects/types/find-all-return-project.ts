@@ -1,5 +1,5 @@
 import { FindAllReturn } from '../../../common/types/find-all-return';
 import { FindAllFilterProjectDto } from '../dto/find-all-filter-project.dto';
-import { ProjectDocument } from '../schemas/project.schema';
+import { ReturnProject } from './return-project';
 
-export type FindAllReturnProject = FindAllReturn<FindAllFilterProjectDto, ProjectDocument> & {};
+export type FindAllReturnProject = FindAllReturn<FindAllFilterProjectDto, ReturnProject> & {};

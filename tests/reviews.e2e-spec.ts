@@ -152,11 +152,7 @@ describe('Reviews Controller (e2e)', () => {
     });
 
     it('(POST/E) - Создание нового обзора без токена', async () => {
-      return request(app.getHttpServer())
-        .post('/reviews')
-        .set('Authorization', 'Bearer ')
-        .send(newReviews[1])
-        .expect(401);
+      return request(app.getHttpServer()).post('/reviews').set('Authorization', 'Bearer ').send(newReviews[1]).expect(401);
     });
 
     it('(GET) - Получить все обзоры без фильтра', async () => {
@@ -276,14 +272,14 @@ describe('Reviews Controller (e2e)', () => {
       return request(app.getHttpServer())
         .post(`/reviews/${newReviews[0]._id}/like`)
         .set('Authorization', 'Bearer ' + access_token)
-        .expect(409);
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.likes).toEqual(newReviews[0].likes as number);
+        });
     });
 
     it('(POST/E) - Поставить лайк обзору без токена по ID', async () => {
-      return request(app.getHttpServer())
-        .post(`/reviews/${newReviews[0]._id}/like`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).post(`/reviews/${newReviews[0]._id}/like`).set('Authorization', 'Bearer ').expect(401);
     });
 
     it('(POST/E) - Поставить лайк несуществующему обзору по ID', async () => {
@@ -308,14 +304,14 @@ describe('Reviews Controller (e2e)', () => {
       return request(app.getHttpServer())
         .post(`/reviews/${newReviews[0]._id}/dislike`)
         .set('Authorization', 'Bearer ' + access_token)
-        .expect(409);
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.dislikes).toEqual(newReviews[0].dislikes as number);
+        });
     });
 
     it('(POST/E) - Поставить дизлайк обзору без токена по ID', async () => {
-      return request(app.getHttpServer())
-        .post(`/reviews/${newReviews[0]._id}/dislike`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).post(`/reviews/${newReviews[0]._id}/dislike`).set('Authorization', 'Bearer ').expect(401);
     });
 
     it('(POST/E) - Поставить дизлайк несуществующему обзору по ID', async () => {
@@ -344,10 +340,7 @@ describe('Reviews Controller (e2e)', () => {
     });
 
     it('(DELETE/E) - Удалить обзор по ID без токена', async () => {
-      return request(app.getHttpServer())
-        .delete(`/reviews/${newReviews[1]._id}`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).delete(`/reviews/${newReviews[1]._id}`).set('Authorization', 'Bearer ').expect(401);
     });
   });
 });

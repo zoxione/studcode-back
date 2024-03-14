@@ -22,6 +22,7 @@ module.exports = {
       'warn',
       {
         endOfLine: 'auto',
+        printWidth: 'auto',
       },
     ],
     'no-unused-vars': 'off',

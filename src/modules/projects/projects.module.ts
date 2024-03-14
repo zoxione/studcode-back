@@ -9,6 +9,7 @@ import { ProjectsService } from './projects.service';
 import { Project, ProjectSchema } from './schemas/project.schema';
 import { Tag, TagSchema } from '../tags/schemas/tag.schema';
 import { Review, ReviewSchema } from '../reviews/schemas/review.schema';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { Review, ReviewSchema } from '../reviews/schemas/review.schema';
     MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
     MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]),
     UploadModule,
+    JwtModule.register({}),
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

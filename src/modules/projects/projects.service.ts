@@ -5,6 +5,7 @@ import { startOfToday, subDays, subMonths, subWeeks, subYears } from 'date-fns';
 import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { OperationOptions } from '../../common/types/operation-options';
+import { Review } from '../reviews/schemas/review.schema';
 import { Tag } from '../tags/schemas/tag.schema';
 import { UploadService } from '../upload/upload.service';
 import { User } from '../users/schemas/user.schema';
@@ -12,12 +13,11 @@ import { Vote } from '../votes/schemas/vote.schema';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { FindAllFilterProjectDto } from './dto/find-all-filter-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { Project } from './schemas/project.schema';
+import { Project, ProjectDocument } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
 import { ProjectFiles } from './types/project-files';
 import { ProjectTimeFrame } from './types/project-time-frame';
 import { ReturnProject } from './types/return-project';
-import { Review } from '../reviews/schemas/review.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -51,7 +51,8 @@ export class ProjectsService {
     status = '',
     creator_id = '',
     team_id = '',
-  }: FindAllFilterProjectDto): Promise<FindAllReturnProject> {
+    user_id = '',
+  }: { user_id?: string } & FindAllFilterProjectDto): Promise<FindAllReturnProject> {
     const count = await this.projectModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const tag = tag_slug !== '' ? await this.tagModel.findOne({ slug: tag_slug }) : null;
@@ -77,7 +78,8 @@ export class ProjectsService {
         startDate = new Date(0);
         break;
     }
-    const foundProjects = await this.projectModel
+    // let foundProjects: (ProjectDocument & Pick<ReturnProject, 'voted'>)[] = await this.projectModel
+    let foundProjects = await this.projectModel
       .find({
         ...searchQuery,
         ...tagSlugQuery,
@@ -90,6 +92,10 @@ export class ProjectsService {
       .limit(limit)
       .sort({ [order]: order[0] === '!' ? -1 : 1 })
       .exec();
+    const resultProjects = foundProjects.map(async (project) => {
+      const vote = user_id !== '' ? await this.voteModel.findOne({ project: project._id, voter: user_id }).exec() : null;
+      return { ...project.toObject(), voted: vote ? true : false };
+    });
     return {
       filter: {
         page,
@@ -107,11 +113,11 @@ export class ProjectsService {
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      results: foundProjects,
+      results: await Promise.all(resultProjects),
     };
   }
 
-  async findOne({ fields, fieldValue }: OperationOptions<Project>): Promise<ReturnProject> {
+  async findOne({ fields, fieldValue, user_id = '' }: { user_id?: string } & OperationOptions<Project>): Promise<ReturnProject> {
     let foundProject = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
@@ -121,14 +127,16 @@ export class ProjectsService {
     if (!foundProject) {
       throw new NotFoundException('Project not found');
     }
-    return { ...foundProject.toObject(), voted: false };
+    const vote = user_id !== '' ? await this.voteModel.findOne({ project: foundProject._id, voter: user_id }).exec() : null;
+    return { ...foundProject.toObject(), voted: vote ? true : false };
   }
 
   async updateOne({
     fields,
     fieldValue,
+    user_id = '',
     updateDto,
-  }: { updateDto: UpdateProjectDto } & OperationOptions<Project>): Promise<ReturnProject> {
+  }: { user_id?: string; updateDto: UpdateProjectDto } & OperationOptions<Project>): Promise<ReturnProject> {
     let updatedProject = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
@@ -150,7 +158,8 @@ export class ProjectsService {
       updatedProject.slug = this.generateSlug(updatedProject._id, updatedProject.title);
       await updatedProject.save();
     }
-    return { ...updatedProject.toObject(), voted: false };
+    const vote = user_id !== '' ? await this.voteModel.findOne({ project: updatedProject._id, voter: user_id }).exec() : null;
+    return { ...updatedProject.toObject(), voted: vote ? true : false };
   }
 
   async deleteOne({ fields, fieldValue }: OperationOptions<Project>): Promise<ReturnProject> {
@@ -171,8 +180,9 @@ export class ProjectsService {
   async uploadFiles({
     fields,
     fieldValue,
+    user_id = '',
     files,
-  }: { files: ProjectFiles } & OperationOptions<Project>): Promise<ReturnProject> {
+  }: { user_id?: string; files: ProjectFiles } & OperationOptions<Project>): Promise<ReturnProject> {
     let project = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
@@ -189,24 +199,18 @@ export class ProjectsService {
         const res = await this.uploadService.upload(`project-${project._id}-logo.${file.mimetype.split('/')[1]}`, file);
         project.logo = res;
       } else if (file.fieldname === 'screenshots_files') {
-        const res = await this.uploadService.upload(
-          `project-${project._id}-screenshot-${index}.${file.mimetype.split('/')[1]}`,
-          file,
-        );
+        const res = await this.uploadService.upload(`project-${project._id}-screenshot-${index}.${file.mimetype.split('/')[1]}`, file);
         project.screenshots.push(res);
         index += 1;
       }
     }
 
     await project.save();
-    return { ...project.toObject(), voted: false };
+    const vote = user_id !== '' ? await this.voteModel.findOne({ project: project._id, voter: user_id }).exec() : null;
+    return { ...project.toObject(), voted: vote ? true : false };
   }
 
-  async voteOne({
-    fields,
-    fieldValue,
-    voter_id,
-  }: { voter_id: string } & OperationOptions<Project>): Promise<ReturnProject> {
+  async voteOne({ fields, fieldValue, voter_id }: { voter_id: string } & OperationOptions<Project>): Promise<ReturnProject> {
     let project = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
@@ -240,6 +244,6 @@ export class ProjectsService {
     }
 
     await project.save();
-    return { ...project.toObject(), voted: !!vote };
+    return { ...project.toObject(), voted: vote ? false : true };
   }
 }

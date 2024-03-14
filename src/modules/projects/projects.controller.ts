@@ -28,6 +28,9 @@ import { Project } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
 import { ProjectFiles } from './types/project-files';
 import { ReturnProject } from './types/return-project';
+import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
+import { JwtPayload } from '../auth/types/jwt-payload';
 
 @ApiBearerAuth()
 @ApiTags('projects')
@@ -35,7 +38,10 @@ import { ReturnProject } from './types/return-project';
 export class ProjectsController {
   private readonly fields: (keyof Project)[] = ['_id', 'slug'];
 
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+    private jwtService: JwtService,
+  ) {}
 
   @UseGuards(AccessTokenGuard)
   @Post('/')
@@ -50,8 +56,9 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Получение списка проектов' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async findAll(@Query() query: FindAllFilterProjectDto): Promise<FindAllReturnProject> {
-    return this.projectsService.findAll(query);
+  async findAll(@Req() req: Request, @Query() query: FindAllFilterProjectDto): Promise<FindAllReturnProject> {
+    const access_token_decode = req.cookies['access_token'] ? (this.jwtService.decode(req.cookies['access_token']) as JwtPayload) : null;
+    return this.projectsService.findAll({ ...query, user_id: access_token_decode?.sub });
   }
 
   @Get('/:key')
@@ -59,8 +66,9 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async findOne(@Param('key') key: string): Promise<ReturnProject> {
-    return this.projectsService.findOne({ fields: this.fields, fieldValue: key });
+  async findOne(@Req() req: Request, @Param('key') key: string): Promise<ReturnProject> {
+    const access_token_decode = req.cookies['access_token'] ? (this.jwtService.decode(req.cookies['access_token']) as JwtPayload) : null;
+    return this.projectsService.findOne({ fields: this.fields, fieldValue: key, user_id: access_token_decode?.sub });
   }
 
   @UseGuards(AccessTokenGuard)
@@ -69,16 +77,17 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOne(
-    @Req() req: AuthUserRequest,
-    @Param('key') key: string,
-    @Body() updateDto: UpdateProjectDto,
-  ): Promise<ReturnProject> {
+  async updateOne(@Req() req: AuthUserRequest, @Param('key') key: string, @Body() updateDto: UpdateProjectDto): Promise<ReturnProject> {
     const project = await this.projectsService.findOne({ fields: this.fields, fieldValue: key });
-    if (project.creator._id.toString() !== req.user.sub) {
+    if (project.creator._id.toString() !== req.user?.sub) {
       throw new UnauthorizedException('You are not allowed to update this project');
     }
-    return this.projectsService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
+    return this.projectsService.updateOne({
+      fields: this.fields,
+      fieldValue: key,
+      user_id: req.user?.sub,
+      updateDto: updateDto,
+    });
   }
 
   @UseGuards(AccessTokenGuard)
@@ -89,7 +98,7 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<ReturnProject> {
     const project = await this.projectsService.findOne({ fields: this.fields, fieldValue: key });
-    if (project.creator._id.toString() !== req.user.sub) {
+    if (project.creator._id.toString() !== req.user?.sub) {
       throw new UnauthorizedException('You are not allowed to delete this project');
     }
     return this.projectsService.deleteOne({ fields: this.fields, fieldValue: key });
@@ -127,11 +136,16 @@ export class ProjectsController {
     files: ProjectFiles,
   ): Promise<ReturnProject> {
     let project = await this.projectsService.findOne({ fields: this.fields, fieldValue: key });
-    if (project.creator._id.toString() !== req.user.sub) {
+    if (project.creator._id.toString() !== req.user?.sub) {
       throw new UnauthorizedException('You are not allowed to upload file this project');
     }
     if (files.length > 0) {
-      project = await this.projectsService.uploadFiles({ fields: this.fields, fieldValue: key, files: files });
+      project = await this.projectsService.uploadFiles({
+        fields: this.fields,
+        fieldValue: key,
+        user_id: req.user?.sub,
+        files: files,
+      });
     }
     return project;
   }
@@ -143,6 +157,6 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async voteOne(@Param('key') key: string, @Req() req: AuthUserRequest): Promise<ReturnProject> {
-    return this.projectsService.voteOne({ fields: this.fields, fieldValue: key, voter_id: req.user.sub });
+    return this.projectsService.voteOne({ fields: this.fields, fieldValue: key, voter_id: req.user?.sub });
   }
 }
