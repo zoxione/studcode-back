@@ -69,11 +69,7 @@ export class TeamsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOne(
-    @Req() req: AuthUserRequest,
-    @Param('key') key: string,
-    @Body() updateDto: UpdateTeamDto,
-  ): Promise<Team> {
+  async updateOne(@Req() req: AuthUserRequest, @Param('key') key: string, @Body() updateDto: UpdateTeamDto): Promise<Team> {
     const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
     if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
       throw new UnauthorizedException('You are not allowed to update this team');
@@ -142,10 +138,10 @@ export class TeamsController {
     @Param('key') key: string,
     @Body() updateMembersDto: UpdateMembersTeamDto,
   ): Promise<Team> {
-    const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
-    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
-      throw new UnauthorizedException('You are not allowed to update this team');
-    }
+    // const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    // if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+    //   throw new UnauthorizedException('You are not allowed to update this team');
+    // }
     return this.teamsService.updateMembers({
       fields: this.fields,
       fieldValue: key,

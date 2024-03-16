@@ -67,14 +67,17 @@ export class ReviewsService {
     limit = 20,
     order = '_id',
     project_id = '',
+    user_id = '',
   }: FindAllFilterReviewDto): Promise<FindAllReturnReview> {
     const count = await this.reviewModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const projectQuery = project_id !== '' ? { project: project_id } : {};
+    const userQuery = user_id !== '' ? { reviewer: user_id[0] === '!' ? { $ne: user_id.slice(1) } : user_id } : {};
     const foundReviews = await this.reviewModel
       .find({
         ...searchQuery,
         ...projectQuery,
+        ...userQuery,
       })
       .skip((page - 1) * limit)
       .limit(limit)
@@ -87,6 +90,7 @@ export class ReviewsService {
         search,
         order,
         project_id,
+        user_id,
       },
       info: {
         find_count: foundReviews.length,

@@ -939,7 +939,26 @@ window.onload = function() {
         "get": {
           "operationId": "ReviewsController_findAll",
           "summary": "Получение списка обзоров",
-          "parameters": [],
+          "parameters": [
+            {
+              "name": "project_id",
+              "required": true,
+              "in": "query",
+              "description": "Идентификатор проекта",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "user_id",
+              "required": true,
+              "in": "query",
+              "description": "Идентификатор пользователя",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
           "responses": {
             "200": {
               "description": "Success",
