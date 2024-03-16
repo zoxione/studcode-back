@@ -14,6 +14,7 @@ window.onload = function() {
       "/": {
         "get": {
           "operationId": "AppController_mainInfo",
+          "summary": "Основная информация",
           "parameters": [],
           "responses": {
             "200": {
@@ -1496,6 +1497,28 @@ window.onload = function() {
             "url"
           ]
         },
+        "UserFullName": {
+          "type": "object",
+          "properties": {
+            "surname": {
+              "type": "string",
+              "description": "Фамилия"
+            },
+            "name": {
+              "type": "string",
+              "description": "Имя"
+            },
+            "patronymic": {
+              "type": "string",
+              "description": "Отчество"
+            }
+          },
+          "required": [
+            "surname",
+            "name",
+            "patronymic"
+          ]
+        },
         "User": {
           "type": "object",
           "properties": {
@@ -1539,7 +1562,7 @@ window.onload = function() {
               "description": "ФИО",
               "allOf": [
                 {
-                  "$ref": "#/components/schemas/"
+                  "$ref": "#/components/schemas/UserFullName"
                 }
               ]
             },

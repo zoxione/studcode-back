@@ -6,6 +6,7 @@ import { get } from 'http';
 import { AppModule } from './app.module';
 import configuration from './config/configuration';
 import cookieParser from 'cookie-parser';
+import { setupRedoc } from './common/middlewares/redoc.middleware';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -32,6 +33,7 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/swagger', app, document);
+  setupRedoc(app);
 
   await app.listen(configuration().port);
   const appUrl = await app.getUrl();

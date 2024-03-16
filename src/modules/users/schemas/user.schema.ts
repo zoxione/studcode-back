@@ -36,7 +36,7 @@ class User {
   @Prop({ type: String, default: '' })
   refresh_token: string;
 
-  @ApiProperty({ description: 'ФИО', type: UserFullNameSchema })
+  @ApiProperty({ description: 'ФИО', type: UserFullName })
   @Prop({ type: UserFullNameSchema, default: null })
   full_name: UserFullName;
 

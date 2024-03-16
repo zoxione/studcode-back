@@ -3,6 +3,7 @@ paths:
   /:
     get:
       operationId: AppController_mainInfo
+      summary: Основная информация
       parameters: []
       responses:
         '200':
@@ -868,6 +869,22 @@ components:
         - type
         - label
         - url
+    UserFullName:
+      type: object
+      properties:
+        surname:
+          type: string
+          description: Фамилия
+        name:
+          type: string
+          description: Имя
+        patronymic:
+          type: string
+          description: Отчество
+      required:
+        - surname
+        - name
+        - patronymic
     User:
       type: object
       properties:
@@ -899,7 +916,7 @@ components:
         full_name:
           description: ФИО
           allOf:
-            - $ref: '#/components/schemas/'
+            - $ref: '#/components/schemas/UserFullName'
         avatar:
           type: string
           description: Ссылка на аватар

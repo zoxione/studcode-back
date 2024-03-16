@@ -83,6 +83,9 @@ dependencies:
   passport-jwt:
     specifier: ^4.0.1
     version: 4.0.1
+  redoc-express:
+    specifier: ^2.1.0
+    version: 2.1.0
   reflect-metadata:
     specifier: ^0.1.13
     version: 0.1.13
@@ -7055,6 +7058,10 @@ packages:
     dependencies:
       resolve: 1.22.8
     dev: true
+
+  /redoc-express@2.1.0:
+    resolution: {integrity: sha512-gq6FvghNirD3dCJ7w8Z6escXYHnU1Hk50baQsIeGunQQ9YRoy6qR/MjEOJtDEKaPNB2NgkIzQ9ESNX5/27zkDA==}
+    dev: false
 
   /reduce-flatten@2.0.0:
     resolution: {integrity: sha512-EJ4UNY/U1t2P/2k6oqotuX2Cc3T6nxJwsM0N0asT7dhrtH1ltUxDn4NalSYmPE2rCkVpcf/X6R0wDwcFpzhd4w==}
