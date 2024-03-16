@@ -31,6 +31,7 @@ import { ReturnProject } from './types/return-project';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { JwtPayload } from '../auth/types/jwt-payload';
+import configuration from '../../config/configuration';
 
 @ApiBearerAuth()
 @ApiTags('projects')
@@ -57,7 +58,10 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Project })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   async findAll(@Req() req: Request, @Query() query: FindAllFilterProjectDto): Promise<FindAllReturnProject> {
-    const access_token_decode = req.cookies['access_token'] ? (this.jwtService.decode(req.cookies['access_token']) as JwtPayload) : null;
+    const access_token_name = configuration().access_token_name;
+    const access_token_decode = req.cookies[access_token_name]
+      ? (this.jwtService.decode(req.cookies[access_token_name]) as JwtPayload)
+      : null;
     return this.projectsService.findAll({ ...query, user_id: access_token_decode?.sub });
   }
 
@@ -67,7 +71,10 @@ export class ProjectsController {
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
   async findOne(@Req() req: Request, @Param('key') key: string): Promise<ReturnProject> {
-    const access_token_decode = req.cookies['access_token'] ? (this.jwtService.decode(req.cookies['access_token']) as JwtPayload) : null;
+    const access_token_name = configuration().access_token_name;
+    const access_token_decode = req.cookies[access_token_name]
+      ? (this.jwtService.decode(req.cookies[access_token_name]) as JwtPayload)
+      : null;
     return this.projectsService.findOne({ fields: this.fields, fieldValue: key, user_id: access_token_decode?.sub });
   }
 

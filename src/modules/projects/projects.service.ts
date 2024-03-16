@@ -78,7 +78,6 @@ export class ProjectsService {
         startDate = new Date(0);
         break;
     }
-    // let foundProjects: (ProjectDocument & Pick<ReturnProject, 'voted'>)[] = await this.projectModel
     let foundProjects = await this.projectModel
       .find({
         ...searchQuery,
