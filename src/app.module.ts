@@ -14,6 +14,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { AppController } from './app.controller';
 import { ReactionsModule } from './modules/reactions/reactions.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -31,6 +32,16 @@ import { ReactionsModule } from './modules/reactions/reactions.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),
       serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
+    }),
+    MailerModule.forRoot({
+      transport: {
+        host: configuration().smtp_host,
+        port: configuration().smtp_port,
+        auth: {
+          user: configuration().smtp_user,
+          pass: configuration().smtp_password,
+        },
+      },
     }),
   ],
   controllers: [AppController],

@@ -44,7 +44,7 @@ describe('Users Controller (e2e)', () => {
       email: 'zoxione@gmail.com',
       password: 'password',
       role: 'admin',
-      verify_email: true,
+      verify_email: 'false',
       refresh_token: 'token',
       full_name: {
         surname: 'surname',
@@ -241,11 +241,7 @@ describe('Users Controller (e2e)', () => {
       const updateUser: Partial<UpdateUserDto> = {
         username: 'new username',
       };
-      return request(app.getHttpServer())
-        .put(`/users/${createdUser._id}`)
-        .set('Authorization', 'Bearer ')
-        .send(updateUser)
-        .expect(401);
+      return request(app.getHttpServer()).put(`/users/${createdUser._id}`).set('Authorization', 'Bearer ').send(updateUser).expect(401);
     });
 
     it('(DELETE) - Удалить пользователя по ID', async () => {
@@ -267,10 +263,7 @@ describe('Users Controller (e2e)', () => {
     });
 
     it('(DELETE/E) - Удалить пользователя по ID без токена', async () => {
-      return request(app.getHttpServer())
-        .delete(`/users/${newUsers[1]._id}`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).delete(`/users/${newUsers[1]._id}`).set('Authorization', 'Bearer ').expect(401);
     });
   });
 });

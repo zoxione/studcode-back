@@ -1319,6 +1319,36 @@ window.onload = function() {
             }
           ]
         }
+      },
+      "/api/v1/auth/verify": {
+        "get": {
+          "operationId": "AuthController_verifyEmail",
+          "summary": "Подтверждение почты",
+          "parameters": [
+            {
+              "name": "token",
+              "required": true,
+              "in": "query",
+              "description": "Токен",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": ""
+            }
+          },
+          "tags": [
+            "auth"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
       }
     },
     "info": {
@@ -1570,7 +1600,7 @@ window.onload = function() {
               ]
             },
             "verify_email": {
-              "type": "boolean",
+              "type": "string",
               "description": "Подтверждение почты"
             },
             "refresh_token": {
@@ -2141,7 +2171,7 @@ window.onload = function() {
               ]
             },
             "verify_email": {
-              "type": "boolean",
+              "type": "string",
               "description": "Подтверждение почты"
             },
             "refresh_token": {

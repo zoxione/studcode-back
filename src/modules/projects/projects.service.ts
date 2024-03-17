@@ -89,7 +89,7 @@ export class ProjectsService {
       })
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ [order]: order[0] === '!' ? -1 : 1 })
+      .sort({ [order[0] === '!' ? order.slice(1) : order]: order[0] === '!' ? -1 : 1 })
       .exec();
     const resultProjects = foundProjects.map(async (project) => {
       const vote = user_id !== '' ? await this.voteModel.findOne({ project: project._id, voter: user_id }).exec() : null;

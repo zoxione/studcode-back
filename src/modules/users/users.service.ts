@@ -30,12 +30,7 @@ export class UsersService {
     return createdUser;
   }
 
-  async findAll({
-    search = '',
-    page = 1,
-    limit = 20,
-    order = '_id',
-  }: FindAllFilterUserDto): Promise<FindAllReturnUser> {
+  async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterUserDto): Promise<FindAllReturnUser> {
     const count = await this.userModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const foundUsers = await this.userModel
@@ -43,7 +38,7 @@ export class UsersService {
       .select('-password -refresh_token')
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ [order]: order[0] === '!' ? -1 : 1 })
+      .sort({ [order[0] === '!' ? order.slice(1) : order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
       filter: {
@@ -78,11 +73,7 @@ export class UsersService {
     return foundUser.toObject();
   }
 
-  async updateOne({
-    fields,
-    fieldValue,
-    updateDto,
-  }: { updateDto: UpdateUserDto } & OperationOptions<User>): Promise<User> {
+  async updateOne({ fields, fieldValue, updateDto }: { updateDto: UpdateUserDto } & OperationOptions<User>): Promise<User> {
     let updatedUser = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;

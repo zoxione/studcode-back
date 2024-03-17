@@ -1,16 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-  IsArray,
-  IsBoolean,
-  IsEmail,
-  IsEnum,
-  IsObject,
-  IsOptional,
-  IsString,
-  IsUrl,
-  ValidateNested,
-} from 'class-validator';
+import { IsArray, IsBoolean, IsEmail, IsEnum, IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 import { LinkDto } from '../../../common/dto/link.dto';
 import { UserRole } from '../types/user-role';
 import { UserFullNameDto } from './user-full-name.dto';
@@ -33,10 +23,10 @@ export class CreateUserDto {
   @IsOptional()
   readonly role: UserRole;
 
-  @ApiProperty({ description: 'Подтверждение почты', type: Boolean })
-  @IsBoolean()
+  @ApiProperty({ description: 'Подтверждение почты', type: String })
+  @IsString()
   @IsOptional()
-  readonly verify_email: boolean;
+  readonly verify_email: string;
 
   @ApiProperty({ description: 'Токен обновления', type: String })
   @IsString()

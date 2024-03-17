@@ -728,6 +728,22 @@ paths:
           description: ''
       tags: *ref_10
       security: *ref_11
+  /api/v1/auth/verify:
+    get:
+      operationId: AuthController_verifyEmail
+      summary: Подтверждение почты
+      parameters:
+        - name: token
+          required: true
+          in: query
+          description: Токен
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ''
+      tags: *ref_10
+      security: *ref_11
 info:
   title: Студенческий код
   description: Это открытое API для веб-приложения "Студенческий код".
@@ -920,7 +936,7 @@ components:
             - user
             - admin
         verify_email:
-          type: boolean
+          type: string
           description: Подтверждение почты
         refresh_token:
           type: string
@@ -1328,7 +1344,7 @@ components:
             - user
             - admin
         verify_email:
-          type: boolean
+          type: string
           description: Подтверждение почты
         refresh_token:
           type: string

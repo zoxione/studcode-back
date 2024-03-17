@@ -30,13 +30,7 @@ export class TeamsService {
     return createdTeam.toObject();
   }
 
-  async findAll({
-    search = '',
-    page = 1,
-    limit = 20,
-    order = '_id',
-    member_id = '',
-  }: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
+  async findAll({ search = '', page = 1, limit = 20, order = '_id', member_id = '' }: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
     const count = await this.teamModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const memberQuery = member_id !== '' ? { 'members.user': member_id } : {};
@@ -44,7 +38,7 @@ export class TeamsService {
       .find({ ...searchQuery, ...memberQuery })
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ [order]: order[0] === '!' ? -1 : 1 })
+      .sort({ [order[0] === '!' ? order.slice(1) : order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
       filter: {
@@ -76,11 +70,7 @@ export class TeamsService {
     return foundTeam.toObject();
   }
 
-  async updateOne({
-    fields,
-    fieldValue,
-    updateDto,
-  }: { updateDto: UpdateTeamDto } & OperationOptions<Team>): Promise<Team> {
+  async updateOne({ fields, fieldValue, updateDto }: { updateDto: UpdateTeamDto } & OperationOptions<Team>): Promise<Team> {
     let updatedTeam = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;

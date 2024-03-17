@@ -20,8 +20,8 @@ export class AppController {
       votes: `${fullUrl}/api/v1/votes`,
       users: `${fullUrl}/api/v1/users`,
       teams: `${fullUrl}/api/v1/teams`,
-      awards: `${fullUrl}/api/v1/awards`,
       reviews: `${fullUrl}/api/v1/reviews`,
+      reactions: `${fullUrl}/api/v1/reactions`,
     };
   }
 }

@@ -35,7 +35,7 @@ export class TagsService {
       .find(searchQuery)
       .skip((page - 1) * limit)
       .limit(limit)
-      .sort({ [order]: order[0] === '!' ? -1 : 1 })
+      .sort({ [order[0] === '!' ? order.slice(1) : order]: order[0] === '!' ? -1 : 1 })
       .exec();
     return {
       filter: {
