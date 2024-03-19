@@ -1,15 +1,16 @@
 const fs = require('fs');
-const csv = require('csv-parser');
+const csv = require('csv');
 require('dotenv').config({
   path: '.env.test',
 });
 
-const rows = [];
+const tags = [];
+const file = './src/utils/data.csv';
 
-fs.createReadStream('./src/utils/data.csv')
-  .pipe(csv())
-  .on('data', (row) => {
-    rows.push(row);
+fs.createReadStream(file)
+  .pipe(csv.parse({ columns: true }))
+  .on('data', (tag) => {
+    tags.push(tag);
   })
   .on('end', async () => {
     const res = await fetch(`http://localhost:${process.env.PORT}/api/v1/auth/login`, {
@@ -28,8 +29,8 @@ fs.createReadStream('./src/utils/data.csv')
     if (!access_token) {
       throw new Error('No access token');
     }
-    for (let i = 0; i < rows.length; i++) {
-      console.log(`[${i + 1}/${rows.length}] ${rows[i].name}`);
+    for (let i = 0; i < tags.length; i++) {
+      console.log(`[${i + 1}/${tags.length}] ${tags[i].icon} - ${tags[i].name}`);
       const res = await fetch(`http://localhost:${process.env.PORT}/api/v1/tags`, {
         method: 'POST',
         headers: {
@@ -37,10 +38,10 @@ fs.createReadStream('./src/utils/data.csv')
           Accept: 'application/json',
           Authorization: `Bearer ${access_token}`,
         },
-        body: JSON.stringify(rows[i]),
+        body: JSON.stringify(tags[i]),
       });
       if (!res.ok) {
-        throw new Error(`[${i + 1}/${rows.length}] ${rows[i].name} - ${res.statusText}`);
+        throw new Error(`[${i + 1}/${tags.length}] ${tags[i].name} - ${res.statusText}`);
       }
     }
   });

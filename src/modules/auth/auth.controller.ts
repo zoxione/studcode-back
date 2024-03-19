@@ -140,6 +140,7 @@ export class AuthController {
             <h1>Подтверждение почты на сайте ${configuration().frontend_url}</h1>
             <p>Для подтверждения почты перейдите по ссылке</p>
             <a href="${configuration().app_url}/api/v1/auth/verify?token=${randomToken}">Ссылка</a>
+            <span>${configuration().app_url}/api/v1/auth/verify?token=${randomToken}</span>
           </div>
         `,
       });

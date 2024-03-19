@@ -1,4 +1,12 @@
-import { PutObjectCommand, PutObjectCommandInput, PutObjectCommandOutput, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  DeleteObjectCommandInput,
+  DeleteObjectCommandOutput,
+  PutObjectCommand,
+  PutObjectCommandInput,
+  PutObjectCommandOutput,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -8,10 +16,10 @@ export class UploadService {
   private readonly region: string;
   private readonly endpoint: string;
   private readonly bucket: string;
-  private readonly upload_url: string;
+  private readonly uploadUrl: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.upload_url = this.configService.getOrThrow('UPLOAD_URL');
+    this.uploadUrl = this.configService.getOrThrow('UPLOAD_URL');
     this.region = this.configService.getOrThrow('AWS_REGION');
     this.endpoint = this.configService.getOrThrow('AWS_ENDPOINT');
     this.bucket = this.configService.getOrThrow('AWS_BUCKET_NAME');
@@ -38,9 +46,26 @@ export class UploadService {
     try {
       const response: PutObjectCommandOutput = await this.s3Client.send(new PutObjectCommand(input));
       if (response.$metadata.httpStatusCode === 200) {
-        return `${this.upload_url}/${key}`;
+        return `${this.uploadUrl}/${key}`;
       }
-      throw new Error('Image not saved to S3');
+      throw new Error(`Failed to upload file ${key} to S3.`);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
+  async remove(key: string) {
+    const input: DeleteObjectCommandInput = {
+      Bucket: this.bucket,
+      Key: key,
+    };
+    try {
+      const response: DeleteObjectCommandOutput = await this.s3Client.send(new DeleteObjectCommand(input));
+      if (response.$metadata.httpStatusCode === 204) {
+        return true;
+      }
+      throw new Error(`Failed to remove file ${key} from S3.`);
     } catch (error) {
       console.log(error);
       throw error;

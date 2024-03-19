@@ -8,7 +8,6 @@ import { UpdateProjectDto } from '../src/modules/projects/dto/update-project.dto
 import { Project } from '../src/modules/projects/schemas/project.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
 import { startOfToday, subYears } from 'date-fns';
-import { getRandomId } from '../src/utils/get-random-id';
 
 describe('Projects Controller (e2e)', () => {
   let app: INestApplication;
@@ -33,7 +32,7 @@ describe('Projects Controller (e2e)', () => {
   });
 
   const user = {
-    _id: getRandomId(),
+    _id: 'f53528c0460a017f68186911',
     username: Math.random().toString(36).substring(7),
     email: `${Math.random().toString(36).substring(7)}@example.com`,
     password: Math.random().toString(36).substring(7),
@@ -129,11 +128,7 @@ describe('Projects Controller (e2e)', () => {
     });
 
     it('(POST/E) - Создание нового проекта без токена', async () => {
-      return request(app.getHttpServer())
-        .post('/projects')
-        .set('Authorization', 'Bearer ')
-        .send(newProjects[1])
-        .expect(401);
+      return request(app.getHttpServer()).post('/projects').set('Authorization', 'Bearer ').send(newProjects[1]).expect(401);
     });
 
     it('(GET) - Получить все проекты без фильтра', async () => {
@@ -316,10 +311,7 @@ describe('Projects Controller (e2e)', () => {
     });
 
     it('(POST/E) - Голосование за проект без токена', async () => {
-      return request(app.getHttpServer())
-        .post(`/projects/${createdProject._id}/vote`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).post(`/projects/${createdProject._id}/vote`).set('Authorization', 'Bearer ').expect(401);
     });
 
     it('(DELETE) - Удалить проект по ID', async () => {
@@ -341,10 +333,7 @@ describe('Projects Controller (e2e)', () => {
     });
 
     it('(DELETE/E) - Удалить проект по ID без токена', async () => {
-      return request(app.getHttpServer())
-        .delete(`/projects/${newProjects[1]._id}`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).delete(`/projects/${newProjects[1]._id}`).set('Authorization', 'Bearer ').expect(401);
     });
   });
 });

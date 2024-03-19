@@ -13,15 +13,15 @@ export class AppController {
     const host = req.get('Host');
     const fullUrl = `${protocol}://${host}`;
     return {
+      name: 'Студенческий код',
+      version: '1.0.0',
       swagger: `${fullUrl}/swagger`,
       docs: `${fullUrl}/docs`,
       projects: `${fullUrl}/api/v1/projects`,
       tags: `${fullUrl}/api/v1/tags`,
-      votes: `${fullUrl}/api/v1/votes`,
       users: `${fullUrl}/api/v1/users`,
       teams: `${fullUrl}/api/v1/teams`,
       reviews: `${fullUrl}/api/v1/reviews`,
-      reactions: `${fullUrl}/api/v1/reactions`,
     };
   }
 }

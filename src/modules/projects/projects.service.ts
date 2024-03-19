@@ -173,6 +173,10 @@ export class ProjectsService {
     }
     await this.voteModel.deleteMany({ project: deletedProject._id }).exec();
     await this.reviewModel.deleteMany({ project: deletedProject._id }).exec();
+    await this.uploadService.remove(deletedProject.logo.split('/').slice(-1)[0]);
+    for (const screenshot of deletedProject.screenshots) {
+      await this.uploadService.remove(screenshot.split('/').slice(-1)[0]);
+    }
     return { ...deletedProject.toObject(), voted: false };
   }
 

@@ -6,7 +6,6 @@ import { AppModule } from '../src/app.module';
 import configuration from '../src/config/configuration';
 import { UpdateUserDto } from '../src/modules/users/dto/update-user.dto';
 import { User } from '../src/modules/users/schemas/user.schema';
-import { getRandomId } from '../src/utils/get-random-id';
 
 describe('Users Controller (e2e)', () => {
   let app: INestApplication;
@@ -31,7 +30,7 @@ describe('Users Controller (e2e)', () => {
   });
 
   const user = {
-    _id: getRandomId(),
+    _id: 'f53528c0460a017f68186911',
     username: Math.random().toString(36).substring(7),
     email: `${Math.random().toString(36).substring(7)}@example.com`,
     password: Math.random().toString(36).substring(7),

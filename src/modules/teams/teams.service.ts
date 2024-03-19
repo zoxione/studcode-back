@@ -105,6 +105,7 @@ export class TeamsService {
     if (!deletedTeam) {
       throw new NotFoundException('Team not deleted');
     }
+    await this.uploadService.remove(deletedTeam.logo.split('/').slice(-1)[0]);
     return deletedTeam.toObject();
   }
 

@@ -7,7 +7,6 @@ import configuration from '../src/config/configuration';
 import { UpdateTeamDto } from '../src/modules/teams/dto/update-team.dto';
 import { Team } from '../src/modules/teams/schemas/team.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
-import { getRandomId } from '../src/utils/get-random-id';
 
 describe('Teams Controller (e2e)', () => {
   let app: INestApplication;
@@ -32,7 +31,7 @@ describe('Teams Controller (e2e)', () => {
   });
 
   const user = {
-    _id: getRandomId(),
+    _id: 'f53528c0460a017f68186911',
     username: Math.random().toString(36).substring(7),
     email: `${Math.random().toString(36).substring(7)}@example.com`,
     password: Math.random().toString(36).substring(7),
@@ -254,11 +253,7 @@ describe('Teams Controller (e2e)', () => {
       const updateTeam: Partial<UpdateTeamDto> = {
         name: 'Update Team',
       };
-      return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}`)
-        .set('Authorization', 'Bearer ')
-        .send(updateTeam)
-        .expect(401);
+      return request(app.getHttpServer()).put(`/teams/${createdTeam._id}`).set('Authorization', 'Bearer ').send(updateTeam).expect(401);
     });
 
     it('(POST) - Добавить участника в команду по ID', async () => {
@@ -351,10 +346,7 @@ describe('Teams Controller (e2e)', () => {
     });
 
     it('(DELETE/E) - Удалить команду по ID без токена', async () => {
-      return request(app.getHttpServer())
-        .delete(`/teams/${newTeams[1]._id}`)
-        .set('Authorization', 'Bearer ')
-        .expect(401);
+      return request(app.getHttpServer()).delete(`/teams/${newTeams[1]._id}`).set('Authorization', 'Bearer ').expect(401);
     });
   });
 });
