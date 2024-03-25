@@ -202,6 +202,12 @@ export class ProjectsService {
         const res = await this.uploadService.upload(`project-${project._id}-logo.${file.mimetype.split('/')[1]}`, file);
         project.logo = res;
       } else if (file.fieldname === 'screenshots_files') {
+        if (index === 0) {
+          for (const screenshot of project.screenshots) {
+            await this.uploadService.remove(screenshot.split('/').slice(-1)[0]);
+          }
+          project.screenshots = [];
+        }
         const res = await this.uploadService.upload(`project-${project._id}-screenshot-${index}.${file.mimetype.split('/')[1]}`, file);
         project.screenshots.push(res);
         index += 1;
