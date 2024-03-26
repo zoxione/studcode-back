@@ -89,6 +89,7 @@ ProjectSchema.pre(/^find/, function (this: mongoose.Query<any, any, {}, any, 'fi
   this.populate([
     { path: 'tags', select: '_id name icon slug' },
     { path: 'creator', select: '_id username avatar full_name' },
+    { path: 'team', select: '_id name logo slug' },
   ]);
   next();
 });
@@ -96,6 +97,7 @@ ProjectSchema.pre('save', function (next) {
   this.populate([
     { path: 'tags', select: '_id name icon slug' },
     { path: 'creator', select: '_id username avatar full_name' },
+    { path: 'team', select: '_id name logo slug' },
   ]);
   next();
 });
