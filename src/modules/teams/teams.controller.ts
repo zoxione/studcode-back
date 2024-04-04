@@ -21,13 +21,15 @@ import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
-import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
+import { UpdateTeamMembersDto } from './dto/update-team-members.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { Team } from './schemas/team.schema';
 import { TeamsService } from './teams.service';
 import { FindAllReturnTeam } from './types/find-all-return-team';
 import { TeamFiles } from './types/team-files';
 import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { TeamMemberDto } from './dto/team-member.dto';
+import { TeamAction } from './types/team-action';
 
 @ApiBearerAuth()
 @ApiTags('teams')
@@ -136,16 +138,50 @@ export class TeamsController {
   async updateMembers(
     @Req() req: AuthUserRequest,
     @Param('key') key: string,
-    @Body() updateMembersDto: UpdateMembersTeamDto,
+    @Body() updateMembersDto: UpdateTeamMembersDto,
   ): Promise<Team> {
-    // const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
-    // if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
-    //   throw new UnauthorizedException('You are not allowed to update this team');
-    // }
+    const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+      throw new UnauthorizedException(`You are not allowed to update members this team because you aren't owner`);
+    }
     return this.teamsService.updateMembers({
       fields: this.fields,
       fieldValue: key,
       updateMembersDto: updateMembersDto,
+    });
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Put('/:key/members/add')
+  @ApiOperation({ summary: 'Добавление участника в команду по _id/name' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async addMember(@Param('key') key: string, @Body() teamMemberDto: TeamMemberDto): Promise<Team> {
+    return this.teamsService.updateMembers({
+      fields: this.fields,
+      fieldValue: key,
+      updateMembersDto: { members: [{ member: teamMemberDto, action: TeamAction.Add }] },
+    });
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Put('/:key/members/remove')
+  @ApiOperation({ summary: 'Удаление участника из команды по _id/name' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Team })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async removeMember(@Req() req: AuthUserRequest, @Param('key') key: string, @Body() teamMemberDto: TeamMemberDto): Promise<Team> {
+    const team = await this.teamsService.findOne({ fields: this.fields, fieldValue: key });
+    if (!team.members.some((member) => member.user._id.toString() === req.user.sub && member.role === 'owner')) {
+      if (teamMemberDto.user !== req.user.sub) {
+        throw new UnauthorizedException(`You are not allowed to remove member this team because you aren't member`);
+      }
+    }
+    return this.teamsService.updateMembers({
+      fields: this.fields,
+      fieldValue: key,
+      updateMembersDto: { members: [{ member: teamMemberDto, action: TeamAction.Remove }] },
     });
   }
 }

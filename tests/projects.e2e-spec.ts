@@ -289,6 +289,7 @@ describe('Projects Controller (e2e)', () => {
         .then((res) => {
           expect(res.body).toBeDefined();
           expect(res.body.flames).toEqual(createdProject.flames + 1);
+          expect(res.body.voted).toBe(true);
         });
     });
 
@@ -300,6 +301,7 @@ describe('Projects Controller (e2e)', () => {
         .then((res) => {
           expect(res.body).toBeDefined();
           expect(res.body.flames).toEqual(createdProject.flames);
+          expect(res.body.voted).toBe(false);
         });
     });
 

@@ -58,11 +58,7 @@ export class UsersController {
   @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async updateOne(
-    @Req() req: AuthUserRequest,
-    @Param('key') key: string,
-    @Body() updateDto: UpdateUserDto,
-  ): Promise<User> {
+  async updateOne(@Req() req: AuthUserRequest, @Param('key') key: string, @Body() updateDto: UpdateUserDto): Promise<User> {
     const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
     if (user._id.toString() !== req.user.sub) {
       throw new UnauthorizedException('You are not allowed to update this user');
@@ -70,19 +66,19 @@ export class UsersController {
     return this.usersService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
   }
 
-  @UseGuards(AccessTokenGuard)
-  @Delete('/:key')
-  @ApiOperation({ summary: 'Удаление пользователя по _id/username/email' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
-    const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
-    if (user._id.toString() !== req.user.sub) {
-      throw new UnauthorizedException('You are not allowed to update this user');
-    }
-    return this.usersService.deleteOne({ fields: this.fields, fieldValue: key });
-  }
+  // @UseGuards(AccessTokenGuard)
+  // @Delete('/:key')
+  // @ApiOperation({ summary: 'Удаление пользователя по _id/username/email' })
+  // @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
+  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  // @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  // async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
+  //   const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
+  //   if (user._id.toString() !== req.user.sub) {
+  //     throw new UnauthorizedException('You are not allowed to update this user');
+  //   }
+  //   return this.usersService.deleteOne({ fields: this.fields, fieldValue: key });
+  // }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/uploads')

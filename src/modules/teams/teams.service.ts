@@ -6,7 +6,7 @@ import { OperationOptions } from '../../common/types/operation-options';
 import { UploadService } from '../upload/upload.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
-import { UpdateMembersTeamDto } from './dto/update-members-team.dto';
+import { UpdateTeamMembersDto } from './dto/update-team-members.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { Team } from './schemas/team.schema';
 import { FindAllReturnTeam } from './types/find-all-return-team';
@@ -135,7 +135,7 @@ export class TeamsService {
     fields,
     fieldValue,
     updateMembersDto,
-  }: { updateMembersDto: UpdateMembersTeamDto } & OperationOptions<Team>): Promise<Team> {
+  }: { updateMembersDto: UpdateTeamMembersDto } & OperationOptions<Team>): Promise<Team> {
     let team = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;

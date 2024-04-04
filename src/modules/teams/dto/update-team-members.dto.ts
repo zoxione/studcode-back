@@ -4,7 +4,7 @@ import { IsArray, IsEnum, IsObject, ValidateNested } from 'class-validator';
 import { TeamAction } from '../types/team-action';
 import { TeamMemberDto } from './team-member.dto';
 
-class UpdateMembersTeamItemDto {
+class UpdateTeamMembersItemDto {
   @ApiProperty({ description: 'Участник', type: TeamMemberDto })
   @IsObject()
   @ValidateNested()
@@ -16,10 +16,10 @@ class UpdateMembersTeamItemDto {
   readonly action: TeamAction;
 }
 
-export class UpdateMembersTeamDto {
-  @ApiProperty({ description: 'Участники', type: [UpdateMembersTeamItemDto] })
+export class UpdateTeamMembersDto {
+  @ApiProperty({ description: 'Участники', type: [UpdateTeamMembersItemDto] })
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateMembersTeamItemDto)
-  readonly members: UpdateMembersTeamItemDto[];
+  @Type(() => UpdateTeamMembersItemDto)
+  readonly members: UpdateTeamMembersItemDto[];
 }

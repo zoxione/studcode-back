@@ -257,25 +257,25 @@ describe('Teams Controller (e2e)', () => {
     });
 
     it('(POST) - Добавить участника в команду по ID', async () => {
-      const updateMembers = { members: [{ member: { user: userMember._id, role: 'member' }, action: 'add' }] };
+      const teamMember = { user: userMember._id, role: 'member' };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}/members`)
+        .put(`/teams/${createdTeam._id}/members/add`)
         .set('Authorization', 'Bearer ' + access_token)
-        .send(updateMembers)
+        .send(teamMember)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
           expect(res.body.members.length).toEqual(2);
-          expect(res.body.members[1].user._id).toEqual(updateMembers.members[0].member.user);
+          expect(res.body.members[1].user._id).toEqual(teamMember.user);
         });
     });
 
     it('(POST/E) - Повторное добавление участника в команду по ID', async () => {
-      const updateMembers = { members: [{ member: { user: userMember._id, role: 'member' }, action: 'add' }] };
+      const teamMember = { user: userMember._id, role: 'member' };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}/members`)
+        .put(`/teams/${createdTeam._id}/members/add`)
         .set('Authorization', 'Bearer ' + access_token)
-        .send(updateMembers)
+        .send(teamMember)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -284,29 +284,20 @@ describe('Teams Controller (e2e)', () => {
     });
 
     it('(POST/E) - Добавить участника в команду по ID без токена', async () => {
-      const updateMembers = { members: [{ member: { user: userMember._id, role: 'member' }, action: 'add' }] };
+      const teamMember = { user: userMember._id, role: 'member' };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}/members`)
+        .put(`/teams/${createdTeam._id}/members/add`)
         .set('Authorization', 'Bearer ')
-        .send(updateMembers)
+        .send(teamMember)
         .expect(401);
     });
 
-    it('(POST/E) - Добавить участника в команду по ID с ролью member', async () => {
-      const updateMembers = { members: [{ member: { user: userMember._id, role: 'member' }, action: 'add' }] };
+    it('(POST) - Удалить участника из команды по ID с ролью member (себя)', async () => {
+      const teamMember = { user: userMember._id, role: 'member' };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}/members`)
+        .put(`/teams/${createdTeam._id}/members/remove`)
         .set('Authorization', 'Bearer ' + access_token_member)
-        .send(updateMembers)
-        .expect(401);
-    });
-
-    it('(POST) - Удалить участника из команды по ID', async () => {
-      const updateMembers = { members: [{ member: { user: userMember._id, role: 'member' }, action: 'remove' }] };
-      return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}/members`)
-        .set('Authorization', 'Bearer ' + access_token)
-        .send(updateMembers)
+        .send(teamMember)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -314,12 +305,34 @@ describe('Teams Controller (e2e)', () => {
         });
     });
 
-    it('(POST/E) - Повторное удаление участника из команды по ID', async () => {
-      const updateMembers = { members: [{ member: { user: userMember._id, role: 'member' }, action: 'remove' }] };
+    it('(POST/E) - Повторное удаление участника из команды по ID с ролью member (себя)', async () => {
+      const teamMember = { user: userMember._id, role: 'member' };
       return request(app.getHttpServer())
-        .put(`/teams/${createdTeam._id}/members`)
+        .put(`/teams/${createdTeam._id}/members/remove`)
+        .set('Authorization', 'Bearer ' + access_token_member)
+        .send(teamMember)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.members.length).toEqual(1);
+        });
+    });
+
+    it('(POST) - Удалить участника из команды по ID с ролью owner (другого)', async () => {
+      const teamMember = { user: userMember._id, role: 'member' };
+      request(app.getHttpServer())
+        .put(`/teams/${createdTeam._id}/members/add`)
         .set('Authorization', 'Bearer ' + access_token)
-        .send(updateMembers)
+        .send(teamMember)
+        .expect(200)
+        .then((res) => {
+          expect(res.body).toBeDefined();
+          expect(res.body.members.length).toEqual(2);
+        });
+      return request(app.getHttpServer())
+        .put(`/teams/${createdTeam._id}/members/remove`)
+        .set('Authorization', 'Bearer ' + access_token)
+        .send(teamMember)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();

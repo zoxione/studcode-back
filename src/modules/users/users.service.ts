@@ -94,19 +94,19 @@ export class UsersService {
     return updatedUser.toObject();
   }
 
-  async deleteOne({ fields, fieldValue }: OperationOptions<User>): Promise<User> {
-    let deletedUser = null;
-    for (const field of fields) {
-      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
-      deletedUser = await this.userModel.findOneAndRemove({ [field]: fieldValue }).exec();
-      if (deletedUser) break;
-    }
-    if (!deletedUser) {
-      throw new NotFoundException('User not deleted');
-    }
-    await this.uploadService.remove(deletedUser.avatar.split('/').slice(-1)[0]);
-    return deletedUser.toObject();
-  }
+  // async deleteOne({ fields, fieldValue }: OperationOptions<User>): Promise<User> {
+  //   let deletedUser = null;
+  //   for (const field of fields) {
+  //     if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+  //     deletedUser = await this.userModel.findOneAndRemove({ [field]: fieldValue }).exec();
+  //     if (deletedUser) break;
+  //   }
+  //   if (!deletedUser) {
+  //     throw new NotFoundException('User not deleted');
+  //   }
+  //   await this.uploadService.remove(deletedUser.avatar.split('/').slice(-1)[0]);
+  //   return deletedUser.toObject();
+  // }
 
   async uploadFiles({ fields, fieldValue, files }: { files: UserFiles } & OperationOptions<User>): Promise<User> {
     let user = null;

@@ -546,39 +546,6 @@ window.onload = function() {
               "bearer": []
             }
           ]
-        },
-        "delete": {
-          "operationId": "UsersController_deleteOne",
-          "summary": "Удаление пользователя по _id/username/email",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success"
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "users"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
         }
       },
       "/api/v1/users/{key}/uploads": {
@@ -864,7 +831,111 @@ window.onload = function() {
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UpdateMembersTeamDto"
+                  "$ref": "#/components/schemas/UpdateTeamMembersDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/teams/{key}/members/add": {
+        "put": {
+          "operationId": "TeamsController_addMember",
+          "summary": "Добавление участника в команду по _id/name",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/teams/{key}/members/remove": {
+        "put": {
+          "operationId": "TeamsController_removeMember",
+          "summary": "Удаление участника из команды по _id/name",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamMemberDto"
                 }
               }
             }
@@ -1990,7 +2061,7 @@ window.onload = function() {
           "type": "object",
           "properties": {}
         },
-        "UpdateMembersTeamItemDto": {
+        "UpdateTeamMembersItemDto": {
           "type": "object",
           "properties": {
             "member": {
@@ -2015,14 +2086,14 @@ window.onload = function() {
             "action"
           ]
         },
-        "UpdateMembersTeamDto": {
+        "UpdateTeamMembersDto": {
           "type": "object",
           "properties": {
             "members": {
               "description": "Участники",
               "type": "array",
               "items": {
-                "$ref": "#/components/schemas/UpdateMembersTeamItemDto"
+                "$ref": "#/components/schemas/UpdateTeamMembersItemDto"
               }
             }
           },

@@ -242,27 +242,5 @@ describe('Users Controller (e2e)', () => {
       };
       return request(app.getHttpServer()).put(`/users/${createdUser._id}`).set('Authorization', 'Bearer ').send(updateUser).expect(401);
     });
-
-    it('(DELETE) - Удалить пользователя по ID', async () => {
-      return request(app.getHttpServer())
-        .delete(`/users/${user._id}`)
-        .set('Authorization', 'Bearer ' + access_token)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(user._id);
-        });
-    });
-
-    it('(DELETE/E) - Удалить несуществующего пользователя по ID', async () => {
-      return request(app.getHttpServer())
-        .delete(`/users/${clownId}`)
-        .set('Authorization', 'Bearer ' + access_token)
-        .expect(404);
-    });
-
-    it('(DELETE/E) - Удалить пользователя по ID без токена', async () => {
-      return request(app.getHttpServer()).delete(`/users/${newUsers[1]._id}`).set('Authorization', 'Bearer ').expect(401);
-    });
   });
 });
