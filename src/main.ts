@@ -28,7 +28,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Студенческий код')
     .setDescription('Это открытое API для веб-приложения "Студенческий код".')
-    .setVersion('1.0')
+    .setVersion('1.2.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

@@ -1425,7 +1425,7 @@ window.onload = function() {
     "info": {
       "title": "Студенческий код",
       "description": "Это открытое API для веб-приложения \"Студенческий код\".",
-      "version": "1.0",
+      "version": "1.2.0",
       "contact": {}
     },
     "tags": [],

@@ -14,7 +14,7 @@ export class AppController {
     const fullUrl = `${protocol}://${host}`;
     return {
       name: 'Студенческий код',
-      version: '1.0.0',
+      version: '1.2.0',
       swagger: `${fullUrl}/swagger`,
       docs: `${fullUrl}/docs`,
       projects: `${fullUrl}/api/v1/projects`,
