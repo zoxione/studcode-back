@@ -18,7 +18,11 @@ import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ envFilePath: `.env.${configuration().node_env}`, isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      envFilePath: !configuration().node_env ? '.env' : `.env.${configuration().node_env}`,
+      isGlobal: true,
+      load: [configuration],
+    }),
     MongooseModule.forRoot(configuration().database),
     ProjectsModule,
     TagsModule,
@@ -31,7 +35,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     AuthModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),
-      serveRoot: process.env.NODE_ENV === 'development' ? '/' : '/swagger',
+      serveRoot: configuration().node_env === 'development' ? '/' : '/swagger',
     }),
     MailerModule.forRoot({
       transport: {

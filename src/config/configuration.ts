@@ -1,5 +1,5 @@
 export default () => ({
-  node_env: process.env.NODE_ENV?.trim(),
+  node_env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
   app_url: process.env.APP_URL || '',
   frontend_url: process.env.FRONTEND_URL || '',

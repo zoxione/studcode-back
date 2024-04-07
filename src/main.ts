@@ -13,7 +13,7 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn', 'debug'],
   });
   app.enableCors({
-    origin: process.env.FRONTEND_URL,
+    origin: configuration().frontend_url,
     methods: 'GET,POST,PUT,DELETE',
     credentials: true,
   });
@@ -35,7 +35,7 @@ async function bootstrap() {
   SwaggerModule.setup('/swagger', app, document);
   setupRedoc(app);
 
-  await app.listen(configuration().port);
+  await app.listen(configuration().port, '0.0.0.0');
   const appUrl = await app.getUrl();
   console.log(`Application is running on: ${appUrl}`);
 
