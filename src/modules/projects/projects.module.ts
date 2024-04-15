@@ -1,15 +1,14 @@
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TagsModule } from '../tags/tags.module';
+import { Review, ReviewSchema } from '../reviews/schemas/review.schema';
+import { Tag, TagSchema } from '../tags/schemas/tag.schema';
 import { UploadModule } from '../upload/upload.module';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { Vote, VoteSchema } from '../votes/schemas/vote.schema';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { Project, ProjectSchema } from './schemas/project.schema';
-import { Tag, TagSchema } from '../tags/schemas/tag.schema';
-import { Review, ReviewSchema } from '../reviews/schemas/review.schema';
-import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [

@@ -104,7 +104,9 @@ export class UsersService {
   //   if (!deletedUser) {
   //     throw new NotFoundException('User not deleted');
   //   }
-  //   await this.uploadService.remove(deletedUser.avatar.split('/').slice(-1)[0]);
+  //   if (deletedUser.avatar) {
+  //     await this.uploadService.remove(deletedUser.avatar.split('/').slice(-1)[0]);
+  //   }
   //   return deletedUser.toObject();
   // }
 

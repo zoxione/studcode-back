@@ -4,9 +4,14 @@ import { TeamsController } from './teams.controller';
 import { TeamsService } from './teams.service';
 import { Team, TeamSchema } from './schemas/team.schema';
 import { UploadModule } from '../upload/upload.module';
+import { Project, ProjectSchema } from '../projects/schemas/project.schema';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Team.name, schema: TeamSchema }]), UploadModule],
+  imports: [
+    MongooseModule.forFeature([{ name: Team.name, schema: TeamSchema }]),
+    MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
+    UploadModule,
+  ],
   controllers: [TeamsController],
   providers: [TeamsService],
   exports: [TeamsService],

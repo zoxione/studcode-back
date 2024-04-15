@@ -11,11 +11,13 @@ import { UpdateTeamDto } from './dto/update-team.dto';
 import { Team } from './schemas/team.schema';
 import { FindAllReturnTeam } from './types/find-all-return-team';
 import { TeamFiles } from './types/team-files';
+import { Project } from '../projects/schemas/project.schema';
 
 @Injectable()
 export class TeamsService {
   constructor(
     @InjectModel(Team.name) private readonly teamModel: Model<Team>,
+    @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     private uploadService: UploadService,
   ) {}
 
@@ -105,7 +107,10 @@ export class TeamsService {
     if (!deletedTeam) {
       throw new NotFoundException('Team not deleted');
     }
-    await this.uploadService.remove(deletedTeam.logo.split('/').slice(-1)[0]);
+    await this.projectModel.updateMany({ team: deletedTeam._id }, { $set: { team: null } }).exec();
+    if (deletedTeam.logo) {
+      await this.uploadService.remove(deletedTeam.logo.split('/').slice(-1)[0]);
+    }
     return deletedTeam.toObject();
   }
 
