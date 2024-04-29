@@ -13,11 +13,12 @@ import { Vote } from '../votes/schemas/vote.schema';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { FindAllFilterProjectDto } from './dto/find-all-filter-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
-import { Project, ProjectDocument } from './schemas/project.schema';
+import { Project } from './schemas/project.schema';
 import { FindAllReturnProject } from './types/find-all-return-project';
 import { ProjectFiles } from './types/project-files';
 import { ProjectTimeFrame } from './types/project-time-frame';
 import { ReturnProject } from './types/return-project';
+import { Reaction } from '../reactions/schemas/reaction.schema';
 
 @Injectable()
 export class ProjectsService {
@@ -27,6 +28,7 @@ export class ProjectsService {
     @InjectModel(User.name) private readonly userModel: Model<User>,
     @InjectModel(Tag.name) private readonly tagModel: Model<Tag>,
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+    @InjectModel(Reaction.name) private readonly reactionModel: Model<Reaction>,
     private uploadService: UploadService,
   ) {}
 
@@ -172,6 +174,8 @@ export class ProjectsService {
       throw new NotFoundException('Project not deleted');
     }
     await this.voteModel.deleteMany({ project: deletedProject._id }).exec();
+    const reviewsProject = await this.reviewModel.find({ project: deletedProject._id }).exec();
+    await this.reactionModel.deleteMany({ review: { $in: reviewsProject.map((review) => review._id) } }).exec();
     await this.reviewModel.deleteMany({ project: deletedProject._id }).exec();
     if (deletedProject.logo) {
       await this.uploadService.remove(deletedProject.logo.split('/').slice(-1)[0]);

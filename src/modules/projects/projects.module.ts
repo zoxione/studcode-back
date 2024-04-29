@@ -9,6 +9,7 @@ import { Vote, VoteSchema } from '../votes/schemas/vote.schema';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 import { Project, ProjectSchema } from './schemas/project.schema';
+import { Reaction, ReactionSchema } from '../reactions/schemas/reaction.schema';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { Project, ProjectSchema } from './schemas/project.schema';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     MongooseModule.forFeature([{ name: Tag.name, schema: TagSchema }]),
     MongooseModule.forFeature([{ name: Review.name, schema: ReviewSchema }]),
+    MongooseModule.forFeature([{ name: Reaction.name, schema: ReactionSchema }]),
     UploadModule,
     JwtModule.register({}),
   ],
