@@ -447,6 +447,116 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/specializations": {
+        "post": {
+          "operationId": "SpecializationsController_createOne",
+          "summary": "Создание новой специализации",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSpecializationDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Specialization"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "specializations"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "get": {
+          "operationId": "SpecializationsController_findAll",
+          "summary": "Получение списка специализаций",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Specialization"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "specializations"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/specializations/{key}": {
+        "get": {
+          "operationId": "SpecializationsController_findOne",
+          "summary": "Получение специализации по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Specialization"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "specializations"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/users": {
         "get": {
           "operationId": "UsersController_findAll",
@@ -1639,6 +1749,32 @@ window.onload = function() {
             "patronymic"
           ]
         },
+        "Specialization": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "description": "Идентификатор",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
+            }
+          },
+          "required": [
+            "_id",
+            "name",
+            "description"
+          ]
+        },
         "User": {
           "type": "object",
           "properties": {
@@ -1700,6 +1836,13 @@ window.onload = function() {
               "items": {
                 "$ref": "#/components/schemas/Link"
               }
+            },
+            "specializations": {
+              "description": "Специализации",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/Specialization"
+              }
             }
           },
           "required": [
@@ -1713,7 +1856,8 @@ window.onload = function() {
             "full_name",
             "avatar",
             "about",
-            "links"
+            "links",
+            "specializations"
           ]
         },
         "TeamMember": {
@@ -1986,6 +2130,23 @@ window.onload = function() {
             "icon",
             "description",
             "slug"
+          ]
+        },
+        "CreateSpecializationDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
+            }
+          },
+          "required": [
+            "name",
+            "description"
           ]
         },
         "UpdateUserDto": {
@@ -2271,6 +2432,13 @@ window.onload = function() {
               "items": {
                 "$ref": "#/components/schemas/LinkDto"
               }
+            },
+            "specializations": {
+              "description": "Специализации",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           },
           "required": [
@@ -2283,7 +2451,8 @@ window.onload = function() {
             "full_name",
             "avatar",
             "about",
-            "links"
+            "links",
+            "specializations"
           ]
         },
         "SignInDto": {

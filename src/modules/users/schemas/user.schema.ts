@@ -4,6 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { Link, LinkSchema } from '../../../common/schemas/link.schema';
 import { UserRole } from '../types/user-role';
 import { UserFullName, UserFullNameSchema } from './user-full-name.schema';
+import { Specialization } from '../../specializations/schemas/specialization.schema';
 
 type UserDocument = HydratedDocument<User>;
 
@@ -51,6 +52,10 @@ class User {
   @ApiProperty({ description: 'Ссылки', type: [Link] })
   @Prop({ type: [LinkSchema], default: [] })
   links: Link[];
+
+  @ApiProperty({ description: 'Специализации', type: [Specialization] })
+  @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Specialization' }], default: [] })
+  specializations: Specialization[];
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
@@ -59,6 +64,15 @@ UserSchema.index({ email: 'text' });
 UserSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
+});
+
+UserSchema.pre(/^find/, function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
+  this.populate([{ path: 'specializations', select: '_id name description' }]);
+  next();
+});
+UserSchema.pre('save', function (next) {
+  this.populate([{ path: 'specializations', select: '_id name description' }]);
+  next();
 });
 
 export { User, UserDocument, UserSchema };

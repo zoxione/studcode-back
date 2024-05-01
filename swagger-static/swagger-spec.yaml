@@ -244,6 +244,68 @@ paths:
           description: Not Found
       tags: *ref_2
       security: *ref_3
+  /api/v1/specializations:
+    post:
+      operationId: SpecializationsController_createOne
+      summary: Создание новой специализации
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSpecializationDto'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Specialization'
+        '401':
+          description: Unauthorized
+      tags: &ref_4
+        - specializations
+      security: &ref_5
+        - bearer: []
+    get:
+      operationId: SpecializationsController_findAll
+      summary: Получение списка специализаций
+      parameters: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Specialization'
+        '401':
+          description: Unauthorized
+      tags: *ref_4
+      security: *ref_5
+  /api/v1/specializations/{key}:
+    get:
+      operationId: SpecializationsController_findOne
+      summary: Получение специализации по _id
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Specialization'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_4
+      security: *ref_5
   /api/v1/users:
     get:
       operationId: UsersController_findAll
@@ -254,9 +316,9 @@ paths:
           description: Success
         '401':
           description: Unauthorized
-      tags: &ref_4
+      tags: &ref_6
         - users
-      security: &ref_5
+      security: &ref_7
         - bearer: []
   /api/v1/users/{key}:
     get:
@@ -275,8 +337,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
     put:
       operationId: UsersController_updateOne
       summary: Обновление пользователя по _id/username/email
@@ -299,8 +361,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
   /api/v1/users/{key}/uploads:
     post:
       operationId: UsersController_uploadFiles
@@ -316,8 +378,8 @@ paths:
           description: Success
         '401':
           description: Unauthorized
-      tags: *ref_4
-      security: *ref_5
+      tags: *ref_6
+      security: *ref_7
   /api/v1/teams:
     post:
       operationId: TeamsController_createOne
@@ -338,9 +400,9 @@ paths:
                 $ref: '#/components/schemas/Team'
         '401':
           description: Unauthorized
-      tags: &ref_6
+      tags: &ref_8
         - teams
-      security: &ref_7
+      security: &ref_9
         - bearer: []
     get:
       operationId: TeamsController_findAll
@@ -355,8 +417,8 @@ paths:
                 $ref: '#/components/schemas/Team'
         '401':
           description: Unauthorized
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/teams/{key}:
     get:
       operationId: TeamsController_findOne
@@ -378,8 +440,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
     put:
       operationId: TeamsController_updateOne
       summary: Обновление команды по _id/name
@@ -406,8 +468,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
     delete:
       operationId: TeamsController_deleteOne
       summary: Удаление команды по _id/name
@@ -428,8 +490,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/teams/{key}/uploads:
     post:
       operationId: TeamsController_uploadFiles
@@ -445,8 +507,8 @@ paths:
           description: Success
         '401':
           description: Unauthorized
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/teams/{key}/members:
     put:
       operationId: TeamsController_updateMembers
@@ -474,8 +536,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/teams/{key}/members/add:
     put:
       operationId: TeamsController_addMember
@@ -503,8 +565,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/teams/{key}/members/remove:
     put:
       operationId: TeamsController_removeMember
@@ -532,8 +594,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_6
-      security: *ref_7
+      tags: *ref_8
+      security: *ref_9
   /api/v1/reviews:
     post:
       operationId: ReviewsController_createOne
@@ -554,9 +616,9 @@ paths:
                 $ref: '#/components/schemas/Review'
         '401':
           description: Unauthorized
-      tags: &ref_8
+      tags: &ref_10
         - reviews
-      security: &ref_9
+      security: &ref_11
         - bearer: []
     get:
       operationId: ReviewsController_findAll
@@ -583,8 +645,8 @@ paths:
                 $ref: '#/components/schemas/Review'
         '401':
           description: Unauthorized
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/reviews/{key}:
     get:
       operationId: ReviewsController_findOne
@@ -606,8 +668,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
     put:
       operationId: ReviewsController_updateOne
       summary: Обновление обзора по _id
@@ -634,8 +696,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
     delete:
       operationId: ReviewsController_deleteOne
       summary: Удаление обзора по _id
@@ -656,8 +718,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/reviews/{key}/like:
     post:
       operationId: ReviewsController_likeOne
@@ -679,8 +741,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/reviews/{key}/dislike:
     post:
       operationId: ReviewsController_dislikeOne
@@ -702,8 +764,8 @@ paths:
           description: Unauthorized
         '404':
           description: Not Found
-      tags: *ref_8
-      security: *ref_9
+      tags: *ref_10
+      security: *ref_11
   /api/v1/auth/register:
     post:
       operationId: AuthController_register
@@ -718,9 +780,9 @@ paths:
       responses:
         '201':
           description: ''
-      tags: &ref_10
+      tags: &ref_12
         - auth
-      security: &ref_11
+      security: &ref_13
         - bearer: []
   /api/v1/auth/login:
     post:
@@ -736,8 +798,8 @@ paths:
       responses:
         '201':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_12
+      security: *ref_13
   /api/v1/auth/logout:
     get:
       operationId: AuthController_logout
@@ -746,8 +808,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_12
+      security: *ref_13
   /api/v1/auth/refresh:
     get:
       operationId: AuthController_refreshTokens
@@ -756,8 +818,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_12
+      security: *ref_13
   /api/v1/auth/whoami:
     get:
       operationId: AuthController_whoami
@@ -766,8 +828,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_12
+      security: *ref_13
   /api/v1/auth/verify:
     get:
       operationId: AuthController_verifyEmail
@@ -782,8 +844,8 @@ paths:
       responses:
         '200':
           description: ''
-      tags: *ref_10
-      security: *ref_11
+      tags: *ref_12
+      security: *ref_13
 info:
   title: Студенческий код
   description: Это открытое API для веб-приложения "Студенческий код".
@@ -953,6 +1015,23 @@ components:
         - surname
         - name
         - patronymic
+    Specialization:
+      type: object
+      properties:
+        _id:
+          description: Идентификатор
+          allOf:
+            - $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          description: Название
+        description:
+          type: string
+          description: Описание
+      required:
+        - _id
+        - name
+        - description
     User:
       type: object
       properties:
@@ -996,6 +1075,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Link'
+        specializations:
+          description: Специализации
+          type: array
+          items:
+            $ref: '#/components/schemas/Specialization'
       required:
         - _id
         - username
@@ -1008,6 +1092,7 @@ components:
         - avatar
         - about
         - links
+        - specializations
     TeamMember:
       type: object
       properties:
@@ -1203,6 +1288,18 @@ components:
         - icon
         - description
         - slug
+    CreateSpecializationDto:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название
+        description:
+          type: string
+          description: Описание
+      required:
+        - name
+        - description
     UpdateUserDto:
       type: object
       properties: {}
@@ -1404,6 +1501,11 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LinkDto'
+        specializations:
+          description: Специализации
+          type: array
+          items:
+            type: string
       required:
         - username
         - email
@@ -1415,6 +1517,7 @@ components:
         - avatar
         - about
         - links
+        - specializations
     SignInDto:
       type: object
       properties:

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsEmail, IsEnum, IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsObject, IsOptional, IsString, IsUrl, ValidateNested } from 'class-validator';
 import { LinkDto } from '../../../common/dto/link.dto';
 import { UserRole } from '../types/user-role';
 import { UserFullNameDto } from './user-full-name.dto';
@@ -56,4 +56,10 @@ export class CreateUserDto {
   @Type(() => LinkDto)
   @IsOptional()
   readonly links: LinkDto[];
+
+  @ApiProperty({ description: 'Специализации', type: [String] })
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  readonly specializations: string[];
 }

@@ -15,6 +15,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { AppController } from './app.controller';
 import { ReactionsModule } from './modules/reactions/reactions.module';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { SpecializationsModule } from './modules/specializations/specializations.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     MongooseModule.forRoot(configuration().database),
     ProjectsModule,
     TagsModule,
+    SpecializationsModule,
     UsersModule,
     TeamsModule,
     VotesModule,

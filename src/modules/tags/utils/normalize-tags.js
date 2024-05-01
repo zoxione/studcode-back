@@ -5,7 +5,7 @@ require('dotenv').config({
 });
 
 const tags = [];
-const file = './src/utils/data.csv';
+const file = './src/modules/tags/utils/data.csv';
 
 fs.createReadStream(file)
   .pipe(csv.parse({ columns: true }))
