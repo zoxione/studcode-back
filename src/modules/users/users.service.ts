@@ -126,6 +126,10 @@ export class UsersService {
         const res = await this.uploadService.upload(`user-${user._id}-avatar.${file.mimetype.split('/')[1]}`, file);
         user.avatar = res;
       }
+      if (file.fieldname === 'cover_file') {
+        const res = await this.uploadService.upload(`user-${user._id}-cover.${file.mimetype.split('/')[1]}`, file);
+        user.cover = res;
+      }
     }
 
     await user.save();

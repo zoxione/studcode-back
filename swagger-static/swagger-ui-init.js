@@ -1826,6 +1826,10 @@ window.onload = function() {
               "type": "string",
               "description": "Ссылка на аватар"
             },
+            "cover": {
+              "type": "string",
+              "description": "Ссылка на обложку"
+            },
             "about": {
               "type": "string",
               "description": "О себе"
@@ -1855,6 +1859,7 @@ window.onload = function() {
             "refresh_token",
             "full_name",
             "avatar",
+            "cover",
             "about",
             "links",
             "specializations"
@@ -2422,6 +2427,10 @@ window.onload = function() {
               "type": "string",
               "description": "Ссылка на аватар"
             },
+            "cover": {
+              "type": "string",
+              "description": "Ссылка на обложку"
+            },
             "about": {
               "type": "string",
               "description": "О себе"
@@ -2450,6 +2459,7 @@ window.onload = function() {
             "refresh_token",
             "full_name",
             "avatar",
+            "cover",
             "about",
             "links",
             "specializations"

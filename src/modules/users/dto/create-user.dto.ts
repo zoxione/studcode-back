@@ -45,6 +45,11 @@ export class CreateUserDto {
   @IsOptional()
   readonly avatar: string;
 
+  @ApiProperty({ description: 'Ссылка на обложку', type: String })
+  @IsUrl()
+  @IsOptional()
+  readonly cover: string;
+
   @ApiProperty({ description: 'О себе', type: String })
   @IsString()
   @IsOptional()

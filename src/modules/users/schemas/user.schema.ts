@@ -45,6 +45,10 @@ class User {
   @Prop({ type: String, default: '' })
   avatar: string;
 
+  @ApiProperty({ description: 'Ссылка на обложку', type: String })
+  @Prop({ type: String, default: '' })
+  cover: string;
+
   @ApiProperty({ description: 'О себе', type: String })
   @Prop({ type: String, default: '' })
   about: string;
