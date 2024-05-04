@@ -1,7 +1,7 @@
 const fs = require('fs');
 const csv = require('csv');
 require('dotenv').config({
-  path: '.env.test',
+  path: '.env.development',
 });
 
 const tags = [];
