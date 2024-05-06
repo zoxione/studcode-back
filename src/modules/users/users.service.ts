@@ -121,13 +121,14 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
+    const timeStamp = new Date().getTime();
     for (const file of files.flat()) {
       if (file.fieldname === 'avatar_file') {
-        const res = await this.uploadService.upload(`user-${user._id}-avatar.${file.mimetype.split('/')[1]}`, file);
+        const res = await this.uploadService.upload(`user-${user._id}-avatar-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         user.avatar = res;
       }
       if (file.fieldname === 'cover_file') {
-        const res = await this.uploadService.upload(`user-${user._id}-cover.${file.mimetype.split('/')[1]}`, file);
+        const res = await this.uploadService.upload(`user-${user._id}-cover-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         user.cover = res;
       }
     }

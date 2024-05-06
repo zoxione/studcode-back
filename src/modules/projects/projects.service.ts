@@ -204,10 +204,11 @@ export class ProjectsService {
       throw new NotFoundException('Project not found');
     }
 
+    const timeStamp = new Date().getTime();
     let index = 0;
     for (const file of files.flat()) {
       if (file.fieldname === 'logo_file') {
-        const res = await this.uploadService.upload(`project-${project._id}-logo.${file.mimetype.split('/')[1]}`, file);
+        const res = await this.uploadService.upload(`project-${project._id}-logo-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         project.logo = res;
       } else if (file.fieldname === 'screenshots_files') {
         if (index === 0) {
@@ -216,7 +217,10 @@ export class ProjectsService {
           }
           project.screenshots = [];
         }
-        const res = await this.uploadService.upload(`project-${project._id}-screenshot-${index}.${file.mimetype.split('/')[1]}`, file);
+        const res = await this.uploadService.upload(
+          `project-${project._id}-screenshot-${index}-${timeStamp}.${file.mimetype.split('/')[1]}`,
+          file,
+        );
         project.screenshots.push(res);
         index += 1;
       }

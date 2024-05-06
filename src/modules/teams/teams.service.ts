@@ -125,9 +125,10 @@ export class TeamsService {
       throw new NotFoundException('Team not found');
     }
 
+    const timeStamp = new Date().getTime();
     for (const file of files.flat()) {
       if (file.fieldname === 'logo_file') {
-        const res = await this.uploadService.upload(`team-${team._id}-logo.${file.mimetype.split('/')[1]}`, file);
+        const res = await this.uploadService.upload(`team-${team._id}-logo-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         team.logo = res;
       }
     }
