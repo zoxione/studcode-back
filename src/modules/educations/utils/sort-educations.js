@@ -14,7 +14,7 @@ fs.createReadStream(file)
   })
   .on('end', async () => {
     educations.sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      return a.abbreviation.localeCompare(b.abbreviation);
     });
     const csvStringifier = csv.stringify(educations, { header: true, quoted: true });
     const writeStream = fs.createWriteStream(file);
