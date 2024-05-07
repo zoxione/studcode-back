@@ -12,6 +12,7 @@ import { Team } from './schemas/team.schema';
 import { FindAllReturnTeam } from './types/find-all-return-team';
 import { TeamFiles } from './types/team-files';
 import { Project } from '../projects/schemas/project.schema';
+import { getFilePath } from '../../common/utils/get-file-path';
 
 @Injectable()
 export class TeamsService {
@@ -108,9 +109,7 @@ export class TeamsService {
       throw new NotFoundException('Team not deleted');
     }
     await this.projectModel.updateMany({ team: deletedTeam._id }, { $set: { team: null } }).exec();
-    if (deletedTeam.logo) {
-      await this.uploadService.remove(deletedTeam.logo.split('/').slice(-1)[0]);
-    }
+    await this.uploadService.removeFolder(`teams/${deletedTeam._id}`);
     return deletedTeam.toObject();
   }
 
@@ -128,7 +127,10 @@ export class TeamsService {
     const timeStamp = new Date().getTime();
     for (const file of files.flat()) {
       if (file.fieldname === 'logo_file') {
-        const res = await this.uploadService.upload(`team-${team._id}-logo-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
+        if (team.logo !== '') {
+          await this.uploadService.remove(getFilePath(team.logo));
+        }
+        const res = await this.uploadService.upload(`teams/${team._id}/logo-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         team.logo = res;
       }
     }

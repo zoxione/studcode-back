@@ -9,6 +9,7 @@ import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
 import { UserFiles } from './types/user-files';
 import { OperationOptions } from '../../common/types/operation-options';
+import { getFilePath } from '../../common/utils/get-file-path';
 
 @Injectable()
 export class UsersService {
@@ -94,22 +95,6 @@ export class UsersService {
     return updatedUser.toObject();
   }
 
-  // async deleteOne({ fields, fieldValue }: OperationOptions<User>): Promise<User> {
-  //   let deletedUser = null;
-  //   for (const field of fields) {
-  //     if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
-  //     deletedUser = await this.userModel.findOneAndRemove({ [field]: fieldValue }).exec();
-  //     if (deletedUser) break;
-  //   }
-  //   if (!deletedUser) {
-  //     throw new NotFoundException('User not deleted');
-  //   }
-  //   if (deletedUser.avatar) {
-  //     await this.uploadService.remove(deletedUser.avatar.split('/').slice(-1)[0]);
-  //   }
-  //   return deletedUser.toObject();
-  // }
-
   async uploadFiles({ fields, fieldValue, files }: { files: UserFiles } & OperationOptions<User>): Promise<User> {
     let user = null;
     for (const field of fields) {
@@ -124,11 +109,18 @@ export class UsersService {
     const timeStamp = new Date().getTime();
     for (const file of files.flat()) {
       if (file.fieldname === 'avatar_file') {
-        const res = await this.uploadService.upload(`user-${user._id}-avatar-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
+        if (user.avatar !== '') {
+          console.log(getFilePath(user.avatar));
+          await this.uploadService.remove(getFilePath(user.avatar));
+        }
+        const res = await this.uploadService.upload(`users/${user._id}/avatar-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         user.avatar = res;
       }
       if (file.fieldname === 'cover_file') {
-        const res = await this.uploadService.upload(`user-${user._id}-cover-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
+        if (user.cover !== '') {
+          await this.uploadService.remove(getFilePath(user.cover));
+        }
+        const res = await this.uploadService.upload(`users/${user._id}/cover-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         user.cover = res;
       }
     }

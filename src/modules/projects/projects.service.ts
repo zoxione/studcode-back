@@ -19,6 +19,7 @@ import { ProjectFiles } from './types/project-files';
 import { ProjectTimeFrame } from './types/project-time-frame';
 import { ReturnProject } from './types/return-project';
 import { Reaction } from '../reactions/schemas/reaction.schema';
+import { getFilePath } from '../../common/utils/get-file-path';
 
 @Injectable()
 export class ProjectsService {
@@ -177,14 +178,7 @@ export class ProjectsService {
     const reviewsProject = await this.reviewModel.find({ project: deletedProject._id }).exec();
     await this.reactionModel.deleteMany({ review: { $in: reviewsProject.map((review) => review._id) } }).exec();
     await this.reviewModel.deleteMany({ project: deletedProject._id }).exec();
-    if (deletedProject.logo) {
-      await this.uploadService.remove(deletedProject.logo.split('/').slice(-1)[0]);
-    }
-    if (deletedProject.screenshots.length > 0) {
-      for (const screenshot of deletedProject.screenshots) {
-        await this.uploadService.remove(screenshot.split('/').slice(-1)[0]);
-      }
-    }
+    await this.uploadService.removeFolder(`projects/${deletedProject._id}`);
     return { ...deletedProject.toObject(), voted: false };
   }
 
@@ -208,17 +202,20 @@ export class ProjectsService {
     let index = 0;
     for (const file of files.flat()) {
       if (file.fieldname === 'logo_file') {
-        const res = await this.uploadService.upload(`project-${project._id}-logo-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
+        if (project.logo !== '') {
+          await this.uploadService.remove(getFilePath(project.logo));
+        }
+        const res = await this.uploadService.upload(`projects/${project._id}/logo-${timeStamp}.${file.mimetype.split('/')[1]}`, file);
         project.logo = res;
       } else if (file.fieldname === 'screenshots_files') {
         if (index === 0) {
           for (const screenshot of project.screenshots) {
-            await this.uploadService.remove(screenshot.split('/').slice(-1)[0]);
+            await this.uploadService.remove(getFilePath(screenshot));
           }
           project.screenshots = [];
         }
         const res = await this.uploadService.upload(
-          `project-${project._id}-screenshot-${index}-${timeStamp}.${file.mimetype.split('/')[1]}`,
+          `projects/${project._id}/screenshot-${index}-${timeStamp}.${file.mimetype.split('/')[1]}`,
           file,
         );
         project.screenshots.push(res);

@@ -2,6 +2,8 @@ import {
   DeleteObjectCommand,
   DeleteObjectCommandInput,
   DeleteObjectCommandOutput,
+  DeleteObjectsCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   PutObjectCommandInput,
   PutObjectCommandOutput,
@@ -20,16 +22,17 @@ export class UploadService {
 
   constructor(private readonly configService: ConfigService) {
     this.uploadUrl = this.configService.getOrThrow('UPLOAD_URL');
-    this.region = this.configService.getOrThrow('AWS_REGION');
-    this.endpoint = this.configService.getOrThrow('AWS_ENDPOINT');
-    this.bucket = this.configService.getOrThrow('AWS_BUCKET_NAME');
+    this.region = this.configService.getOrThrow('S3_REGION');
+    this.endpoint = this.configService.getOrThrow('S3_ENDPOINT');
+    this.bucket = this.configService.getOrThrow('S3_BUCKET_NAME');
     this.s3Client = new S3Client({
       endpoint: this.endpoint,
       credentials: {
-        accessKeyId: this.configService.getOrThrow('AWS_ACCESS_KEY_ID'),
-        secretAccessKey: this.configService.getOrThrow('AWS_SECRET_ACCESS_KEY'),
+        accessKeyId: this.configService.getOrThrow('S3_ACCESS_KEY_ID'),
+        secretAccessKey: this.configService.getOrThrow('S3_SECRET_ACCESS_KEY'),
       },
       region: this.region,
+      forcePathStyle: true,
     });
   }
 
@@ -46,7 +49,7 @@ export class UploadService {
     try {
       const response: PutObjectCommandOutput = await this.s3Client.send(new PutObjectCommand(input));
       if (response.$metadata.httpStatusCode === 200) {
-        return `${this.uploadUrl}/${key}`;
+        return `${this.uploadUrl}/${this.bucket}/${key}`;
       }
       throw new Error(`Failed to upload file ${key} to S3.`);
     } catch (error) {
@@ -69,6 +72,27 @@ export class UploadService {
     } catch (error) {
       console.log(error);
       throw error;
+    }
+  }
+
+  async removeFolder(location: string) {
+    const listCommand = new ListObjectsV2Command({
+      Bucket: this.bucket,
+      Prefix: location,
+    });
+    let list = await this.s3Client.send(listCommand);
+    if (list.Contents && list.Contents.length > 0) {
+      const deleteCommand = new DeleteObjectsCommand({
+        Bucket: this.bucket,
+        Delete: {
+          Objects: list.Contents.map((item) => ({ Key: item.Key })),
+          Quiet: false,
+        },
+      });
+      let deleted = await this.s3Client.send(deleteCommand);
+      if (deleted.Errors) {
+        deleted.Errors.map((error) => console.log(`${error.Key} could not be deleted - ${error.Code}`));
+      }
     }
   }
 }
