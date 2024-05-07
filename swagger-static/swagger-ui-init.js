@@ -557,6 +557,116 @@ window.onload = function() {
           ]
         }
       },
+      "/api/v1/educations": {
+        "post": {
+          "operationId": "EducationsController_createOne",
+          "summary": "Создание нового образовательного учреждения",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateEducationDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Education"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "educations"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "get": {
+          "operationId": "EducationsController_findAll",
+          "summary": "Получение списка образовательных учреждении",
+          "parameters": [],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Education"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "educations"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/educations/{key}": {
+        "get": {
+          "operationId": "EducationsController_findOne",
+          "summary": "Получение образовательного учреждения по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Education"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "educations"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
       "/api/v1/users": {
         "get": {
           "operationId": "UsersController_findAll",
@@ -1775,6 +1885,42 @@ window.onload = function() {
             "description"
           ]
         },
+        "Education": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "description": "Идентификатор",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ObjectId"
+                }
+              ]
+            },
+            "abbreviation": {
+              "type": "string",
+              "description": "Аббревиатура"
+            },
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
+            },
+            "logo": {
+              "type": "string",
+              "description": "Ссылка на логотип"
+            }
+          },
+          "required": [
+            "_id",
+            "abbreviation",
+            "name",
+            "description",
+            "logo"
+          ]
+        },
         "User": {
           "type": "object",
           "properties": {
@@ -1847,6 +1993,14 @@ window.onload = function() {
               "items": {
                 "$ref": "#/components/schemas/Specialization"
               }
+            },
+            "education": {
+              "description": "Образовательное учреждение",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/Education"
+                }
+              ]
             }
           },
           "required": [
@@ -1862,7 +2016,8 @@ window.onload = function() {
             "cover",
             "about",
             "links",
-            "specializations"
+            "specializations",
+            "education"
           ]
         },
         "TeamMember": {
@@ -2152,6 +2307,33 @@ window.onload = function() {
           "required": [
             "name",
             "description"
+          ]
+        },
+        "CreateEducationDto": {
+          "type": "object",
+          "properties": {
+            "abbreviation": {
+              "type": "string",
+              "description": "Аббревиатура"
+            },
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "description": {
+              "type": "string",
+              "description": "Описание"
+            },
+            "logo": {
+              "type": "string",
+              "description": "Ссылка на логотип"
+            }
+          },
+          "required": [
+            "abbreviation",
+            "name",
+            "description",
+            "logo"
           ]
         },
         "UpdateUserDto": {
@@ -2448,6 +2630,10 @@ window.onload = function() {
               "items": {
                 "type": "string"
               }
+            },
+            "education": {
+              "type": "string",
+              "description": "Образовательное учреждение"
             }
           },
           "required": [
@@ -2462,7 +2648,8 @@ window.onload = function() {
             "cover",
             "about",
             "links",
-            "specializations"
+            "specializations",
+            "education"
           ]
         },
         "SignInDto": {

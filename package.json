@@ -18,6 +18,8 @@
     "tags:parse": "node ./src/modules/tags/utils/parse-tags.js",
     "specializations:sort": "node ./src/modules/specializations/utils/sort-specializations.js",
     "specializations:parse": "node ./src/modules/specializations/utils/parse-specializations.js",
+    "educations:sort": "node ./src/modules/educations/utils/sort-educations.js",
+    "educations:parse": "node ./src/modules/educations/utils/parse-educations.js",
     "mongodb:normalize": "node ./scripts/normalize-mongodb.js"
   },
   "dependencies": {

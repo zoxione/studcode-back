@@ -67,4 +67,9 @@ export class CreateUserDto {
   @IsString({ each: true })
   @IsOptional()
   readonly specializations: string[];
+
+  @ApiProperty({ description: 'Образовательное учреждение', type: String })
+  @IsString()
+  @IsOptional()
+  readonly education: string;
 }

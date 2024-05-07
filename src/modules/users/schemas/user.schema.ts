@@ -5,6 +5,7 @@ import { Link, LinkSchema } from '../../../common/schemas/link.schema';
 import { UserRole } from '../types/user-role';
 import { UserFullName, UserFullNameSchema } from './user-full-name.schema';
 import { Specialization } from '../../specializations/schemas/specialization.schema';
+import { Education } from '../../educations/schemas/education.schema';
 
 type UserDocument = HydratedDocument<User>;
 
@@ -60,6 +61,10 @@ class User {
   @ApiProperty({ description: 'Специализации', type: [Specialization] })
   @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Specialization' }], default: [] })
   specializations: Specialization[];
+
+  @ApiProperty({ description: 'Образовательное учреждение', type: Education })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Education', default: null })
+  education: Education;
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
@@ -72,10 +77,12 @@ UserSchema.set('timestamps', {
 
 UserSchema.pre(/^find/, function (this: mongoose.Query<any, any, {}, any, 'find'>, next) {
   this.populate([{ path: 'specializations', select: '_id name description' }]);
+  this.populate([{ path: 'education', select: '_id abbreviation name description logo' }]);
   next();
 });
 UserSchema.pre('save', function (next) {
   this.populate([{ path: 'specializations', select: '_id name description' }]);
+  this.populate([{ path: 'education', select: '_id abbreviation name description logo' }]);
   next();
 });
 

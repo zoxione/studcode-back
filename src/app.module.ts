@@ -16,6 +16,7 @@ import { AppController } from './app.controller';
 import { ReactionsModule } from './modules/reactions/reactions.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { SpecializationsModule } from './modules/specializations/specializations.module';
+import { EducationsModule } from './modules/educations/educations.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { SpecializationsModule } from './modules/specializations/specializations
     ProjectsModule,
     TagsModule,
     SpecializationsModule,
+    EducationsModule,
     UsersModule,
     TeamsModule,
     VotesModule,
