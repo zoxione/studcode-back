@@ -4,10 +4,10 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import configuration from '../src/config/configuration';
-import { Tag } from '../src/modules/tags/schemas/tag.schema';
+import { Specialization } from '../src/modules/specializations/schemas/specialization.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
 
-describe('Tags Controller (e2e)', () => {
+describe('Specializations Controller (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -37,11 +37,11 @@ describe('Tags Controller (e2e)', () => {
     password: Math.random().toString(36).substring(7),
   };
 
-  const newTags = [
+  const newSpecializations = [
     {
       _id: 'f53528c0460a017f68186916',
-      name: 'Tag1',
-      icon: '✨',
+      name: 'Specialization 1',
+      description: 'Specialization 1 description',
     },
     {
       _id: 'f53528c0460a017f68186917',
@@ -52,7 +52,7 @@ describe('Tags Controller (e2e)', () => {
   let access_token: string = '';
   let refresh_token: string = '';
   let createdUser: User;
-  let createdTag: Tag;
+  let createdSpecialization: Specialization;
 
   describe('Auth', () => {
     it('(POST) - Регистрация нового пользователя', async () => {
@@ -80,49 +80,49 @@ describe('Tags Controller (e2e)', () => {
     });
   });
 
-  describe('Tags', () => {
-    it('(POST) - Создание нового тега со всеми полями', async () => {
+  describe('Specializations', () => {
+    it('(POST) - Создание новой специализации со всеми полями', async () => {
       return request(app.getHttpServer())
-        .post('/tags')
+        .post('/specializations')
         .set('Authorization', 'Bearer ' + access_token)
-        .send(newTags[0])
+        .send(newSpecializations[0])
         .expect(201)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(newTags[0]._id);
-          createdTag = res.body;
+          expect(res.body._id).toEqual(newSpecializations[0]._id);
+          createdSpecialization = res.body;
         });
     });
 
-    it('(POST) - Создание нового тега с минимальными полями', async () => {
+    it('(POST) - Создание новой специализации с минимальными полями', async () => {
       return request(app.getHttpServer())
-        .post('/tags')
+        .post('/specializations')
         .set('Authorization', 'Bearer ' + access_token)
-        .send(newTags[1])
+        .send(newSpecializations[1])
         .expect(201)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(newTags[1]._id);
+          expect(res.body._id).toEqual(newSpecializations[1]._id);
         });
     });
 
-    it('(POST/E) - Создание нового тега без токена', async () => {
-      return request(app.getHttpServer()).post('/tags').set('Authorization', 'Bearer ').send(newTags[1]).expect(401);
+    it('(POST/E) - Создание новой специализации без токена', async () => {
+      return request(app.getHttpServer()).post('/specializations').set('Authorization', 'Bearer ').send(newSpecializations[1]).expect(401);
     });
 
-    it('(GET) - Получить все теги без фильтра', async () => {
+    it('(GET) - Получить все специализации без фильтра', async () => {
       return request(app.getHttpServer())
-        .get('/tags')
+        .get('/specializations')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.results.length).toBe(newTags.length);
+          expect(res.body.results.length).toBe(newSpecializations.length);
         });
     });
 
-    it('(GET) - Получить все теги с page=2', async () => {
+    it('(GET) - Получить все специализации с page=2', async () => {
       return request(app.getHttpServer())
-        .get('/tags?page=2')
+        .get('/specializations?page=2')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -130,9 +130,9 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it('(GET) - Получить все теги с limit=1', async () => {
+    it('(GET) - Получить все специализации с limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/tags?limit=1')
+        .get('/specializations?limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -140,9 +140,9 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it('(GET) - Получить все теги с page=2 и limit=1', async () => {
+    it('(GET) - Получить все специализации с page=2 и limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/tags?page=2&limit=1')
+        .get('/specializations?page=2&limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -150,53 +150,29 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it(`(GET) - Получить все теги с search=${newTags[0].name}`, async () => {
+    it(`(GET) - Получить все специализации с search=${newSpecializations[0].name}`, async () => {
       return request(app.getHttpServer())
-        .get(encodeURI(`/tags?search=${newTags[0].name}`))
+        .get(encodeURI(`/specializations?search=${newSpecializations[0].name}`))
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
           expect(res.body.results.length).toBe(1);
-          expect(res.body.results[0].name).toEqual(newTags[0].name);
+          expect(res.body.results[0].name).toEqual(newSpecializations[0].name);
         });
     });
 
-    it('(GET) - Получить все популярные теги', async () => {
+    it('(GET) - Получить специализацию по ID', async () => {
       return request(app.getHttpServer())
-        .get('/tags/popular')
+        .get(`/specializations/${createdSpecialization._id}`)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.length).toBe(0);
+          expect(res.body._id).toEqual(createdSpecialization._id);
         });
     });
 
-    it('(GET) - Получить тег по ID', async () => {
-      return request(app.getHttpServer())
-        .get(`/tags/${createdTag._id}`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdTag._id);
-        });
-    });
-
-    it('(GET/E) - Получить несуществующий тег по ID', async () => {
-      return request(app.getHttpServer()).get(`/tags/${clownId}`).expect(404);
-    });
-
-    it('(GET) - Получить тег по slug', async () => {
-      return request(app.getHttpServer())
-        .get(`/tags/${createdTag.slug}`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdTag._id);
-        });
-    });
-
-    it('(GET/E) - Получить несуществующий тег по slug', async () => {
-      return request(app.getHttpServer()).get(`/tags/slug-${clownId}`).expect(404);
+    it('(GET/E) - Получить несуществующую специализацию по ID', async () => {
+      return request(app.getHttpServer()).get(`/specializations/${clownId}`).expect(404);
     });
   });
 });

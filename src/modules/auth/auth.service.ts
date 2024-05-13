@@ -38,12 +38,12 @@ export class AuthService {
     if (!passwordMatches) {
       throw new UnauthorizedException('Password is incorrect');
     }
-    const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.avatar);
+    const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.role, user.avatar);
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
     const access_token_decode = this.jwtService.decode(tokens.access_token) as JwtPayload;
     const refresh_token_decode = this.jwtService.decode(tokens.refresh_token) as JwtPayload;
     return {
-      session: { _id: user._id.toString(), username: user.username, email: user.email, avatar: user.avatar },
+      session: { _id: user._id.toString(), username: user.username, email: user.email, role: user.role, avatar: user.avatar },
       ...tokens,
       access_token_exp: access_token_decode.exp,
       refresh_token_exp: refresh_token_decode.exp,
@@ -63,7 +63,7 @@ export class AuthService {
     if (!refreshTokenMatches) {
       throw new ForbiddenException('Access denied');
     }
-    const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.avatar);
+    const tokens = await this.getTokens(user._id.toString(), user.username, user.email, user.role, user.avatar);
     await this.updateRefreshToken(user._id.toString(), tokens.refresh_token);
     const access_token_decode = this.jwtService.decode(tokens.access_token) as JwtPayload;
     const refresh_token_decode = this.jwtService.decode(tokens.refresh_token) as JwtPayload;
@@ -96,13 +96,14 @@ export class AuthService {
     });
   }
 
-  async getTokens(userId: string, username: string, email: string, avatar: string): Promise<Tokens> {
+  async getTokens(userId: string, username: string, email: string, role: string, avatar: string): Promise<Tokens> {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         {
           sub: userId,
           username,
           email,
+          role,
           avatar,
         },
         {
@@ -115,6 +116,7 @@ export class AuthService {
           sub: userId,
           username,
           email,
+          role,
           avatar,
         },
         {

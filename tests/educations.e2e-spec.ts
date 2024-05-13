@@ -4,10 +4,10 @@ import mongoose from 'mongoose';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import configuration from '../src/config/configuration';
-import { Tag } from '../src/modules/tags/schemas/tag.schema';
+import { Education } from '../src/modules/educations/schemas/education.schema';
 import { User } from '../src/modules/users/schemas/user.schema';
 
-describe('Tags Controller (e2e)', () => {
+describe('Educations Controller (e2e)', () => {
   let app: INestApplication;
 
   beforeEach(async () => {
@@ -37,11 +37,13 @@ describe('Tags Controller (e2e)', () => {
     password: Math.random().toString(36).substring(7),
   };
 
-  const newTags = [
+  const newEducations = [
     {
       _id: 'f53528c0460a017f68186916',
-      name: 'Tag1',
-      icon: '✨',
+      abbreviation: 'EDU1',
+      name: 'Education1',
+      description: 'Education1 description',
+      logo: '',
     },
     {
       _id: 'f53528c0460a017f68186917',
@@ -52,7 +54,7 @@ describe('Tags Controller (e2e)', () => {
   let access_token: string = '';
   let refresh_token: string = '';
   let createdUser: User;
-  let createdTag: Tag;
+  let createdEducation: Education;
 
   describe('Auth', () => {
     it('(POST) - Регистрация нового пользователя', async () => {
@@ -80,49 +82,49 @@ describe('Tags Controller (e2e)', () => {
     });
   });
 
-  describe('Tags', () => {
-    it('(POST) - Создание нового тега со всеми полями', async () => {
+  describe('Educations', () => {
+    it('(POST) - Создание нового образовательного учреждения со всеми полями', async () => {
       return request(app.getHttpServer())
-        .post('/tags')
+        .post('/educations')
         .set('Authorization', 'Bearer ' + access_token)
-        .send(newTags[0])
+        .send(newEducations[0])
         .expect(201)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(newTags[0]._id);
-          createdTag = res.body;
+          expect(res.body._id).toEqual(newEducations[0]._id);
+          createdEducation = res.body;
         });
     });
 
-    it('(POST) - Создание нового тега с минимальными полями', async () => {
+    it('(POST) - Создание нового образовательного учреждения с минимальными полями', async () => {
       return request(app.getHttpServer())
-        .post('/tags')
+        .post('/educations')
         .set('Authorization', 'Bearer ' + access_token)
-        .send(newTags[1])
+        .send(newEducations[1])
         .expect(201)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(newTags[1]._id);
+          expect(res.body._id).toEqual(newEducations[1]._id);
         });
     });
 
-    it('(POST/E) - Создание нового тега без токена', async () => {
-      return request(app.getHttpServer()).post('/tags').set('Authorization', 'Bearer ').send(newTags[1]).expect(401);
+    it('(POST/E) - Создание нового образовательного учреждения без токена', async () => {
+      return request(app.getHttpServer()).post('/educations').set('Authorization', 'Bearer ').send(newEducations[1]).expect(401);
     });
 
-    it('(GET) - Получить все теги без фильтра', async () => {
+    it('(GET) - Получить все образовательные учреждения без фильтра', async () => {
       return request(app.getHttpServer())
-        .get('/tags')
+        .get('/educations')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.results.length).toBe(newTags.length);
+          expect(res.body.results.length).toBe(newEducations.length);
         });
     });
 
-    it('(GET) - Получить все теги с page=2', async () => {
+    it('(GET) - Получить все образовательные учреждения с page=2', async () => {
       return request(app.getHttpServer())
-        .get('/tags?page=2')
+        .get('/educations?page=2')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -130,9 +132,9 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it('(GET) - Получить все теги с limit=1', async () => {
+    it('(GET) - Получить все образовательные учреждения с limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/tags?limit=1')
+        .get('/educations?limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -140,9 +142,9 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it('(GET) - Получить все теги с page=2 и limit=1', async () => {
+    it('(GET) - Получить все образовательные учреждения с page=2 и limit=1', async () => {
       return request(app.getHttpServer())
-        .get('/tags?page=2&limit=1')
+        .get('/educations?page=2&limit=1')
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
@@ -150,53 +152,29 @@ describe('Tags Controller (e2e)', () => {
         });
     });
 
-    it(`(GET) - Получить все теги с search=${newTags[0].name}`, async () => {
+    it(`(GET) - Получить все образовательные учреждения с search=${newEducations[0].name}`, async () => {
       return request(app.getHttpServer())
-        .get(encodeURI(`/tags?search=${newTags[0].name}`))
+        .get(encodeURI(`/educations?search=${newEducations[0].name}`))
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
           expect(res.body.results.length).toBe(1);
-          expect(res.body.results[0].name).toEqual(newTags[0].name);
+          expect(res.body.results[0].name).toEqual(newEducations[0].name);
         });
     });
 
-    it('(GET) - Получить все популярные теги', async () => {
+    it('(GET) - Получить образовательное учреждение по ID', async () => {
       return request(app.getHttpServer())
-        .get('/tags/popular')
+        .get(`/educations/${createdEducation._id}`)
         .expect(200)
         .then((res) => {
           expect(res.body).toBeDefined();
-          expect(res.body.length).toBe(0);
+          expect(res.body._id).toEqual(createdEducation._id);
         });
     });
 
-    it('(GET) - Получить тег по ID', async () => {
-      return request(app.getHttpServer())
-        .get(`/tags/${createdTag._id}`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdTag._id);
-        });
-    });
-
-    it('(GET/E) - Получить несуществующий тег по ID', async () => {
-      return request(app.getHttpServer()).get(`/tags/${clownId}`).expect(404);
-    });
-
-    it('(GET) - Получить тег по slug', async () => {
-      return request(app.getHttpServer())
-        .get(`/tags/${createdTag.slug}`)
-        .expect(200)
-        .then((res) => {
-          expect(res.body).toBeDefined();
-          expect(res.body._id).toEqual(createdTag._id);
-        });
-    });
-
-    it('(GET/E) - Получить несуществующий тег по slug', async () => {
-      return request(app.getHttpServer()).get(`/tags/slug-${clownId}`).expect(404);
+    it('(GET/E) - Получить несуществующее образовательное учреждение по ID', async () => {
+      return request(app.getHttpServer()).get(`/educations/${clownId}`).expect(404);
     });
   });
 });

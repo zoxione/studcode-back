@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateSpecializationDto } from './dto/create-specialization.dto';
@@ -6,6 +6,8 @@ import { FindAllFilterSpecializationDto } from './dto/find-all-filter-specializa
 import { Specialization } from './schemas/specialization.schema';
 import { SpecializationsService } from './specializations.service';
 import { FindAllReturnSpecialization } from './types/find-all-return-specialization';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { UserRole } from '../users/types/user-role';
 
 @ApiBearerAuth()
 @ApiTags('specializations')
@@ -20,7 +22,10 @@ export class SpecializationsController {
   @ApiOperation({ summary: 'Создание новой специализации' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Specialization })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async createOne(@Body() createSpecializationDto: CreateSpecializationDto): Promise<Specialization> {
+  async createOne(@Req() req: AuthUserRequest, @Body() createSpecializationDto: CreateSpecializationDto): Promise<Specialization> {
+    if (req.user.role !== UserRole.Admin) {
+      throw new UnauthorizedException('You are not allowed to create new specialization');
+    }
     return this.specializationsService.createOne(createSpecializationDto);
   }
 

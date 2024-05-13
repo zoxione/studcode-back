@@ -105,6 +105,7 @@ export class AuthController {
       _id: req.user.sub,
       username: req.user.username,
       email: req.user.email,
+      role: req.user.role,
       avatar: req.user.avatar,
     };
   }

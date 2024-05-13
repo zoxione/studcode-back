@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateEducationDto } from './dto/create-education.dto';
@@ -6,6 +6,8 @@ import { FindAllFilterEducationDto } from './dto/find-all-filter-education.dto';
 import { Education } from './schemas/education.schema';
 import { EducationsService } from './educations.service';
 import { FindAllReturnEducation } from './types/find-all-return-education';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { UserRole } from '../users/types/user-role';
 
 @ApiBearerAuth()
 @ApiTags('educations')
@@ -20,7 +22,10 @@ export class EducationsController {
   @ApiOperation({ summary: 'Создание нового образовательного учреждения' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Education })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async createOne(@Body() createEducationDto: CreateEducationDto): Promise<Education> {
+  async createOne(@Req() req: AuthUserRequest, @Body() createEducationDto: CreateEducationDto): Promise<Education> {
+    if (req.user.role !== UserRole.Admin) {
+      throw new UnauthorizedException('You are not allowed to create new education');
+    }
     return this.educationsService.createOne(createEducationDto);
   }
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Req, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
 import { CreateTagDto } from './dto/create-tag.dto';
@@ -6,6 +6,8 @@ import { FindAllFilterTagDto } from './dto/find-all-filter-tag.dto';
 import { Tag } from './schemas/tag.schema';
 import { TagsService } from './tags.service';
 import { FindAllReturnTag } from './types/find-all-return-tag';
+import { AuthUserRequest } from '../auth/types/auth-user-request';
+import { UserRole } from '../users/types/user-role';
 
 @ApiBearerAuth()
 @ApiTags('tags')
@@ -20,7 +22,10 @@ export class TagsController {
   @ApiOperation({ summary: 'Создание нового тега' })
   @ApiResponse({ status: HttpStatus.OK, description: 'Success', type: Tag })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  async createOne(@Body() createTagDto: CreateTagDto): Promise<Tag> {
+  async createOne(@Req() req: AuthUserRequest, @Body() createTagDto: CreateTagDto): Promise<Tag> {
+    if (req.user.role !== UserRole.Admin) {
+      throw new UnauthorizedException('You are not allowed to create new tag');
+    }
     return this.tagsService.createOne(createTagDto);
   }
 
