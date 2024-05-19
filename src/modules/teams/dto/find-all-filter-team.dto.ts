@@ -5,4 +5,8 @@ export class FindAllFilterTeamDto extends FindAllFilterDto {
   @IsString()
   @IsOptional()
   readonly member_id?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly member_role?: string;
 }

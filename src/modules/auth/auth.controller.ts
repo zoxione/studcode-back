@@ -15,6 +15,10 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { AuthUserRefreshRequest } from './types/auth-user-refresh-request';
 import { AuthUserRequest } from './types/auth-user-request';
 import { Session } from './types/session';
+import { Token } from '../tokens/schemas/token.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { TokenEvent } from '../tokens/types/token-event';
 
 @ApiBearerAuth()
 @ApiTags('auth')
@@ -24,12 +28,26 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
     private readonly mailerService: MailerService,
+    @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
   ) {}
 
   @Post('/register')
   @ApiOperation({ summary: 'Регистрация нового пользователя' })
   async register(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.authService.signUp(createUserDto);
+    const createdUser = await this.authService.signUp(createUserDto);
+    await this.mailerService.sendMail({
+      from: `"Студенческий Код" <${configuration().smtp_mail}>`,
+      to: createdUser.email,
+      subject: `Регистрация на сайте ${configuration().frontend_url}`,
+      html: `
+        <div>
+          <h1>Регистрация на сайте ${configuration().frontend_url}</h1>
+          <p>Спасибо что зарегистрировались на нашем сайте.</p>
+          <p>С уважением, команда Студенческого Кода.</p>
+        </div>
+      `,
+    });
+    return createdUser;
   }
 
   @Post('/login')
@@ -115,23 +133,25 @@ export class AuthController {
   @ApiOperation({ summary: 'Подтверждение почты' })
   async verifyEmail(@Req() req: AuthUserRequest, @Query() query: VerifyEmailDto, @Res() res: Response): Promise<any> {
     const user = await this.usersService.findOne({ fields: ['_id'], fieldValue: req.user.sub });
-    if (user.verify_email === 'true') {
+    if (user.verify_email) {
       throw new BadRequestException('User already verified');
     }
     if (query.token) {
-      if (user.verify_email === query.token) {
-        await this.usersService.updateOne({ fields: ['_id'], fieldValue: req.user.sub, updateDto: { verify_email: 'true' } });
-        return res.redirect(configuration().frontend_url);
-      } else {
+      const token = await this.tokenModel.findOne({ event: TokenEvent.VerifyEmail, user: user._id, content: query.token });
+      if (!token) {
         throw new UnauthorizedException('Invalid token');
       }
+      await this.usersService.updateOne({ fields: ['_id'], fieldValue: req.user.sub, updateDto: { verify_email: true } });
+      await this.tokenModel.deleteOne({ _id: token._id });
+      return res.redirect(configuration().frontend_url);
     } else {
       const randomToken = uuidv4();
-      const user = await this.usersService.updateOne({
-        fields: ['_id'],
-        fieldValue: req.user.sub,
-        updateDto: { verify_email: randomToken },
+      await this.tokenModel.create({
+        event: TokenEvent.VerifyEmail,
+        content: randomToken,
+        user: user._id,
       });
+      const link = `${configuration().app_url}/api/v1/auth/verify?token=${randomToken}`;
       await this.mailerService.sendMail({
         from: `"Студенческий Код" <${configuration().smtp_mail}>`,
         to: user.email,
@@ -139,9 +159,9 @@ export class AuthController {
         html: `
           <div>
             <h1>Подтверждение почты на сайте ${configuration().frontend_url}</h1>
-            <p>Для подтверждения почты перейдите по ссылке</p>
-            <a href="${configuration().app_url}/api/v1/auth/verify?token=${randomToken}">Ссылка</a>
-            <span>${configuration().app_url}/api/v1/auth/verify?token=${randomToken}</span>
+            <p>Для подтверждения почты перейдите по ссылке:</p>
+            <a href="${link}" target="_blank">${link}</a>
+            <p>С уважением, команда Студенческого Кода.</p>
           </div>
         `,
       });

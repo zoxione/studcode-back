@@ -600,22 +600,16 @@ paths:
           description: Not Found
       tags: *ref_10
       security: *ref_11
-  /api/v1/teams/{key}/members/add:
-    put:
-      operationId: TeamsController_addMember
-      summary: Добавление участника в команду по _id/name
+  /api/v1/teams/{key}/members/join:
+    get:
+      operationId: TeamsController_join
+      summary: Вступление участника в команду по _id/name
       parameters:
         - name: key
           required: true
           in: path
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TeamMemberDto'
       responses:
         '200':
           description: Success
@@ -629,22 +623,45 @@ paths:
           description: Not Found
       tags: *ref_10
       security: *ref_11
-  /api/v1/teams/{key}/members/remove:
-    put:
-      operationId: TeamsController_removeMember
-      summary: Удаление участника из команды по _id/name
+  /api/v1/teams/{key}/members/accept:
+    get:
+      operationId: TeamsController_accept
+      summary: Принятие участника в команду по _id/name
       parameters:
         - name: key
           required: true
           in: path
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/TeamMemberDto'
+        - name: token
+          required: true
+          in: query
+          description: Токен
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not Found
+      tags: *ref_10
+      security: *ref_11
+  /api/v1/teams/{key}/members/leave:
+    get:
+      operationId: TeamsController_leave
+      summary: Покидание участника из команды по _id/name
+      parameters:
+        - name: key
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         '200':
           description: Success
@@ -1142,7 +1159,7 @@ components:
             - user
             - admin
         verify_email:
-          type: string
+          type: boolean
           description: Подтверждение почты
         refresh_token:
           type: string
@@ -1202,6 +1219,7 @@ components:
           enum:
             - owner
             - member
+            - invited
       required:
         - user
         - role
@@ -1431,6 +1449,7 @@ components:
           enum:
             - owner
             - member
+            - invited
       required:
         - user
         - role
@@ -1470,7 +1489,7 @@ components:
     UpdateTeamDto:
       type: object
       properties: {}
-    UpdateTeamMembersItemDto:
+    UpdateTeamMembersDto:
       type: object
       properties:
         member:
@@ -1486,16 +1505,6 @@ components:
       required:
         - member
         - action
-    UpdateTeamMembersDto:
-      type: object
-      properties:
-        members:
-          description: Участники
-          type: array
-          items:
-            $ref: '#/components/schemas/UpdateTeamMembersItemDto'
-      required:
-        - members
     CreateReviewDto:
       type: object
       properties:

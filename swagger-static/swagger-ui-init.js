@@ -1084,10 +1084,10 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/teams/{key}/members/add": {
-        "put": {
-          "operationId": "TeamsController_addMember",
-          "summary": "Добавление участника в команду по _id/name",
+      "/api/v1/teams/{key}/members/join": {
+        "get": {
+          "operationId": "TeamsController_join",
+          "summary": "Вступление участника в команду по _id/name",
           "parameters": [
             {
               "name": "key",
@@ -1098,16 +1098,6 @@ window.onload = function() {
               }
             }
           ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeamMemberDto"
-                }
-              }
-            }
-          },
           "responses": {
             "200": {
               "description": "Success",
@@ -1136,10 +1126,61 @@ window.onload = function() {
           ]
         }
       },
-      "/api/v1/teams/{key}/members/remove": {
-        "put": {
-          "operationId": "TeamsController_removeMember",
-          "summary": "Удаление участника из команды по _id/name",
+      "/api/v1/teams/{key}/members/accept": {
+        "get": {
+          "operationId": "TeamsController_accept",
+          "summary": "Принятие участника в команду по _id/name",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "token",
+              "required": true,
+              "in": "query",
+              "description": "Токен",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "teams"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/teams/{key}/members/leave": {
+        "get": {
+          "operationId": "TeamsController_leave",
+          "summary": "Покидание участника из команды по _id/name",
           "parameters": [
             {
               "name": "key",
@@ -1150,16 +1191,6 @@ window.onload = function() {
               }
             }
           ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TeamMemberDto"
-                }
-              }
-            }
-          },
           "responses": {
             "200": {
               "description": "Success",
@@ -1953,7 +1984,7 @@ window.onload = function() {
               ]
             },
             "verify_email": {
-              "type": "string",
+              "type": "boolean",
               "description": "Подтверждение почты"
             },
             "refresh_token": {
@@ -2036,7 +2067,8 @@ window.onload = function() {
               "description": "Роль",
               "enum": [
                 "owner",
-                "member"
+                "member",
+                "invited"
               ]
             }
           },
@@ -2352,7 +2384,8 @@ window.onload = function() {
               "description": "Роль",
               "enum": [
                 "owner",
-                "member"
+                "member",
+                "invited"
               ]
             }
           },
@@ -2409,7 +2442,7 @@ window.onload = function() {
           "type": "object",
           "properties": {}
         },
-        "UpdateTeamMembersItemDto": {
+        "UpdateTeamMembersDto": {
           "type": "object",
           "properties": {
             "member": {
@@ -2432,21 +2465,6 @@ window.onload = function() {
           "required": [
             "member",
             "action"
-          ]
-        },
-        "UpdateTeamMembersDto": {
-          "type": "object",
-          "properties": {
-            "members": {
-              "description": "Участники",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/UpdateTeamMembersItemDto"
-              }
-            }
-          },
-          "required": [
-            "members"
           ]
         },
         "CreateReviewDto": {

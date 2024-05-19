@@ -26,7 +26,7 @@ export class CreateUserDto {
   @ApiProperty({ description: 'Подтверждение почты', type: String })
   @IsString()
   @IsOptional()
-  readonly verify_email: string;
+  readonly verify_email: boolean;
 
   @ApiProperty({ description: 'Токен обновления', type: String })
   @IsString()

@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.service';
 import { Tokens } from './types/tokens';
 import { JwtPayload } from './types/jwt-payload';
 import { Session } from './types/session';
+import { User } from '../users/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +17,7 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async signUp(user: CreateUserDto): Promise<any> {
+  async signUp(user: CreateUserDto): Promise<User> {
     const hashedPassword = await this.hashData(user.password);
     const createdUser = await this.usersService.createOne({
       ...user,

@@ -17,6 +17,7 @@ import { ReactionsModule } from './modules/reactions/reactions.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { SpecializationsModule } from './modules/specializations/specializations.module';
 import { EducationsModule } from './modules/educations/educations.module';
+import { TokensModule } from './modules/tokens/tokens.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { EducationsModule } from './modules/educations/educations.module';
     ReactionsModule,
     UploadModule,
     AuthModule,
+    TokensModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'swagger-static'),
       serveRoot: configuration().node_env === 'development' ? '/' : '/swagger',

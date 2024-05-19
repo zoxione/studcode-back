@@ -110,7 +110,6 @@ export class UsersService {
     for (const file of files.flat()) {
       if (file.fieldname === 'avatar_file') {
         if (user.avatar !== '') {
-          console.log(getFilePath(user.avatar));
           await this.uploadService.remove(getFilePath(user.avatar));
         }
         const res = await this.uploadService.upload(`users/${user._id}/avatar-${timeStamp}.${file.mimetype.split('/')[1]}`, file);

@@ -1,29 +1,65 @@
+import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import slugify from '@sindresorhus/slugify';
 import mongoose, { Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { OperationOptions } from '../../common/types/operation-options';
+import { getFilePath } from '../../common/utils/get-file-path';
+import configuration from '../../config/configuration';
+import { Project } from '../projects/schemas/project.schema';
+import { Token } from '../tokens/schemas/token.schema';
+import { TokenEvent } from '../tokens/types/token-event';
 import { UploadService } from '../upload/upload.service';
+import { UsersService } from '../users/users.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
+import { FindOneFilterTeamDto } from './dto/find-one-filter-team.dto';
 import { UpdateTeamMembersDto } from './dto/update-team-members.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
 import { Team } from './schemas/team.schema';
 import { FindAllReturnTeam } from './types/find-all-return-team';
+import { TeamAction } from './types/team-action';
 import { TeamFiles } from './types/team-files';
-import { Project } from '../projects/schemas/project.schema';
-import { getFilePath } from '../../common/utils/get-file-path';
+import { TeamMemberRole } from './types/team-member-role';
 
 @Injectable()
 export class TeamsService {
   constructor(
     @InjectModel(Team.name) private readonly teamModel: Model<Team>,
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
+    @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
     private uploadService: UploadService,
+    private readonly mailerService: MailerService,
+    private readonly usersService: UsersService,
   ) {}
 
   private generateSlug(name: string): string {
     return `${slugify(name, { decamelize: false })}`;
+  }
+
+  private async sendEmailInvitedUser(userId: string, team: Team): Promise<void> {
+    const user = await this.usersService.findOne({ fields: ['_id'], fieldValue: userId });
+    const randomToken = uuidv4();
+    await this.tokenModel.create({
+      event: TokenEvent.TeamInvite,
+      content: randomToken,
+      user: user._id,
+    });
+    const link = `${configuration().app_url}/api/v1/teams/${team._id}/members/accept?token=${randomToken}`;
+    await this.mailerService.sendMail({
+      from: `"Студенческий Код" <${configuration().smtp_mail}>`,
+      to: user.email,
+      subject: `Приглашение в команду ${team.name} на сайте ${configuration().frontend_url}`,
+      html: `
+          <div>
+            <h1>Приглашение в команду ${team.name} на сайте ${configuration().frontend_url}</h1>
+            <p>Для подтверждения приглашения перейдите по ссылке:</p>
+            <a href="${link}" target="_blank">${link}</a>
+            <p>С уважением, команда Студенческого Кода.</p>
+          </div>
+        `,
+    });
   }
 
   async createOne(createTeamDto: CreateTeamDto): Promise<Team> {
@@ -33,16 +69,40 @@ export class TeamsService {
     return createdTeam.toObject();
   }
 
-  async findAll({ search = '', page = 1, limit = 20, order = '_id', member_id = '' }: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
+  async findAll({
+    search = '',
+    page = 1,
+    limit = 20,
+    order = '_id',
+    member_id = '',
+    member_role = '',
+  }: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
     const count = await this.teamModel.countDocuments().exec();
     const searchQuery = search !== '' ? { $text: { $search: search } } : {};
     const memberQuery = member_id !== '' ? { 'members.user': member_id } : {};
+    const memberRoleQuery =
+      member_role !== ''
+        ? member_role[0] === '!'
+          ? { members: { $not: { $elemMatch: { user: member_id, role: member_role.slice(1) } } } }
+          : { members: { $elemMatch: { user: member_id, role: member_role } } }
+        : {};
     const foundTeams = await this.teamModel
-      .find({ ...searchQuery, ...memberQuery })
+      .find({ ...searchQuery, ...memberQuery, ...memberRoleQuery })
       .skip((page - 1) * limit)
       .limit(limit)
       .sort({ [order[0] === '!' ? order.slice(1) : order]: order[0] === '!' ? -1 : 1 })
       .exec();
+    const foundTeamsFiltered = foundTeams;
+    for (let i = 0; i < foundTeamsFiltered.length; i++) {
+      let membersFiltered = foundTeamsFiltered[i].members;
+      if (member_role !== '') {
+        membersFiltered =
+          member_role[0] === '!'
+            ? foundTeamsFiltered[i].members.filter((member) => member.role !== member_role.slice(1))
+            : foundTeamsFiltered[i].members.filter((member) => member.role === member_role);
+      }
+      foundTeamsFiltered[i].members = membersFiltered;
+    }
     return {
       filter: {
         page,
@@ -50,17 +110,18 @@ export class TeamsService {
         search,
         order,
         member_id,
+        member_role,
       },
       info: {
         find_count: foundTeams.length,
         total_count: count,
         count_pages: Math.ceil(count / limit),
       },
-      results: foundTeams,
+      results: foundTeamsFiltered,
     };
   }
 
-  async findOne({ fields, fieldValue }: OperationOptions<Team>): Promise<Team> {
+  async findOne({ fields, fieldValue, filter }: { filter: FindOneFilterTeamDto } & OperationOptions<Team>): Promise<Team> {
     let foundTeam = null;
     for (const field of fields) {
       if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
@@ -70,7 +131,15 @@ export class TeamsService {
     if (!foundTeam) {
       throw new NotFoundException('Team not found');
     }
-    return foundTeam.toObject();
+    let membersFiltered = foundTeam.members;
+    if (filter.member_role) {
+      membersFiltered =
+        filter.member_role[0] === '!'
+          ? foundTeam.members.filter((member) => member.role !== filter.member_role?.slice(1))
+          : foundTeam.members.filter((member) => member.role === filter.member_role);
+    }
+    const { members, ...team } = foundTeam.toObject();
+    return { ...team, members: membersFiltered };
   }
 
   async updateOne({ fields, fieldValue, updateDto }: { updateDto: UpdateTeamDto } & OperationOptions<Team>): Promise<Team> {
@@ -155,20 +224,107 @@ export class TeamsService {
     }
 
     let newMembers = team.members;
-    for (const item of updateMembersDto.members) {
-      if (item.action === 'add') {
-        const memberIndex = team.members.findIndex((member) => member.user._id.toString() === item.member.user);
-        if (memberIndex !== -1) {
-          newMembers[memberIndex] = { user: new mongoose.Types.ObjectId(item.member.user), role: item.member.role };
+    if (updateMembersDto.action === TeamAction.Add) {
+      const newMember = { user: new mongoose.Types.ObjectId(updateMembersDto.member.user), role: updateMembersDto.member.role };
+      const memberIndex = team.members.findIndex((member) => member.user._id.toString() === updateMembersDto.member.user);
+      if (memberIndex !== -1) {
+        if (team.members[memberIndex].role !== TeamMemberRole.Invited) {
+          // если уже есть и не приглашен, то просто обновим
+          newMembers[memberIndex] = newMember;
         } else {
-          newMembers.push({ user: new mongoose.Types.ObjectId(item.member.user), role: item.member.role });
+          // если уже есть и приглашен, то просто отправим повторное приглашение
+          const token = await this.tokenModel.findOne({
+            event: TokenEvent.TeamInvite,
+            user: newMember.user._id,
+          });
+          if (!token) {
+            await this.sendEmailInvitedUser(newMember.user._id.toString(), team);
+          }
         }
-      } else if (item.action === 'remove') {
-        const memberIndex = team.members.findIndex((member) => member.user._id.toString() === item.member.user);
-        if (memberIndex !== -1) {
-          newMembers = team.members.filter((member) => member.user._id.toString() !== item.member.user);
-        }
+      } else {
+        // если нет, то пригласим
+        await this.sendEmailInvitedUser(newMember.user._id.toString(), team);
+        const { role: newMemberRole, ...newMemberInvited } = newMember;
+        newMembers.push({ role: TeamMemberRole.Invited, ...newMemberInvited });
       }
+    } else if (updateMembersDto.action === TeamAction.Remove) {
+      const memberIndex = team.members.findIndex((member) => member.user._id.toString() === updateMembersDto.member.user);
+      if (memberIndex !== -1) {
+        // если нашли, то удалим
+        newMembers = team.members.filter((member) => member.user._id.toString() !== updateMembersDto.member.user);
+      }
+    }
+
+    team = await this.teamModel
+      .findOneAndUpdate(
+        { _id: team._id },
+        { $set: { members: newMembers } },
+        {
+          new: true,
+        },
+      )
+      .exec();
+    if (!team) {
+      throw new NotFoundException('Team not updated');
+    }
+    return team.toObject();
+  }
+
+  async join({ fields, fieldValue, userId }: { userId: string } & OperationOptions<Team>): Promise<Team> {
+    let team = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      team = await this.teamModel.findOne({ [field]: fieldValue }).exec();
+      if (team) break;
+    }
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    let newMembers = team.members;
+    const newMember = { user: new mongoose.Types.ObjectId(userId), role: TeamMemberRole.Member };
+    const memberIndex = team.members.findIndex((member) => member.user._id.toString() === userId);
+    if (memberIndex === -1) {
+      // если не нашли, то добавим
+      newMembers.push(newMember);
+      await this.tokenModel.deleteMany({ event: TokenEvent.TeamInvite, user: userId });
+    } else if (team.members[memberIndex].role === TeamMemberRole.Invited) {
+      // если нашли и приглашен, то просто обновим
+      newMembers[memberIndex] = newMember;
+      await this.tokenModel.deleteMany({ event: TokenEvent.TeamInvite, user: userId });
+    }
+
+    team = await this.teamModel
+      .findOneAndUpdate(
+        { _id: team._id },
+        { $set: { members: newMembers } },
+        {
+          new: true,
+        },
+      )
+      .exec();
+    if (!team) {
+      throw new NotFoundException('Team not updated');
+    }
+    return team.toObject();
+  }
+
+  async leave({ fields, fieldValue, userId }: { userId: string } & OperationOptions<Team>): Promise<Team> {
+    let team = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      team = await this.teamModel.findOne({ [field]: fieldValue }).exec();
+      if (team) break;
+    }
+    if (!team) {
+      throw new NotFoundException('Team not found');
+    }
+
+    let newMembers = team.members;
+    const memberIndex = team.members.findIndex((member) => member.user._id.toString() === userId);
+    if (memberIndex !== -1) {
+      // если нашли, то удалим
+      newMembers = team.members.filter((member) => member.user._id.toString() !== userId);
     }
 
     team = await this.teamModel
