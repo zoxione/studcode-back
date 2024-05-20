@@ -249,26 +249,27 @@ describe('Teams Controller (e2e)', () => {
     return request(app.getHttpServer()).put(`/teams/${createdTeam._id}`).set('Authorization', 'Bearer ').send(updateTeam).expect(401);
   });
 
-  it('(POST) - Добавить участника в команду по ID', async () => {
-    const teamMember = { user: member._id, role: 'member' };
+  it('(POST) - Пригласить участника в команду по ID', async () => {
+    const updateMember = { member: { user: member._id, role: 'member' }, action: 'add' };
     return request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/add`)
+      .put(`/teams/${createdTeam._id}/members`)
       .set('Authorization', 'Bearer ' + accessToken)
-      .send(teamMember)
+      .send(updateMember)
       .expect(200)
       .then((res) => {
         expect(res.body).toBeDefined();
         expect(res.body.members.length).toEqual(2);
-        expect(res.body.members[1].user._id).toEqual(teamMember.user);
+        expect(res.body.members[1].user._id).toEqual(updateMember.member.user);
+        expect(res.body.members[1].role).toEqual('invited');
       });
   });
 
-  it('(POST/E) - Повторное добавление участника в команду по ID', async () => {
-    const teamMember = { user: member._id, role: 'member' };
+  it('(POST/E) - Повторно пригласить участника в команду по ID', async () => {
+    const updateMember = { member: { user: member._id, role: 'member' }, action: 'add' };
     return request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/add`)
+      .put(`/teams/${createdTeam._id}/members`)
       .set('Authorization', 'Bearer ' + accessToken)
-      .send(teamMember)
+      .send(updateMember)
       .expect(200)
       .then((res) => {
         expect(res.body).toBeDefined();
@@ -276,61 +277,118 @@ describe('Teams Controller (e2e)', () => {
       });
   });
 
-  it('(POST/E) - Добавить участника в команду по ID без токена', async () => {
-    const teamMember = { user: member._id, role: 'member' };
+  it('(POST/E) - Пригласить участника в команду по ID без токена', async () => {
+    const updateMember = { member: { user: member._id, role: 'member' }, action: 'add' };
     return request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/add`)
+      .put(`/teams/${createdTeam._id}/members`)
       .set('Authorization', 'Bearer ')
-      .send(teamMember)
+      .send(updateMember)
       .expect(401);
   });
 
-  it('(POST) - Удалить участника из команды по ID с ролью member (себя)', async () => {
-    const teamMember = { user: member._id, role: 'member' };
+  it('(POST) - Удалить участника из команды по ID', async () => {
+    const updateMember = { member: { user: member._id }, action: 'remove' };
     return request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/remove`)
-      .set('Authorization', 'Bearer ' + accessTokenMember)
-      .send(teamMember)
-      .expect(200)
-      .then((res) => {
-        expect(res.body).toBeDefined();
-        expect(res.body.members.length).toEqual(1);
-      });
-  });
-
-  it('(POST/E) - Повторное удаление участника из команды по ID с ролью member (себя)', async () => {
-    const teamMember = { user: member._id, role: 'member' };
-    return request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/remove`)
-      .set('Authorization', 'Bearer ' + accessTokenMember)
-      .send(teamMember)
-      .expect(200)
-      .then((res) => {
-        expect(res.body).toBeDefined();
-        expect(res.body.members.length).toEqual(1);
-      });
-  });
-
-  it('(POST) - Удалить участника из команды по ID с ролью owner (другого)', async () => {
-    const teamMember = { user: member._id, role: 'member' };
-    request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/add`)
+      .put(`/teams/${createdTeam._id}/members`)
       .set('Authorization', 'Bearer ' + accessToken)
-      .send(teamMember)
+      .send(updateMember)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBeDefined();
+        expect(res.body.members.length).toEqual(1);
+      });
+  });
+
+  it('(POST/E) - Повторно удалить участника из команды по ID', async () => {
+    const updateMember = { member: { user: member._id }, action: 'remove' };
+    return request(app.getHttpServer())
+      .put(`/teams/${createdTeam._id}/members`)
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send(updateMember)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBeDefined();
+        expect(res.body.members.length).toEqual(1);
+      });
+  });
+
+  it('(POST/E) - Удалить участника из команду по ID без токена', async () => {
+    const updateMember = { member: { user: member._id }, action: 'remove' };
+    return request(app.getHttpServer())
+      .put(`/teams/${createdTeam._id}/members`)
+      .set('Authorization', 'Bearer ')
+      .send(updateMember)
+      .expect(401);
+  });
+
+  it('(POST) - Войти в команду по ID', async () => {
+    return request(app.getHttpServer())
+      .get(`/teams/${createdTeam._id}/members/join`)
+      .set('Authorization', 'Bearer ' + accessTokenMember)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBeDefined();
+        expect(res.body.members.length).toEqual(2);
+        expect(res.body.members[1].user._id).toEqual(member._id);
+        expect(res.body.members[1].role).toEqual('member');
+      });
+  });
+
+  it('(POST/E) - Повторно войти в команду по ID', async () => {
+    return request(app.getHttpServer())
+      .get(`/teams/${createdTeam._id}/members/join`)
+      .set('Authorization', 'Bearer ' + accessTokenMember)
       .expect(200)
       .then((res) => {
         expect(res.body).toBeDefined();
         expect(res.body.members.length).toEqual(2);
       });
+  });
+
+  it('(POST/E) - Войти в команду по ID без токена', async () => {
+    return request(app.getHttpServer()).get(`/teams/${createdTeam._id}/members/join`).set('Authorization', 'Bearer ').expect(401);
+  });
+
+  it('(POST) - Выйти из команды по ID', async () => {
     return request(app.getHttpServer())
-      .put(`/teams/${createdTeam._id}/members/remove`)
-      .set('Authorization', 'Bearer ' + accessToken)
-      .send(teamMember)
+      .get(`/teams/${createdTeam._id}/members/leave`)
+      .set('Authorization', 'Bearer ' + accessTokenMember)
       .expect(200)
       .then((res) => {
         expect(res.body).toBeDefined();
         expect(res.body.members.length).toEqual(1);
       });
+  });
+
+  it('(POST/E) - Повторно выйти из команды по ID', async () => {
+    return request(app.getHttpServer())
+      .get(`/teams/${createdTeam._id}/members/leave`)
+      .set('Authorization', 'Bearer ' + accessTokenMember)
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBeDefined();
+        expect(res.body.members.length).toEqual(1);
+      });
+  });
+
+  it('(POST/E) - Выйти из команды по ID без токена', async () => {
+    return request(app.getHttpServer()).get(`/teams/${createdTeam._id}/members/leave`).set('Authorization', 'Bearer ').expect(401);
+  });
+
+  it('(POST/E) - Войти в закрытую команду по ID', async () => {
+    await request(app.getHttpServer())
+      .put(`/teams/${createdTeam._id}`)
+      .set('Authorization', 'Bearer ' + accessToken)
+      .send({ status: 'closed' })
+      .expect(200)
+      .then((res) => {
+        expect(res.body).toBeDefined();
+        expect(res.body.status).toEqual('closed');
+      });
+    return request(app.getHttpServer())
+      .get(`/teams/${createdTeam._id}/members/join`)
+      .set('Authorization', 'Bearer ' + accessTokenMember)
+      .expect(403);
   });
 
   it('(DELETE) - Удалить команду по ID', async () => {

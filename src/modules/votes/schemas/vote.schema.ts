@@ -21,7 +21,6 @@ class Vote {
 }
 
 const VoteSchema = SchemaFactory.createForClass(Vote);
-VoteSchema.index({ project: 'text' });
 VoteSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',

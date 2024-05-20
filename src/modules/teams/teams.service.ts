@@ -252,6 +252,13 @@ export class TeamsService {
       if (memberIndex !== -1) {
         // если нашли, то удалим
         newMembers = team.members.filter((member) => member.user._id.toString() !== updateMembersDto.member.user);
+        if (team.members[memberIndex].role === TeamMemberRole.Invited) {
+          // если приглашен, то удалим токен
+          await this.tokenModel.deleteMany({
+            event: TokenEvent.TeamInvite,
+            user: team.members[memberIndex].user._id,
+          });
+        }
       }
     }
 

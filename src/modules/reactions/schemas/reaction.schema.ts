@@ -26,7 +26,6 @@ class Reaction {
 }
 
 const ReactionSchema = SchemaFactory.createForClass(Reaction);
-ReactionSchema.index({ text: 'text' });
 ReactionSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',

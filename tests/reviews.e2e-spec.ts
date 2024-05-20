@@ -35,7 +35,7 @@ describe('Reviews Controller (e2e)', () => {
   const newReviews = [
     {
       _id: 'f53528c0460a017f68186916',
-      text: 'крутяк',
+      text: 'круто',
       rating: 5,
       likes: 0,
       dislikes: 0,
@@ -44,7 +44,7 @@ describe('Reviews Controller (e2e)', () => {
     },
     {
       _id: 'f53528c0460a017f68186917',
-      text: 'хуяк',
+      text: 'некруто',
       project: newProjects[1]._id,
       reviewer: admin._id,
     },

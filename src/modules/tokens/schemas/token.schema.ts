@@ -26,7 +26,7 @@ class Token {
 
   @ApiProperty({ description: 'Дата истечения (по умолчанию 12 часов)', type: Date })
   @Prop({ type: Date, default: Date.now() + TOKEN_EXPIRE_TIME })
-  expires_at: string;
+  expires_at: Date;
 }
 
 const TokenSchema = SchemaFactory.createForClass(Token);
