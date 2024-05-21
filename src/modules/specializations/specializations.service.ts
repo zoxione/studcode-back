@@ -6,6 +6,7 @@ import { CreateSpecializationDto } from './dto/create-specialization.dto';
 import { FindAllFilterSpecializationDto } from './dto/find-all-filter-specialization.dto';
 import { Specialization } from './schemas/specialization.schema';
 import { FindAllReturnSpecialization } from './types/find-all-return-specialization';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class SpecializationsService {
@@ -23,7 +24,7 @@ export class SpecializationsService {
     order = '_id',
   }: FindAllFilterSpecializationDto): Promise<FindAllReturnSpecialization> {
     const count = await this.specializationModel.countDocuments().exec();
-    const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const searchQuery = search !== '' ? { name: { $in: convertIncorrectKeyboard(search) } } : {};
     const foundSpecializations = await this.specializationModel
       .find(searchQuery)
       .skip((page - 1) * limit)

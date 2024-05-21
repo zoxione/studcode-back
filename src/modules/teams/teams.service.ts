@@ -22,6 +22,7 @@ import { FindAllReturnTeam } from './types/find-all-return-team';
 import { TeamAction } from './types/team-action';
 import { TeamFiles } from './types/team-files';
 import { TeamMemberRole } from './types/team-member-role';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class TeamsService {
@@ -78,7 +79,7 @@ export class TeamsService {
     member_role = '',
   }: FindAllFilterTeamDto): Promise<FindAllReturnTeam> {
     const count = await this.teamModel.countDocuments().exec();
-    const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const searchQuery = search !== '' ? { name: { $in: convertIncorrectKeyboard(search) } } : {};
     const memberQuery = member_id !== '' ? { 'members.user': member_id } : {};
     const memberRoleQuery =
       member_role !== ''

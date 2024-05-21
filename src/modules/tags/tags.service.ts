@@ -9,6 +9,7 @@ import { CreateTagDto } from './dto/create-tag.dto';
 import { FindAllFilterTagDto } from './dto/find-all-filter-tag.dto';
 import { Tag } from './schemas/tag.schema';
 import { FindAllReturnTag } from './types/find-all-return-tag';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class TagsService {
@@ -30,7 +31,7 @@ export class TagsService {
 
   async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterTagDto): Promise<FindAllReturnTag> {
     const count = await this.tagModel.countDocuments().exec();
-    const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const searchQuery = search !== '' ? { name: { $in: convertIncorrectKeyboard(search) } } : {};
     const foundTags = await this.tagModel
       .find(searchQuery)
       .skip((page - 1) * limit)

@@ -79,7 +79,7 @@ class Project {
 }
 
 const ProjectSchema = SchemaFactory.createForClass(Project);
-ProjectSchema.index({ title: 'text' });
+ProjectSchema.index({ description: 'text' });
 ProjectSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',

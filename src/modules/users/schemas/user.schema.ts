@@ -68,8 +68,7 @@ class User {
 }
 
 const UserSchema = SchemaFactory.createForClass(User);
-UserSchema.index({ username: 'text' });
-UserSchema.index({ email: 'text' });
+UserSchema.index({ about: 'text' });
 UserSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',

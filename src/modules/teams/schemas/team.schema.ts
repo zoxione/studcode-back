@@ -37,7 +37,7 @@ class Team {
 }
 
 const TeamSchema = SchemaFactory.createForClass(Team);
-TeamSchema.index({ name: 'text' });
+TeamSchema.index({ about: 'text' });
 TeamSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',

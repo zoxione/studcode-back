@@ -19,7 +19,6 @@ class Specialization {
 }
 
 const SpecializationSchema = SchemaFactory.createForClass(Specialization);
-SpecializationSchema.index({ name: 'text' });
 SpecializationSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',

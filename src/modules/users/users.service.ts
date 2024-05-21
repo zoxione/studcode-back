@@ -10,6 +10,7 @@ import { FindAllReturnUser } from './types/find-all-return-user';
 import { UserFiles } from './types/user-files';
 import { OperationOptions } from '../../common/types/operation-options';
 import { getFilePath } from '../../common/utils/get-file-path';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class UsersService {
@@ -33,7 +34,7 @@ export class UsersService {
 
   async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterUserDto): Promise<FindAllReturnUser> {
     const count = await this.userModel.countDocuments().exec();
-    const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const searchQuery = search !== '' ? { username: { $in: convertIncorrectKeyboard(search) } } : {};
     const foundUsers = await this.userModel
       .find(searchQuery)
       .select('-password -refresh_token')

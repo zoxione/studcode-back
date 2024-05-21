@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import slugify from '@sindresorhus/slugify';
 import { startOfToday, subDays, subMonths, subWeeks, subYears } from 'date-fns';
@@ -20,6 +20,8 @@ import { ProjectTimeFrame } from './types/project-time-frame';
 import { ReturnProject } from './types/return-project';
 import { Reaction } from '../reactions/schemas/reaction.schema';
 import { getFilePath } from '../../common/utils/get-file-path';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
+import { ProjectStatus } from './types/project-status';
 
 @Injectable()
 export class ProjectsService {
@@ -57,7 +59,7 @@ export class ProjectsService {
     user_id = '',
   }: { user_id?: string } & FindAllFilterProjectDto): Promise<FindAllReturnProject> {
     const count = await this.projectModel.countDocuments().exec();
-    const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const searchQuery = search !== '' ? { title: { $in: convertIncorrectKeyboard(search) } } : {};
     const tag = tag_slug !== '' ? await this.tagModel.findOne({ slug: tag_slug }) : null;
     const tagSlugQuery = tag !== null ? { tags: tag._id } : {};
     const statusQuery = status !== '' ? { status: status } : {};
@@ -128,6 +130,11 @@ export class ProjectsService {
     }
     if (!foundProject) {
       throw new NotFoundException('Project not found');
+    }
+    if (foundProject.status !== ProjectStatus.Published) {
+      if (user_id !== foundProject.creator._id.toString()) {
+        throw new ForbiddenException('You are not allowed to see this project');
+      }
     }
     const vote = user_id !== '' ? await this.voteModel.findOne({ project: foundProject._id, voter: user_id }).exec() : null;
     return { ...foundProject.toObject(), voted: vote ? true : false };

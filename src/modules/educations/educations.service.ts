@@ -6,6 +6,7 @@ import { CreateEducationDto } from './dto/create-education.dto';
 import { FindAllFilterEducationDto } from './dto/find-all-filter-education.dto';
 import { Education } from './schemas/education.schema';
 import { FindAllReturnEducation } from './types/find-all-return-education';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class EducationsService {
@@ -18,7 +19,7 @@ export class EducationsService {
 
   async findAll({ search = '', page = 1, limit = 20, order = '_id' }: FindAllFilterEducationDto): Promise<FindAllReturnEducation> {
     const count = await this.educationModel.countDocuments().exec();
-    const searchQuery = search !== '' ? { $text: { $search: search } } : {};
+    const searchQuery = search !== '' ? { name: { $in: convertIncorrectKeyboard(search) } } : {};
     const foundEducations = await this.educationModel
       .find(searchQuery)
       .skip((page - 1) * limit)

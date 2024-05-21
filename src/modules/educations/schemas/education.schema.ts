@@ -27,7 +27,6 @@ class Education {
 }
 
 const EducationSchema = SchemaFactory.createForClass(Education);
-EducationSchema.index({ name: 'text' });
 EducationSchema.set('timestamps', {
   createdAt: 'created_at',
   updatedAt: 'updated_at',
