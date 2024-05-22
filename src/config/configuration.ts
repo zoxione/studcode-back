@@ -4,6 +4,7 @@ export default () => ({
   app_url: process.env.APP_URL || '',
   frontend_url: process.env.FRONTEND_URL || '',
   database: process.env.MONGODB_URL || '',
+  token_domain: process.env.TOKEN_DOMAIN || '',
   access_token_name: process.env.ACCESS_TOKEN_NAME || '',
   jwt_access_secret: process.env.JWT_ACCESS_SECRET || '',
   jwt_access_expires: process.env.JWT_ACCESS_EXPIRES || '',

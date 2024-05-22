@@ -60,12 +60,14 @@ export class AuthController {
     const nowUnix = (+new Date() / 1e3) | 0;
     response
       .cookie(configuration().access_token_name, access_token, {
+        domain: configuration().token_domain,
         httpOnly: true,
         secure: configuration().node_env === 'production',
         sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
         maxAge: (access_token_exp - nowUnix) * 1000,
       })
       .cookie(configuration().refresh_token_name, refresh_token, {
+        domain: configuration().token_domain,
         httpOnly: true,
         secure: configuration().node_env === 'production',
         sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
@@ -78,16 +80,8 @@ export class AuthController {
   @Get('/logout')
   @ApiOperation({ summary: 'Выход из аккаунта' })
   async logout(@Req() req: AuthUserRequest, @Res({ passthrough: true }) response: Response) {
-    response.clearCookie(configuration().access_token_name, {
-      httpOnly: true,
-      secure: configuration().node_env === 'production',
-      sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
-    });
-    response.clearCookie(configuration().refresh_token_name, {
-      httpOnly: true,
-      secure: configuration().node_env === 'production',
-      sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
-    });
+    response.clearCookie(configuration().access_token_name);
+    response.clearCookie(configuration().refresh_token_name);
     return this.authService.signOut(req.user.sub);
   }
 
@@ -101,12 +95,14 @@ export class AuthController {
     const nowUnix = (+new Date() / 1e3) | 0;
     response
       .cookie(configuration().access_token_name, access_token, {
+        domain: configuration().token_domain,
         httpOnly: true,
         secure: configuration().node_env === 'production',
         sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',
         maxAge: (access_token_exp - nowUnix) * 1000,
       })
       .cookie(configuration().refresh_token_name, refresh_token, {
+        domain: configuration().token_domain,
         httpOnly: true,
         secure: configuration().node_env === 'production',
         sameSite: configuration().node_env === 'production' ? 'lax' : 'lax',

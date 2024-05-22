@@ -131,11 +131,11 @@ export class ProjectsService {
     if (!foundProject) {
       throw new NotFoundException('Project not found');
     }
-    if (foundProject.status !== ProjectStatus.Published) {
-      if (user_id !== foundProject.creator._id.toString()) {
-        throw new ForbiddenException('You are not allowed to see this project');
-      }
-    }
+    // if (foundProject.status !== ProjectStatus.Published) {
+    //   if (user_id !== foundProject.creator._id.toString()) {
+    //     throw new ForbiddenException('You are not allowed to see this project');
+    //   }
+    // }
     const vote = user_id !== '' ? await this.voteModel.findOne({ project: foundProject._id, voter: user_id }).exec() : null;
     return { ...foundProject.toObject(), voted: vote ? true : false };
   }
