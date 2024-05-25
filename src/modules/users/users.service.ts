@@ -1,22 +1,34 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { OperationOptions } from '../../common/types/operation-options';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
+import { getFilePath } from '../../common/utils/get-file-path';
+import { ProjectsService } from '../projects/projects.service';
+import { Reaction } from '../reactions/schemas/reaction.schema';
+import { ReviewsService } from '../reviews/reviews.service';
+import { TeamsService } from '../teams/teams.service';
+import { Token } from '../tokens/schemas/token.schema';
 import { UploadService } from '../upload/upload.service';
+import { Vote } from '../votes/schemas/vote.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './schemas/user.schema';
 import { FindAllReturnUser } from './types/find-all-return-user';
 import { UserFiles } from './types/user-files';
-import { OperationOptions } from '../../common/types/operation-options';
-import { getFilePath } from '../../common/utils/get-file-path';
-import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<User>,
+    @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
+    @InjectModel(Vote.name) private readonly voteModel: Model<Vote>,
+    @InjectModel(Reaction.name) private readonly reactionModel: Model<Reaction>,
+    private reviewsService: ReviewsService,
     private uploadService: UploadService,
+    private projectsService: ProjectsService,
+    private teamsService: TeamsService,
   ) {}
 
   async createOne(createUserDto: CreateUserDto): Promise<User> {
@@ -94,6 +106,44 @@ export class UsersService {
       throw new NotFoundException('User not updated');
     }
     return updatedUser.toObject();
+  }
+
+  async deleteOne({ fields, fieldValue }: OperationOptions<User>): Promise<User> {
+    let user = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      user = await this.userModel.findOne({ [field]: fieldValue }).exec();
+      if (user) break;
+    }
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.tokenModel.deleteMany({ user: user._id }).exec();
+    const projectsUser = await this.projectsService.findAll({ creator_id: user._id.toString() });
+    for (const project of projectsUser.results) {
+      await this.projectsService.deleteOne({ fields: ['_id'], fieldValue: project._id.toString() });
+    }
+    const teamsUser = await this.teamsService.findAll({ member_id: user._id.toString() });
+    for (const team of teamsUser.results) {
+      await this.teamsService.leave({ fields: ['_id'], fieldValue: team._id.toString(), userId: user._id.toString() });
+    }
+    await this.voteModel.deleteMany({ voter: user._id }).exec();
+    await this.reactionModel.deleteMany({ reacted_by: user._id }).exec();
+    const reviewsUser = await this.reviewsService.findAll({ user_id: user._id.toString() });
+    for (const review of reviewsUser.results) {
+      await this.reviewsService.deleteOne({ fields: ['_id'], fieldValue: review._id.toString() });
+    }
+    let deletedUser = null;
+    for (const field of fields) {
+      if (field === '_id' && !mongoose.Types.ObjectId.isValid(fieldValue)) continue;
+      deletedUser = await this.userModel.findOneAndRemove({ [field]: fieldValue }).exec();
+      if (deletedUser) break;
+    }
+    if (!deletedUser) {
+      throw new NotFoundException('User not deleted');
+    }
+    await this.uploadService.removeFolder(`users/${deletedUser._id}`);
+    return user.toObject();
   }
 
   async uploadFiles({ fields, fieldValue, files }: { files: UserFiles } & OperationOptions<User>): Promise<User> {

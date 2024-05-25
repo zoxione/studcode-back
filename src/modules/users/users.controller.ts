@@ -17,8 +17,8 @@ import {
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { AccessTokenGuard } from '../../common/guards/access-token.guard';
+import { ParseFilesPipe } from '../../common/validation/parse-files-pipe';
 import { AuthUserRequest } from '../auth/types/auth-user-request';
 import { FindAllFilterUserDto } from './dto/find-all-filter-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -66,19 +66,19 @@ export class UsersController {
     return this.usersService.updateOne({ fields: this.fields, fieldValue: key, updateDto: updateDto });
   }
 
-  // @UseGuards(AccessTokenGuard)
-  // @Delete('/:key')
-  // @ApiOperation({ summary: 'Удаление пользователя по _id/username/email' })
-  // @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
-  // @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
-  // @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
-  // async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
-  //   const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
-  //   if (user._id.toString() !== req.user.sub) {
-  //     throw new UnauthorizedException('You are not allowed to update this user');
-  //   }
-  //   return this.usersService.deleteOne({ fields: this.fields, fieldValue: key });
-  // }
+  @UseGuards(AccessTokenGuard)
+  @Delete('/:key')
+  @ApiOperation({ summary: 'Удаление пользователя по _id/username/email' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Success' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Unauthorized' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Not Found' })
+  async deleteOne(@Req() req: AuthUserRequest, @Param('key') key: string): Promise<User> {
+    const user = await this.usersService.findOne({ fields: this.fields, fieldValue: key });
+    if (user._id.toString() !== req.user.sub) {
+      throw new UnauthorizedException('You are not allowed to update this user');
+    }
+    return this.usersService.deleteOne({ fields: this.fields, fieldValue: key });
+  }
 
   @UseGuards(AccessTokenGuard)
   @Post('/:key/uploads')

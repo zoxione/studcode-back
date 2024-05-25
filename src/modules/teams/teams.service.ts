@@ -5,13 +5,14 @@ import slugify from '@sindresorhus/slugify';
 import mongoose, { Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import { OperationOptions } from '../../common/types/operation-options';
+import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 import { getFilePath } from '../../common/utils/get-file-path';
 import configuration from '../../config/configuration';
 import { Project } from '../projects/schemas/project.schema';
 import { Token } from '../tokens/schemas/token.schema';
 import { TokenEvent } from '../tokens/types/token-event';
 import { UploadService } from '../upload/upload.service';
-import { UsersService } from '../users/users.service';
+import { User } from '../users/schemas/user.schema';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { FindAllFilterTeamDto } from './dto/find-all-filter-team.dto';
 import { FindOneFilterTeamDto } from './dto/find-one-filter-team.dto';
@@ -22,7 +23,6 @@ import { FindAllReturnTeam } from './types/find-all-return-team';
 import { TeamAction } from './types/team-action';
 import { TeamFiles } from './types/team-files';
 import { TeamMemberRole } from './types/team-member-role';
-import { convertIncorrectKeyboard } from '../../common/utils/convert-incorrect-keyboard';
 
 @Injectable()
 export class TeamsService {
@@ -30,9 +30,9 @@ export class TeamsService {
     @InjectModel(Team.name) private readonly teamModel: Model<Team>,
     @InjectModel(Project.name) private readonly projectModel: Model<Project>,
     @InjectModel(Token.name) private readonly tokenModel: Model<Token>,
+    @InjectModel(User.name) private readonly userModel: Model<User>,
     private uploadService: UploadService,
     private readonly mailerService: MailerService,
-    private readonly usersService: UsersService,
   ) {}
 
   private generateSlug(name: string): string {
@@ -40,7 +40,10 @@ export class TeamsService {
   }
 
   private async sendEmailInvitedUser(userId: string, team: Team): Promise<void> {
-    const user = await this.usersService.findOne({ fields: ['_id'], fieldValue: userId });
+    const user = await this.userModel.findOne({ _id: userId }).exec();
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found`);
+    }
     const randomToken = uuidv4();
     await this.tokenModel.create({
       event: TokenEvent.TeamInvite,
@@ -263,6 +266,11 @@ export class TeamsService {
       }
     }
 
+    if (newMembers.length === 0) {
+      team = await this.deleteOne({ fields: ['_id'], fieldValue: team._id.toString() });
+      return team;
+    }
+
     team = await this.teamModel
       .findOneAndUpdate(
         { _id: team._id },
@@ -333,6 +341,11 @@ export class TeamsService {
     if (memberIndex !== -1) {
       // если нашли, то удалим
       newMembers = team.members.filter((member) => member.user._id.toString() !== userId);
+    }
+
+    if (newMembers.length === 0) {
+      team = await this.deleteOne({ fields: ['_id'], fieldValue: team._id.toString() });
+      return team;
     }
 
     team = await this.teamModel

@@ -766,6 +766,39 @@ window.onload = function() {
               "bearer": []
             }
           ]
+        },
+        "delete": {
+          "operationId": "UsersController_deleteOne",
+          "summary": "Удаление пользователя по _id/username/email",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "users"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
         }
       },
       "/api/v1/users/{key}/uploads": {
@@ -792,6 +825,309 @@ window.onload = function() {
           },
           "tags": [
             "users"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews": {
+        "post": {
+          "operationId": "ReviewsController_createOne",
+          "summary": "Создание нового обзора",
+          "parameters": [],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateReviewDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "get": {
+          "operationId": "ReviewsController_findAll",
+          "summary": "Получение списка обзоров",
+          "parameters": [
+            {
+              "name": "project_id",
+              "required": true,
+              "in": "query",
+              "description": "Идентификатор проекта",
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "user_id",
+              "required": true,
+              "in": "query",
+              "description": "Идентификатор пользователя",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews/{key}": {
+        "get": {
+          "operationId": "ReviewsController_findOne",
+          "summary": "Получение обзора по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "put": {
+          "operationId": "ReviewsController_updateOne",
+          "summary": "Обновление обзора по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdateReviewDto"
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        },
+        "delete": {
+          "operationId": "ReviewsController_deleteOne",
+          "summary": "Удаление обзора по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews/{key}/like": {
+        "post": {
+          "operationId": "ReviewsController_likeOne",
+          "summary": "Лайк обзора по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
+          ],
+          "security": [
+            {
+              "bearer": []
+            }
+          ]
+        }
+      },
+      "/api/v1/reviews/{key}/dislike": {
+        "post": {
+          "operationId": "ReviewsController_dislikeOne",
+          "summary": "Дизлайк обзора по _id",
+          "parameters": [
+            {
+              "name": "key",
+              "required": true,
+              "in": "path",
+              "schema": {
+                "type": "string"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Review"
+                  }
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized"
+            },
+            "404": {
+              "description": "Not Found"
+            }
+          },
+          "tags": [
+            "reviews"
           ],
           "security": [
             {
@@ -1211,309 +1547,6 @@ window.onload = function() {
           },
           "tags": [
             "teams"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/reviews": {
-        "post": {
-          "operationId": "ReviewsController_createOne",
-          "summary": "Создание нового обзора",
-          "parameters": [],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CreateReviewDto"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            }
-          },
-          "tags": [
-            "reviews"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        },
-        "get": {
-          "operationId": "ReviewsController_findAll",
-          "summary": "Получение списка обзоров",
-          "parameters": [
-            {
-              "name": "project_id",
-              "required": true,
-              "in": "query",
-              "description": "Идентификатор проекта",
-              "schema": {
-                "type": "string"
-              }
-            },
-            {
-              "name": "user_id",
-              "required": true,
-              "in": "query",
-              "description": "Идентификатор пользователя",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            }
-          },
-          "tags": [
-            "reviews"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/reviews/{key}": {
-        "get": {
-          "operationId": "ReviewsController_findOne",
-          "summary": "Получение обзора по _id",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "reviews"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        },
-        "put": {
-          "operationId": "ReviewsController_updateOne",
-          "summary": "Обновление обзора по _id",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UpdateReviewDto"
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "reviews"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        },
-        "delete": {
-          "operationId": "ReviewsController_deleteOne",
-          "summary": "Удаление обзора по _id",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "reviews"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/reviews/{key}/like": {
-        "post": {
-          "operationId": "ReviewsController_likeOne",
-          "summary": "Лайк обзора по _id",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "reviews"
-          ],
-          "security": [
-            {
-              "bearer": []
-            }
-          ]
-        }
-      },
-      "/api/v1/reviews/{key}/dislike": {
-        "post": {
-          "operationId": "ReviewsController_dislikeOne",
-          "summary": "Дизлайк обзора по _id",
-          "parameters": [
-            {
-              "name": "key",
-              "required": true,
-              "in": "path",
-              "schema": {
-                "type": "string"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Success",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Review"
-                  }
-                }
-              }
-            },
-            "401": {
-              "description": "Unauthorized"
-            },
-            "404": {
-              "description": "Not Found"
-            }
-          },
-          "tags": [
-            "reviews"
           ],
           "security": [
             {
@@ -2372,101 +2405,6 @@ window.onload = function() {
           "type": "object",
           "properties": {}
         },
-        "TeamMemberDto": {
-          "type": "object",
-          "properties": {
-            "user": {
-              "type": "string",
-              "description": "Пользователь"
-            },
-            "role": {
-              "type": "string",
-              "description": "Роль",
-              "enum": [
-                "owner",
-                "member",
-                "invited"
-              ]
-            }
-          },
-          "required": [
-            "user",
-            "role"
-          ]
-        },
-        "CreateTeamDto": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string",
-              "description": "Название"
-            },
-            "about": {
-              "type": "string",
-              "description": "О команде"
-            },
-            "status": {
-              "type": "string",
-              "description": "Статус",
-              "enum": [
-                "opened",
-                "closed"
-              ]
-            },
-            "logo": {
-              "type": "string",
-              "description": "Ссылка на логотип"
-            },
-            "slug": {
-              "type": "string",
-              "description": "Ключевое слово"
-            },
-            "members": {
-              "description": "Участники",
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/TeamMemberDto"
-              }
-            }
-          },
-          "required": [
-            "name",
-            "about",
-            "status",
-            "logo",
-            "slug",
-            "members"
-          ]
-        },
-        "UpdateTeamDto": {
-          "type": "object",
-          "properties": {}
-        },
-        "UpdateTeamMembersDto": {
-          "type": "object",
-          "properties": {
-            "member": {
-              "description": "Участник",
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/TeamMemberDto"
-                }
-              ]
-            },
-            "action": {
-              "type": "string",
-              "description": "Действие",
-              "enum": [
-                "add",
-                "remove"
-              ]
-            }
-          },
-          "required": [
-            "member",
-            "action"
-          ]
-        },
         "CreateReviewDto": {
           "type": "object",
           "properties": {
@@ -2561,6 +2499,101 @@ window.onload = function() {
         "UpdateReviewDto": {
           "type": "object",
           "properties": {}
+        },
+        "TeamMemberDto": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "string",
+              "description": "Пользователь"
+            },
+            "role": {
+              "type": "string",
+              "description": "Роль",
+              "enum": [
+                "owner",
+                "member",
+                "invited"
+              ]
+            }
+          },
+          "required": [
+            "user",
+            "role"
+          ]
+        },
+        "CreateTeamDto": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Название"
+            },
+            "about": {
+              "type": "string",
+              "description": "О команде"
+            },
+            "status": {
+              "type": "string",
+              "description": "Статус",
+              "enum": [
+                "opened",
+                "closed"
+              ]
+            },
+            "logo": {
+              "type": "string",
+              "description": "Ссылка на логотип"
+            },
+            "slug": {
+              "type": "string",
+              "description": "Ключевое слово"
+            },
+            "members": {
+              "description": "Участники",
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TeamMemberDto"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "about",
+            "status",
+            "logo",
+            "slug",
+            "members"
+          ]
+        },
+        "UpdateTeamDto": {
+          "type": "object",
+          "properties": {}
+        },
+        "UpdateTeamMembersDto": {
+          "type": "object",
+          "properties": {
+            "member": {
+              "description": "Участник",
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/TeamMemberDto"
+                }
+              ]
+            },
+            "action": {
+              "type": "string",
+              "description": "Действие",
+              "enum": [
+                "add",
+                "remove"
+              ]
+            }
+          },
+          "required": [
+            "member",
+            "action"
+          ]
         },
         "UserFullNameDto": {
           "type": "object",
